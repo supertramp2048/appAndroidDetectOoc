@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">Phát hiện Tin giả</string>
+    <string name="retake">Chụp lại</string>
+    <string name="gallery">Thư viện</string>
+    <string name="check">Kiểm tra</string>
+    <string name="screen_capture">Chụp màn hình</string>
+    <string name="cancel">Hủy</string>
+    <string name="reasoning_label">Lập luận:</string>
+    <string name="source_articles_label">Nguồn tham khảo:</string>
+    <string name="view_source">Xem nguồn</string>
+    <string name="caption_hint">Viết caption của bức ảnh nếu trong ảnh chưa có caption</string>
+    <string name="dialog_caption_title">Thêm mô tả (Caption)</string>
+    <string name="dialog_caption_hint">Nếu ảnh gửi không có caption, hãy viết caption vào đây...</string>
+    <string name="skip">Bỏ qua</string>
+    <string name="send">Gửi</string>
+</resources>
