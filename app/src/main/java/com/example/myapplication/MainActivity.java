@@ -12,6 +12,13 @@ import android.view.View;
 import android.widget.Toast;
 
 import android.content.Intent;
+import android.os.Bundle;
+import android.provider.Settings;
+import android.util.Log;
+import android.view.View;
+import android.widget.Toast;
+
+import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -105,12 +112,6 @@ public class MainActivity extends AppCompatActivity {
 
         initRetrofit();
 
-        if (allPermissionsGranted()) {
-            startCamera();
-        } else {
-            requestPermissions();
-        }
-
         binding.captureButton.setOnClickListener(v -> takePhoto());
         binding.galleryButton.setOnClickListener(v -> pickMedia.launch(new PickVisualMediaRequest.Builder()
                 .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
@@ -122,7 +123,55 @@ public class MainActivity extends AppCompatActivity {
         binding.cancelUploadButton.setOnClickListener(v -> cancelUpload());
         binding.startCaptureButton.setOnClickListener(v -> checkOverlayPermission());
 
+        binding.btnGoToDetection.setOnClickListener(v -> showDetectionUI());
+        binding.btnGoToHistory.setOnClickListener(v -> {
+            Intent intent = new Intent(this, HistoryActivity.class);
+            startActivity(intent);
+        });
+
         cameraExecutor = Executors.newSingleThreadExecutor();
+
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (binding.menuLayout.getVisibility() == View.GONE) {
+                    stopCamera();
+                    binding.menuLayout.setVisibility(View.VISIBLE);
+                    binding.viewFinder.setVisibility(View.GONE);
+                    binding.captureButton.setVisibility(View.GONE);
+                    binding.galleryButton.setVisibility(View.GONE);
+                    binding.bottomSheet.setVisibility(View.GONE);
+                    binding.imagePreview.setVisibility(View.GONE);
+                    binding.retakeButton.setVisibility(View.GONE);
+                } else {
+                    setEnabled(false);
+                    onBackPressed();
+                }
+            }
+        });
+    }
+
+    private void showDetectionUI() {
+        binding.menuLayout.setVisibility(View.GONE);
+        binding.viewFinder.setVisibility(View.VISIBLE);
+        binding.captureButton.setVisibility(View.VISIBLE);
+        binding.galleryButton.setVisibility(View.VISIBLE);
+        binding.bottomSheet.setVisibility(View.VISIBLE);
+        
+        if (allPermissionsGranted()) {
+            startCamera();
+        } else {
+            requestPermissions();
+        }
+    }
+
+    private void stopCamera() {
+        try {
+            ProcessCameraProvider cameraProvider = ProcessCameraProvider.getInstance(this).get();
+            cameraProvider.unbindAll();
+        } catch (ExecutionException | InterruptedException e) {
+            Log.e(TAG, "Error stopping camera", e);
+        }
     }
 
     private void checkOverlayPermission() {
@@ -257,7 +306,7 @@ public class MainActivity extends AppCompatActivity {
         binding.submitButton.setEnabled(true);
         binding.captureButton.setVisibility(View.GONE);
         binding.galleryButton.setVisibility(View.GONE);
-        Toast.makeText(this, "Photo ready", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Ảnh đã sẵn sàng", Toast.LENGTH_SHORT).show();
     }
 
     private void retakePhoto() {
@@ -346,93 +395,6 @@ public class MainActivity extends AppCompatActivity {
         requestPermissionLauncher.launch(permissions.toArray(new String[0]));
     }
 
-    private void showPredictionDialog(PredictionResponse prediction, File imageFile) {
-        Dialog dialog = new Dialog(this, android.R.style.Theme_Black_NoTitleBar_Fullscreen);
-        View view = LayoutInflater.from(this).inflate(R.layout.dialog_prediction_result, null);
-        dialog.setContentView(view);
-
-        // Set Image
-        ImageView imageView = view.findViewById(R.id.captured_image_view);
-        imageView.setImageURI(Uri.fromFile(imageFile));
-
-        // Set Verdict
-        TextView verdictTv = view.findViewById(R.id.verdict_text);
-        verdictTv.setText(prediction.verdict);
-        if ("FAKE".equalsIgnoreCase(prediction.verdict)) {
-            verdictTv.setTextColor(Color.RED);
-        } else if ("TRUE".equalsIgnoreCase(prediction.verdict)) {
-            verdictTv.setTextColor(Color.GREEN);
-        }
-
-
-
-
-        // Set Reasoning
-        TextView reasoningTv = view.findViewById(R.id.reasoning_text);
-        reasoningTv.setText(prediction.reasoning);
-
-        // Set Articles
-        LinearLayout articlesContainer = view.findViewById(R.id.articles_container);
-        if (prediction.topArticle != null) {
-            addArticleLink(articlesContainer, prediction.topArticle);
-        }
-        if (prediction.supportingArticles != null) {
-            for (PredictionResponse.Article article : prediction.supportingArticles) {
-                addArticleLink(articlesContainer, article);
-            }
-        }
-
-        // Dismiss Behavior: Tap top 1/4 area
-        view.findViewById(R.id.top_image_container).setOnClickListener(v -> {
-            dialog.dismiss();
-            resetAppToOriginalState(imageFile);
-        });
-
-        dialog.show();
-    }
-
-    private void addArticleLink(LinearLayout container, PredictionResponse.Article article) {
-        if (article == null || article.url == null || article.url.isEmpty()) return;
-
-        TextView textView = new TextView(this);
-        SpannableString content = new SpannableString(article.title != null ? article.title : "View Source");
-        content.setSpan(new UnderlineSpan(), 0, content.length(), 0);
-        textView.setText(content);
-        textView.setTextColor(Color.BLUE);
-        textView.setPadding(0, 24, 0, 24); // More space for easier tapping
-        textView.setTextSize(16);
-        textView.setClickable(true);
-        textView.setFocusable(true);
-        textView.setOnTouchListener(null);
-        textView.setOnClickListener(v -> {
-            try {
-                Log.i(TAG, "Opening article link: " + article.url);
-                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(article.url));
-                startActivity(intent);
-            } catch (Exception e) {
-                Log.e(TAG, "Error opening link", e);
-                Toast.makeText(this, "Could not open link", Toast.LENGTH_SHORT).show();
-            }
-        });
-        container.addView(textView);
-    }
-
-    private void resetAppToOriginalState(File tempFile) {
-        // Clear temporary images
-        if (tempFile != null && tempFile.exists()) {
-            boolean deleted = tempFile.delete();
-            Log.d(TAG, "Temp file deleted: " + deleted);
-        }
-        currentImageFile = null;
-        // Clear UI
-        binding.captionEditText.setText("");
-        binding.imagePreview.setVisibility(View.GONE);
-        binding.retakeButton.setVisibility(View.GONE);
-        binding.captureButton.setVisibility(View.VISIBLE);
-        binding.galleryButton.setVisibility(View.VISIBLE);
-        binding.submitButton.setEnabled(false);
-        Toast.makeText(this, "App reset to original state", Toast.LENGTH_SHORT).show();
-    }
     protected void onDestroy() {
         super.onDestroy();
         cameraExecutor.shutdown();

@@ -6,10 +6,50 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+    <LinearLayout
+        android:id="@+id/menuLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="32dp"
+        android:background="@android:color/white"
+        android:visibility="visible">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Detect Fake News"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="48dp"
+            android:textColor="@color/black"/>
+
+        <Button
+            android:id="@+id/btnGoToDetection"
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:text="Phát hiện tin giả"
+            android:textSize="18sp"
+            android:layout_marginBottom="16dp"
+            app:cornerRadius="12dp" />
+
+        <Button
+            android:id="@+id/btnGoToHistory"
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:text="Lịch sử tra cứu"
+            android:textSize="18sp"
+            android:backgroundTint="#607D8B"
+            app:cornerRadius="12dp" />
+
+    </LinearLayout>
+
     <androidx.camera.view.PreviewView
         android:id="@+id/viewFinder"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -46,6 +86,7 @@
         android:layout_marginStart="32dp"
         android:layout_marginBottom="32dp"
         android:text="@string/gallery"
+        android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/bottomSheet"
         app:layout_constraintStart_toStartOf="parent" />
 
@@ -57,6 +98,7 @@
         android:backgroundTint="@android:color/white"
         android:insetTop="0dp"
         android:insetBottom="0dp"
+        android:visibility="gone"
         app:cornerRadius="40dp"
         app:layout_constraintBottom_toTopOf="@+id/bottomSheet"
         app:layout_constraintEnd_toEndOf="parent"
@@ -69,6 +111,7 @@
         android:background="@android:color/white"
         android:orientation="vertical"
         android:padding="16dp"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <EditText

@@ -48,6 +48,11 @@
             android:foregroundServiceType="mediaProjection|dataSync" />
 
         <activity
+            android:name=".HistoryActivity"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+            android:exported="false" />
+
+        <activity
             android:name=".ResultActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"
             android:exported="false" />

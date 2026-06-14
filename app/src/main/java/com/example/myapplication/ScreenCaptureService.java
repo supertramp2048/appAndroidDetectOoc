@@ -82,6 +82,8 @@ public class ScreenCaptureService extends Service {
     private int resultCode;
     private Intent projectionData;
     private ApiService apiService;
+    private boolean isUploading = false;
+    private boolean pendingStop = false;
 
     @Override
     public void onCreate() {
@@ -172,7 +174,17 @@ public class ScreenCaptureService extends Service {
             ImageView captureIcon = floatingWidget.findViewById(R.id.capture_icon);
             ImageView closeIcon = floatingWidget.findViewById(R.id.close_icon);
 
-            closeIcon.setOnClickListener(v -> stopSelf());
+            closeIcon.setOnClickListener(v -> {
+                if (isUploading) {
+                    pendingStop = true;
+                    if (floatingWidget != null) {
+                        floatingWidget.setVisibility(View.GONE);
+                    }
+                    Toast.makeText(this, "Sẽ tắt sau khi có kết quả tra cứu...", Toast.LENGTH_SHORT).show();
+                } else {
+                    stopSelf();
+                }
+            });
             captureIcon.setOnClickListener(v -> toggleSelectionOverlay());
 
             floatingWidget.setOnTouchListener(new View.OnTouchListener() {
@@ -212,9 +224,13 @@ public class ScreenCaptureService extends Service {
         selectionOverlay = new SelectionOverlayView(this, new SelectionOverlayView.OnRegionSelectedListener() {
             @Override
             public void onRegionConfirmed(Rect rect) {
-                windowManager.removeView(selectionOverlay);
+                if (windowManager != null && selectionOverlay != null) {
+                    windowManager.removeView(selectionOverlay);
+                }
                 selectionOverlay = null;
-                floatingWidget.setVisibility(View.GONE);
+                if (floatingWidget != null) {
+                    floatingWidget.setVisibility(View.GONE);
+                }
                 new Handler(Looper.getMainLooper()).postDelayed(() -> startCapture(rect), 500);
             }
 
@@ -349,6 +365,7 @@ public class ScreenCaptureService extends Service {
 
         File savedFile = saveBitmap(cropped);
         if (savedFile != null) {
+            // KHÔNG dừng MediaProjection ở đây để người dùng có thể chụp tiếp lần sau
             showCaptionDialog(savedFile);
         } else {
             Log.e("ScreenCapture", "Failed to save bitmap");
@@ -412,6 +429,7 @@ public class ScreenCaptureService extends Service {
     private void uploadScreenshot(File file, String caption) {
         Log.i("ScreenCapture", "NETWORK: Starting upload request...");
         updateNotification("Uploading screenshot...",false);
+        isUploading = true;
         
         RequestBody captionPart = RequestBody.create(caption, MediaType.parse("text/plain"));
         RequestBody imageRequestBody = RequestBody.create(file, MediaType.parse("image/png"));
@@ -424,8 +442,13 @@ public class ScreenCaptureService extends Service {
         apiService.verifyImage(myApiKey, filePart, captionPart, modePart).enqueue(new Callback<PredictionResponse>() {
             @Override
             public void onResponse(Call<PredictionResponse> call, Response<PredictionResponse> response) {
+                isUploading = false;
                 if (response.isSuccessful() && response.body() != null) {
                     PredictionResponse result = response.body();
+
+                    // Lưu vào SQLite (tối đa 15 bản ghi)
+                    DatabaseHelper dbHelper = new DatabaseHelper(ScreenCaptureService.this);
+                    dbHelper.insertHistory(result.verdict, file.getAbsolutePath(), new Gson().toJson(result));
 
                     // Gửi thông báo nổi khi có kết quả
                     String message = "Kết quả: " + result.verdict + ". Nhấn để xem chi tiết.";
@@ -434,19 +457,33 @@ public class ScreenCaptureService extends Service {
                     // Hiển thị thông báo nhanh để người dùng biết đã có kết quả
                     Toast.makeText(ScreenCaptureService.this, "Đã có kết quả! Vui lòng kiểm tra thông báo.", Toast.LENGTH_LONG).show();
                     
-                    if (floatingWidget != null) floatingWidget.setVisibility(View.VISIBLE);
+                    // Kiểm tra nếu người dùng đã nhấn X trước đó
+                    if (pendingStop) {
+                        stopSelf();
+                    } else if (floatingWidget != null) {
+                        floatingWidget.setVisibility(View.VISIBLE);
+                    }
                 } else {
                     updateNotification("Tải lên thất bại. Vui lòng thử lại.", true);
-                    if (floatingWidget != null) floatingWidget.setVisibility(View.VISIBLE);
+                    if (pendingStop) {
+                        stopSelf();
+                    } else if (floatingWidget != null) {
+                        floatingWidget.setVisibility(View.VISIBLE);
+                    }
                 }
             }
 
             @Override
             public void onFailure(Call<PredictionResponse> call, Throwable t) {
+                isUploading = false;
                 Log.e("ScreenCapture", "NETWORK: Connection Failed!", t);
                 updateNotification("Upload failed.",true);
                 Toast.makeText(ScreenCaptureService.this, "Upload error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                floatingWidget.setVisibility(View.VISIBLE);
+                if (pendingStop) {
+                    stopSelf();
+                } else if (floatingWidget != null) {
+                    floatingWidget.setVisibility(View.VISIBLE);
+                }
             }
         });
     }
@@ -475,7 +512,8 @@ public class ScreenCaptureService extends Service {
 
         NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         if (manager != null) {
-            manager.notify(1, builder.build());
+            // Sử dụng một ID duy nhất (ví dụ: 2) thay vì 1 để thông báo không bị xóa khi stopSelf()
+            manager.notify(2, builder.build());
         }
     }
 
@@ -525,7 +563,7 @@ public class ScreenCaptureService extends Service {
             return null;
         }
 
-        // Also save to gallery in background
+        // Cũng lưu vào gallery trong background (giữ nguyên logic cũ)
         new Thread(() -> {
             try {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -534,13 +572,13 @@ public class ScreenCaptureService extends Service {
                     values.put(MediaStore.MediaColumns.MIME_TYPE, "image/png");
                     values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/ScreenCaptures");
                     Uri imageUri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-            if (imageUri != null) {
-                try (OutputStream fos = getContentResolver().openOutputStream(imageUri)) {
-                    if (fos != null) {
-                        bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
+                    if (imageUri != null) {
+                        try (OutputStream fos = getContentResolver().openOutputStream(imageUri)) {
+                            if (fos != null) {
+                                bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
+                            }
+                        }
                     }
-                }
-            }
                 }
             } catch (Exception ignored) {}
         }).start();
@@ -661,6 +699,13 @@ public class ScreenCaptureService extends Service {
             }
             floatingWidget = null;
         }
+    }
+
+    @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        super.onTaskRemoved(rootIntent);
+        // Khi người dùng vuốt bỏ ứng dụng khỏi Recent Apps, dừng service ngay lập tức
+        stopSelf();
     }
 
     @Nullable
