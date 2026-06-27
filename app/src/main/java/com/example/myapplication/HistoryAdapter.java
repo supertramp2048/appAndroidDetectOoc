@@ -50,9 +50,13 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
         holder.dateText.setText(sdf.format(new Date(item.timestamp)));
 
         File imgFile = new File(item.imagePath);
-        if (imgFile.exists()) {
+        if (RemoteImageLoader.isRemoteUrl(item.imagePath)) {
+            RemoteImageLoader.load(holder.imageView, item.imagePath, android.R.drawable.ic_menu_gallery);
+        } else if (imgFile.exists()) {
+            holder.imageView.setTag(item.imagePath);
             holder.imageView.setImageURI(Uri.fromFile(imgFile));
         } else {
+            holder.imageView.setTag(item.imagePath);
             holder.imageView.setImageResource(android.R.drawable.ic_menu_gallery);
         }
 

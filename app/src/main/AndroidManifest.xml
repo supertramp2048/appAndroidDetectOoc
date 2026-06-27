@@ -16,6 +16,7 @@
     <uses-feature android:name="android.hardware.camera.any" />
 
     <application
+        android:name=".MyApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -54,6 +55,12 @@
 
         <activity
             android:name=".ResultActivity"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+            android:exported="false" />
+
+        <activity
+            android:name=".ScreenshotCropActivity"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"
             android:exported="false" />
 

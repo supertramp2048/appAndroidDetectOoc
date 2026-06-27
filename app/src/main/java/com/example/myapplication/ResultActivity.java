@@ -28,24 +28,28 @@ public class ResultActivity extends AppCompatActivity {
         setContentView(R.layout.dialog_prediction_result);
 
         String predictionJson = getIntent().getStringExtra("PREDICTION_JSON");
-        String imagePath = getIntent().getStringExtra("IMAGE_PATH");
+        String imageReference = getIntent().getStringExtra("IMAGE_PATH");
 
-        if (predictionJson == null || imagePath == null) {
+        if (predictionJson == null || imageReference == null) {
             finish();
             return;
         }
 
         PredictionResponse prediction = new Gson().fromJson(predictionJson, PredictionResponse.class);
-        File imageFile = new File(imagePath);
 
-        setupUI(prediction, imageFile);
+        setupUI(prediction, imageReference);
     }
 
-    private void setupUI(PredictionResponse prediction, File imageFile) {
+    private void setupUI(PredictionResponse prediction, String imageReference) {
         // Set Image
         ImageView imageView = findViewById(R.id.captured_image_view);
-        if (imageFile.exists()) {
-            imageView.setImageURI(Uri.fromFile(imageFile));
+        if (RemoteImageLoader.isRemoteUrl(imageReference)) {
+            RemoteImageLoader.load(imageView, imageReference, android.R.drawable.ic_menu_gallery);
+        } else {
+            File imageFile = new File(imageReference);
+            if (imageFile.exists()) {
+                imageView.setImageURI(Uri.fromFile(imageFile));
+            }
         }
 
         // Set Verdict
@@ -106,7 +110,7 @@ public class ResultActivity extends AppCompatActivity {
         super.onDestroy();
         // Optionally delete the temp file here if it's no longer needed
         String imagePath = getIntent().getStringExtra("IMAGE_PATH");
-        if (imagePath != null) {
+        if (imagePath != null && !RemoteImageLoader.isRemoteUrl(imagePath)) {
             File file = new File(imagePath);
             if (file.exists() && file.getName().startsWith("Capture_")) {
                 file.delete();

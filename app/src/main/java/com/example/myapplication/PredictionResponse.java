@@ -14,6 +14,9 @@ public class PredictionResponse {
     
     @SerializedName("caption_used")
     public String captionUsed;
+
+    @SerializedName("uploaded_image_url")
+    public String uploadedImageUrl;
     
     @SerializedName("top_article")
     public Article topArticle;

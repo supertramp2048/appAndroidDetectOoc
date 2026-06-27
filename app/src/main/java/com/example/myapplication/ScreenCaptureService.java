@@ -72,6 +72,9 @@ import java.util.Objects;
 public class ScreenCaptureService extends Service {
 
     private static final String CHANNEL_ID = "ScreenCaptureChannel";
+    public static final String ACTION_SHOW_CAPTION_FOR_IMAGE = "ACTION_SHOW_CAPTION_FOR_IMAGE";
+    public static final String ACTION_CROP_CANCELED = "ACTION_CROP_CANCELED";
+    public static final String EXTRA_IMAGE_PATH = "IMAGE_PATH";
     private WindowManager windowManager;
     private View floatingWidget;
     private SelectionOverlayView selectionOverlay;
@@ -257,20 +260,32 @@ public class ScreenCaptureService extends Service {
     }
 
     private void startCapture(Rect cropRect) {
-        if (projectionData == null) return;
+        if (projectionData == null) {
+            requestMediaProjectionAgain();
+            return;
+        }
 
         updateScreenMetrics();
         if (mediaProjection == null) {
             MediaProjectionManager manager = (MediaProjectionManager) getSystemService(MEDIA_PROJECTION_SERVICE);
-            mediaProjection = manager.getMediaProjection(resultCode, projectionData);
+            try {
+                mediaProjection = manager.getMediaProjection(resultCode, projectionData);
+            } catch (SecurityException | IllegalStateException e) {
+                Log.e("ScreenCapture", "Cannot create MediaProjection from current token", e);
+                requestMediaProjectionAgain();
+                return;
+            }
 
-            if (mediaProjection == null) return;
+            if (mediaProjection == null) {
+                requestMediaProjectionAgain();
+                return;
+            }
 
             mediaProjection.registerCallback(new MediaProjection.Callback() {
                 @Override
                 public void onStop() {
                     super.onStop();
-                    stopProjection();
+                    releaseProjectionResources(false);
                 }
             }, new Handler(Looper.getMainLooper()));
         }
@@ -284,14 +299,26 @@ public class ScreenCaptureService extends Service {
         }
 
         if (virtualDisplay == null) {
-            virtualDisplay = mediaProjection.createVirtualDisplay("ScreenCapture",
-                    screenWidth, screenHeight, screenDensity,
-                    DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
-                    imageReader.getSurface(), null, null);
+            try {
+                virtualDisplay = mediaProjection.createVirtualDisplay("ScreenCapture",
+                        screenWidth, screenHeight, screenDensity,
+                        DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
+                        imageReader.getSurface(), null, null);
+            } catch (SecurityException | IllegalStateException e) {
+                Log.e("ScreenCapture", "MediaProjection token is no longer valid", e);
+                requestMediaProjectionAgain();
+                return;
+            }
         }
         else {
             // Chỉ cập nhật surface mới, KHÔNG tạo lại virtualDisplay
-            virtualDisplay.setSurface(imageReader.getSurface());
+            try {
+                virtualDisplay.setSurface(imageReader.getSurface());
+            } catch (SecurityException | IllegalStateException e) {
+                Log.e("ScreenCapture", "Cannot update VirtualDisplay surface", e);
+                requestMediaProjectionAgain();
+                return;
+            }
         }
         Handler mainHandler = new Handler(Looper.getMainLooper());
         imageReader.setOnImageAvailableListener(reader -> {
@@ -366,11 +393,18 @@ public class ScreenCaptureService extends Service {
         File savedFile = saveBitmap(cropped);
         if (savedFile != null) {
             // KHÔNG dừng MediaProjection ở đây để người dùng có thể chụp tiếp lần sau
-            showCaptionDialog(savedFile);
+            openScreenshotCrop(savedFile);
         } else {
             Log.e("ScreenCapture", "Failed to save bitmap");
             if (floatingWidget != null) floatingWidget.setVisibility(View.VISIBLE);
         }
+    }
+
+    private void openScreenshotCrop(File imageFile) {
+        Intent intent = new Intent(this, ScreenshotCropActivity.class);
+        intent.putExtra(ScreenshotCropActivity.EXTRA_IMAGE_PATH, imageFile.getAbsolutePath());
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
     }
 
     private void showCaptionDialog(File imageFile) {
@@ -404,8 +438,14 @@ public class ScreenCaptureService extends Service {
                 android.widget.Button btnSend = dialogView.findViewById(R.id.btn_send);
                 android.widget.Button btnSkip = dialogView.findViewById(R.id.btn_skip);
                 android.widget.EditText editText = dialogView.findViewById(R.id.caption_input);
+                final boolean[] submitted = {false};
 
                 btnSend.setOnClickListener(v -> {
+                    if (submitted[0]) return;
+                    submitted[0] = true;
+                    btnSend.setEnabled(false);
+                    btnSkip.setEnabled(false);
+                    editText.setEnabled(false);
                     Log.d("ScreenCapture", "Send button clicked");
                     String caption = editText.getText().toString();
                     uploadScreenshot(imageFile, caption);
@@ -414,6 +454,11 @@ public class ScreenCaptureService extends Service {
                 });
 
                 btnSkip.setOnClickListener(v -> {
+                    if (submitted[0]) return;
+                    submitted[0] = true;
+                    btnSend.setEnabled(false);
+                    btnSkip.setEnabled(false);
+                    editText.setEnabled(false);
                     Log.d("ScreenCapture", "Skip button clicked");
                     uploadScreenshot(imageFile, "");
                     windowManager.removeView(dialogView);
@@ -427,6 +472,12 @@ public class ScreenCaptureService extends Service {
     }
 
     private void uploadScreenshot(File file, String caption) {
+        if (isUploading) {
+            Log.w("ScreenCapture", "Ignoring duplicate upload request while another upload is running");
+            Toast.makeText(this, "Đang gửi ảnh, vui lòng chờ kết quả.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         Log.i("ScreenCapture", "NETWORK: Starting upload request...");
         updateNotification("Uploading screenshot...",false);
         isUploading = true;
@@ -445,14 +496,21 @@ public class ScreenCaptureService extends Service {
                 isUploading = false;
                 if (response.isSuccessful() && response.body() != null) {
                     PredictionResponse result = response.body();
+                    String imageReference = result.uploadedImageUrl != null && !result.uploadedImageUrl.isEmpty()
+                            ? result.uploadedImageUrl
+                            : file.getAbsolutePath();
 
                     // Lưu vào SQLite (tối đa 15 bản ghi)
                     DatabaseHelper dbHelper = new DatabaseHelper(ScreenCaptureService.this);
-                    dbHelper.insertHistory(result.verdict, file.getAbsolutePath(), new Gson().toJson(result));
+                    dbHelper.insertHistory(result.verdict, imageReference, new Gson().toJson(result));
 
-                    // Gửi thông báo nổi khi có kết quả
                     String message = "Kết quả: " + result.verdict + ". Nhấn để xem chi tiết.";
-                    updateNotificationWithResult(message, result, file);
+                    if (MyApplication.isAppInForeground()) {
+                        openResultActivity(result, imageReference);
+                    } else {
+                        // Gửi thông báo nổi khi có kết quả
+                        updateNotificationWithResult(message, result, imageReference);
+                    }
 
                     // Hiển thị thông báo nhanh để người dùng biết đã có kết quả
                     Toast.makeText(ScreenCaptureService.this, "Đã có kết quả! Vui lòng kiểm tra thông báo.", Toast.LENGTH_LONG).show();
@@ -488,10 +546,10 @@ public class ScreenCaptureService extends Service {
         });
     }
 
-    private void updateNotificationWithResult(String text, PredictionResponse result, File imageFile) {
+    private void updateNotificationWithResult(String text, PredictionResponse result, String imageReference) {
         Intent intent = new Intent(this, ResultActivity.class);
         intent.putExtra("PREDICTION_JSON", new Gson().toJson(result));
-        intent.putExtra("IMAGE_PATH", imageFile.getAbsolutePath());
+        intent.putExtra("IMAGE_PATH", imageReference);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         
         PendingIntent pendingIntent = PendingIntent.getActivity(
@@ -515,6 +573,14 @@ public class ScreenCaptureService extends Service {
             // Sử dụng một ID duy nhất (ví dụ: 2) thay vì 1 để thông báo không bị xóa khi stopSelf()
             manager.notify(2, builder.build());
         }
+    }
+
+    private void openResultActivity(PredictionResponse result, String imageReference) {
+        Intent intent = new Intent(this, ResultActivity.class);
+        intent.putExtra("PREDICTION_JSON", new Gson().toJson(result));
+        intent.putExtra("IMAGE_PATH", imageReference);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
     }
 
     private void updateNotification(String text, boolean isResult) {
@@ -595,18 +661,45 @@ public class ScreenCaptureService extends Service {
     }
 
     private void stopProjection() {
+        releaseProjectionResources(true);
+        projectionData = null;
+        resultCode = 0;
+    }
+
+    private void releaseProjectionResources(boolean stopMediaProjection) {
         if (virtualDisplay != null) {
-            virtualDisplay.release();
+            try {
+                virtualDisplay.release();
+            } catch (Exception ignored) {}
             virtualDisplay = null;
         }
         if (imageReader != null) {
-            imageReader.close();
+            try {
+                imageReader.close();
+            } catch (Exception ignored) {}
             imageReader = null;
         }
         if (mediaProjection != null) {
-            mediaProjection.stop();
+            if (stopMediaProjection) {
+                try {
+                    mediaProjection.stop();
+                } catch (Exception ignored) {}
+            }
             mediaProjection = null;
         }
+    }
+
+    private void requestMediaProjectionAgain() {
+        releaseProjectionResources(false);
+        projectionData = null;
+        resultCode = 0;
+        if (floatingWidget != null) {
+            floatingWidget.setVisibility(View.VISIBLE);
+        }
+        Toast.makeText(this, "Vui lòng cấp lại quyền chụp màn hình.", Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(this, MediaProjectionActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
     }
 
     @Override
@@ -658,6 +751,20 @@ public class ScreenCaptureService extends Service {
             setupForegroundNotification("Phát hiện Tin giả", "Đang tải ảnh từ thư viện...", type);
             if (imagePath != null) {
                 uploadScreenshot(new File(imagePath), caption != null ? caption : "");
+            }
+        } else if (ACTION_SHOW_CAPTION_FOR_IMAGE.equals(action)) {
+            String imagePath = intent.getStringExtra(EXTRA_IMAGE_PATH);
+            int type = 0;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                type = ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC;
+            }
+            setupForegroundNotification("Phát hiện Tin giả", "Đang chờ nhập chú thích...", type);
+            if (imagePath != null) {
+                showCaptionDialog(new File(imagePath));
+            }
+        } else if (ACTION_CROP_CANCELED.equals(action)) {
+            if (floatingWidget != null) {
+                floatingWidget.setVisibility(View.VISIBLE);
             }
         } else {
             // Default foreground setup if no specific action matches but service is started

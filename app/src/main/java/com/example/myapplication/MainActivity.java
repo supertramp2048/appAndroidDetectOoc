@@ -280,7 +280,7 @@ public class MainActivity extends AppCompatActivity {
     private void startCrop(@NonNull Uri uri) {
         String destinationFileName = "cropped_image_" + System.currentTimeMillis() + ".jpg";
         UCrop uCrop = UCrop.of(uri, Uri.fromFile(new File(getCacheDir(), destinationFileName)));
-        uCrop.withOptions(new UCrop.Options());
+        uCrop.withOptions(CropOptions.create());
         uCrop.start(this);
     }
 
