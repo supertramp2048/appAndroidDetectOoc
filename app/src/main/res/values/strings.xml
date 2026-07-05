@@ -13,4 +13,16 @@
     <string name="dialog_caption_hint">Nếu ảnh gửi không có caption, hãy viết caption vào đây...</string>
     <string name="skip">Bỏ qua</string>
     <string name="send">Gửi</string>
+    <string name="app_title">Phát hiện Tin giả</string>
+    <string name="app_subtitle">Kiểm tra nội dung từ ảnh và ảnh chụp màn hình</string>
+    <string name="start_detection">Kiểm tra ảnh</string>
+    <string name="start_detection_desc">Chụp ảnh hoặc chọn ảnh từ thư viện</string>
+    <string name="history_desc">Xem lại các kết quả đã kiểm tra</string>
+    <string name="history_title">Lịch sử tra cứu</string>
+    <string name="caption_optional">Caption bổ sung</string>
+    <string name="capture">Chụp ảnh</string>
+    <string name="empty_history_title">Chưa có lịch sử tra cứu</string>
+    <string name="empty_history_message">Các kết quả kiểm tra sẽ xuất hiện tại đây.</string>
+    <string name="result_sources_empty">Chưa có nguồn tham khảo được trả về.</string>
+    <string name="close">Đóng</string>
 </resources>

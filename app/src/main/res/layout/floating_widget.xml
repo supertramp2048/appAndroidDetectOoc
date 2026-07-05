@@ -8,25 +8,34 @@
         android:id="@+id/widget_container"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
         android:background="@drawable/widget_background"
-        android:padding="4dp">
+        android:elevation="10dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="8dp"
+        android:paddingTop="6dp"
+        android:paddingEnd="6dp"
+        android:paddingBottom="6dp">
 
         <ImageView
             android:id="@+id/capture_icon"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:src="@android:drawable/ic_menu_camera"
-            android:padding="8dp"
-            android:contentDescription="Capture" />
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:background="@drawable/bg_chip_neutral"
+            android:contentDescription="@string/capture"
+            android:padding="12dp"
+            android:src="@drawable/ic_camera_24"
+            android:tint="@color/app_primary" />
 
         <ImageView
             android:id="@+id/close_icon"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@android:drawable/ic_menu_close_clear_cancel"
-            android:layout_gravity="top"
-            android:contentDescription="Close" />
+            android:layout_width="34dp"
+            android:layout_height="34dp"
+            android:layout_marginStart="6dp"
+            android:contentDescription="@string/close"
+            android:padding="8dp"
+            android:src="@drawable/ic_close_24"
+            android:tint="@color/app_text_secondary" />
 
     </LinearLayout>
 </FrameLayout>

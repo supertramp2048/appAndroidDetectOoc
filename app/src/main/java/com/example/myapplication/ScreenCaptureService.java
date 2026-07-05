@@ -29,6 +29,7 @@ import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -327,13 +328,7 @@ public class ScreenCaptureService extends Service {
             Image image = reader.acquireLatestImage();
             if (image != null) {
                 processImage(image, cropRect);
-                // Chỉ đóng imageReader, KHÔNG release virtualDisplay
-                mainHandler.post(() -> {
-                    if (imageReader != null) {
-                        imageReader.close();
-                        imageReader = null;
-                    }
-                });
+                mainHandler.post(this::releaseCaptureReader);
             } else {
                 mainHandler.post(() -> {
                     if (floatingWidget != null)
@@ -344,9 +339,21 @@ public class ScreenCaptureService extends Service {
     }
 
     private void releaseCaptureResources() {
+        releaseCaptureReader();
+    }
 
+    private void releaseCaptureReader() {
+        if (virtualDisplay != null) {
+            try {
+                virtualDisplay.setSurface(null);
+            } catch (Exception e) {
+                Log.w("ScreenCapture", "Unable to detach ImageReader surface", e);
+            }
+        }
         if (imageReader != null) {
-            imageReader.close();
+            try {
+                imageReader.close();
+            } catch (Exception ignored) {}
             imageReader = null;
         }
     }
@@ -411,11 +418,25 @@ public class ScreenCaptureService extends Service {
         Log.d("ScreenCapture", "showCaptionDialog entered. File: " + imageFile.getAbsolutePath());
         new Handler(Looper.getMainLooper()).post(() -> {
             try {
+                if (windowManager == null) {
+                    windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+                }
+                if (windowManager == null) {
+                    Log.e("ScreenCapture", "Cannot show caption dialog: WindowManager is null");
+                    return;
+                }
+                if (!Settings.canDrawOverlays(this)) {
+                    Log.e("ScreenCapture", "Cannot show caption dialog: overlay permission not granted");
+                    Toast.makeText(this, "Vui lòng cấp quyền hiển thị trên ứng dụng khác để nhập caption.", Toast.LENGTH_LONG).show();
+                    if (floatingWidget != null) floatingWidget.setVisibility(View.VISIBLE);
+                    return;
+                }
                 if (floatingWidget != null) {
                     floatingWidget.setVisibility(View.GONE);
                 }
                 
-                View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_caption, null);
+                ContextThemeWrapper themedContext = new ContextThemeWrapper(this, R.style.Theme_MyApplication);
+                View dialogView = LayoutInflater.from(themedContext).inflate(R.layout.dialog_caption, null);
                 
                 WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                         WindowManager.LayoutParams.WRAP_CONTENT,

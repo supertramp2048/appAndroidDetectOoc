@@ -50,12 +50,12 @@
 
         <activity
             android:name=".HistoryActivity"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+            android:theme="@style/Theme.MyApplication"
             android:exported="false" />
 
         <activity
             android:name=".ResultActivity"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+            android:theme="@style/Theme.MyApplication"
             android:exported="false" />
 
         <activity

@@ -2,6 +2,7 @@ package com.example.myapplication;
 
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -32,6 +33,11 @@ public class HistoryActivity extends AppCompatActivity {
             List<DatabaseHelper.HistoryItem> historyList = dbHelper.getAllHistory();
             HistoryAdapter adapter = new HistoryAdapter(historyList, this);
             recyclerView.setAdapter(adapter);
+
+            View emptyState = findViewById(R.id.empty_history_state);
+            boolean hasHistory = !historyList.isEmpty();
+            recyclerView.setVisibility(hasHistory ? View.VISIBLE : View.GONE);
+            emptyState.setVisibility(hasHistory ? View.GONE : View.VISIBLE);
         }
     }
 

@@ -39,11 +39,16 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         DatabaseHelper.HistoryItem item = historyList.get(position);
         
-        holder.verdictText.setText(item.verdict);
+        holder.verdictText.setText(formatVerdict(item.verdict));
         if ("FAKE".equalsIgnoreCase(item.verdict)) {
-            holder.verdictText.setTextColor(0xFFFF0000);
+            holder.verdictText.setTextColor(0xFFD83A34);
+            holder.verdictText.setBackgroundResource(R.drawable.bg_chip_danger);
+        } else if ("TRUE".equalsIgnoreCase(item.verdict)) {
+            holder.verdictText.setTextColor(0xFF12805C);
+            holder.verdictText.setBackgroundResource(R.drawable.bg_chip_success);
         } else {
-            holder.verdictText.setTextColor(0xFF4CAF50);
+            holder.verdictText.setTextColor(0xFF5E6B78);
+            holder.verdictText.setBackgroundResource(R.drawable.bg_chip_neutral);
         }
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
@@ -71,6 +76,19 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
     @Override
     public int getItemCount() {
         return historyList.size();
+    }
+
+    private String formatVerdict(String verdict) {
+        if ("FAKE".equalsIgnoreCase(verdict)) {
+            return "Có dấu hiệu tin giả";
+        }
+        if ("TRUE".equalsIgnoreCase(verdict)) {
+            return "Có thể tin cậy";
+        }
+        if (verdict == null || verdict.trim().isEmpty()) {
+            return "Chưa xác định";
+        }
+        return verdict;
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
