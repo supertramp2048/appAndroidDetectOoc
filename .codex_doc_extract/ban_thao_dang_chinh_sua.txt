@@ -1,0 +1,99 @@
+3. Kết quả và Tổng hợp (Results & Synthesis)
+
+Trong số lượng lớn các nghiên cứu được thu thập, để phục vụ cho việc so sánh chuyên sâu, chúng tôi áp dụng phương pháp lựa chọn phân tầng (stratified selection) để lọc ra các công trình mang tính bước ngoặt. Tiêu chí lựa chọn dựa trên tính đại diện cho các hệ sinh thái thuật toán qua từng giai đoạn và sự thay đổi trong chiến lược kiểm chứng. Bảng 1 tóm tắt đặc điểm của 15 nghiên cứu tiêu biểu nhất. Cần lưu ý rằng một số mô hình và bộ dữ liệu tiên tiến nhất trong giai đoạn 2025–2026 hiện đang được công bố dưới dạng bản tiền in (Preprint) và đang tiếp tục được cộng đồng khoa học kiểm chứng mở rộng.
+
+Bảng 1: Tổng hợp các nghiên cứu tiêu biểu về Phát hiện Tin giả Đa phương thức
+
+[TABLE]
+Nghiên cứu [Trích dẫn] | Năm | Chiến lược Kiểm chứng | Thuật toán / Mô hình cốt lõi | Bộ dữ liệu chính | Ngôn ngữ
+Twitter-COMMs [Biamby et al.] | 2021 | Internal Checking | Tinh chỉnh CLIP backbone RN50x16 | Twitter-COMMs | Tiếng Anh
+CCN [Yao et al.] | 2021 | External (Retrieval) | Google Vision API, Mạng bộ nhớ (Memory Network) | NewsCLIPpings | Tiếng Anh
+MuMiN [Nielsen & McConville] | 2022 | Social Graph | Mạng nơ-ron đồ thị (HeteroGraphSAGE) | MuMiN | Đa ngôn ngữ (41)
+COSMOS [Aneja et al.] | 2023 | Internal Checking | Mask-RCNN, USE, tính IoU hộp giới hạn | COSMOS | Tiếng Anh
+SSDL [Mu et al.] | 2023 | Internal Checking | Chưng cất tri thức (Teacher-Student), CLIP | NewsCLIPpings | Tiếng Anh
+MMFN [Zhou et al.] | 2023 | Internal Checking | Multi-grained Fusion (BERT + Swin-T + CLIP) | Weibo, Twitter, Gossipcop | Anh, Trung
+Counter-Intuitive [Papadopoulos et al.] | 2023 | Internal Checking | DALL-E / Stable Diffusion sinh ảnh, CLIP Similarity | COSMOS | Tiếng Anh
+Support/Refute (SEN) [Yuan et al.] | 2023 | External (Stance) | Mạng trích xuất lập trường (SEN) | NewsCLIPpings | Tiếng Anh
+VERITE [Papadopoulos et al.] | 2023 | Dataset Benchmark | Giao thức Cân bằng Phương thức Đối xứng | VERITE | Tiếng Anh
+SNIFFER [Qi et al.] | 2024 | MLLM Hybrid | InstructBLIP, Tinh chỉnh chỉ thị 2 giai đoạn | NewsCLIPpings | Tiếng Anh
+EGMMG [Khalid et al.] | 2025 (Preprint) | External (Graph) | Evidence Graph, Claim Graph, Cross-Attention GNN | NewsCLIPpings, Factify | Tiếng Anh
+EXCLAIM [Lin et al.] | 2025 (Preprint) | External (Agents) | Multi-Agent, LLM (GPT-4o) truy xuất phân cấp | NewsCLIPpings | Tiếng Anh
+HiEAG [Sun et al.] | 2025 (Preprint) | MLLM + Evidence | Rerank/Rewrite (AESP+AEGP), Qwen2-VL, LoRA | NewsCLIPpings, VERITE | Tiếng Anh
+DECEPTIONDECODED [Tan et al.] | 2025 (Preprint) | Intent-Aware | Cải tiến LLaVA/Qwen2.5-VL, FLUX.1 sinh dữ liệu | DECEPTIONDECODED | Tiếng Anh
+M&M-RAG [Amanatidis et al.] | 2026 (Preprint) | External (RAG) | RAG đa ngôn ngữ, LaBSE, Qwen2-VL | Multi-Ax-to-Grind | Đa ngôn ngữ
+[/TABLE]
+
+3.1. Các xu hướng hiển nhiên và Sự phân mảnh phương pháp
+
+Qua quá trình trích xuất và phân tích các nghiên cứu trong giai đoạn từ 2017 đến 2026, có thể thấy bài toán phát hiện tin giả đa phương thức đã trải qua sự tiến hóa sâu sắc cả về phương pháp luận lẫn phạm vi đánh giá. Đặc biệt, dạng tin giả sai ngữ cảnh (Out-of-Context - OOC), nơi hình ảnh nguyên bản bị ghép với một chú thích sai lệch, đã được xác định là mối đe dọa phổ biến và nguy hiểm nhất [Fazio, 2020; Luo et al., 2021]. Về mặt công nghệ, lĩnh vực này đã chứng kiến sự dịch chuyển qua ba hướng tiếp cận cốt lõi: (1) Kiểm tra nội bộ (Internal checking) bằng các mô hình học sâu truyền thống (2017-2023), (2) Truy xuất bằng chứng ngoại vi (External evidence retrieval) (2021-2025), và (3) Suy luận nhận thức ý đồ dựa trên Hệ thống Đa tác tử và Mô hình Ngôn ngữ - Thị giác Lớn (MLLM/Agentic reasoning) (2024-nay).
+
+Bên cạnh sự tiến hóa về thuật toán, một khoảng trống hiển nhiên được rút ra là sự thiên lệch ngôn ngữ nghiêm trọng. Phần lớn các mô hình SOTA (State-of-the-Art) trước năm 2025 gần như chỉ được huấn luyện và đánh giá trên các bộ dữ liệu tiếng Anh [Luo et al., 2021; Aneja et al., 2023]. Gần đây, lĩnh vực mới bắt đầu có những nỗ lực thu hẹp khoảng cách này thông qua các hệ thống truy xuất chéo ngôn ngữ như khung M&M-RAG hỗ trợ tiếng Urdu hay bộ dữ liệu MultiCaption. Mặc dù vậy, sự thiếu hụt các bộ dữ liệu chuẩn mực cho các ngôn ngữ ít tài nguyên tại khu vực Đông Nam Á vẫn là một rào cản lớn đối với khả năng triển khai thực tế toàn cầu.
+
+3.2. Sự tiến hóa của kỹ thuật Kiểm tra Nội bộ (Internal Checking)
+
+Giai đoạn đầu của lĩnh vực MMD tập trung hoàn toàn vào kỹ thuật kiểm tra nội bộ (Internal Checking), với giả định rằng tin giả đa phương thức sẽ luôn để lộ sự bất nhất về mặt ngữ nghĩa hoặc thị giác giữa hình ảnh và văn bản đi kèm.
+
+Giai đoạn 1: So khớp đối tượng và Biểu diễn chung. Các nỗ lực đầu tiên sử dụng phương pháp nhúng liên kết (joint embedding) để chiếu cả ảnh và văn bản vào một không gian chung nhằm tìm ra các cặp sai lệch [Jaiswal et al., 2017]. Để tăng cường độ chính xác, nghiên cứu COSMOS [Aneja et al., 2023] đề xuất việc đối chiếu bằng cách sử dụng Mask-RCNN để trích xuất các hộp giới hạn đối tượng trong ảnh, sau đó tính toán chỉ số giao thoa (IoU) và đối chiếu điểm tương đồng cosine với văn bản được mã hóa bằng Bộ mã hóa câu toàn cầu (Universal Sentence Encoder - USE). Phương pháp này đạt độ chính xác khoảng 85% trên tập dữ liệu nội bộ của COSMOS, cho thấy khả năng phát hiện tốt các lỗi sai lệch vật thể bề mặt rõ ràng.
+
+Giai đoạn 2: Dung hợp đa hạt và Xử lý mơ hồ đa phương thức. Để khắc phục sự yếu kém trong việc liên kết đặc trưng, các mô hình chuyển sang sử dụng các mô hình nền tảng. Chẳng hạn, mô hình Twitter-COMMs tinh chỉnh trực tiếp biến thể RN50x16 của CLIP trên các dữ liệu đặc thù, đạt độ chính xác 87.71% trong môi trường dữ liệu hẹp [Biamby et al., 2021]. Đáng chú ý, kiến trúc MMFN [Zhou et al., 2023] đề xuất cơ chế "dung hợp đa hạt" (multi-grained fusion), kết hợp các đặc trưng hạt mịn từ BERT và Swin-Transformer, đồng thời dùng điểm tương đồng cosine từ CLIP làm hệ số trọng lượng để giải quyết bài toán mơ hồ đa phương thức. Mô hình này đạt độ chính xác ấn tượng lên tới 89.4% trên tập dữ liệu Gossipcop.
+
+Giai đoạn 3: Tăng cường dữ liệu và Chưng cất tri thức (SSL). Nhằm đối phó với tình trạng thiếu hụt dữ liệu gán nhãn, các phương pháp tự giám sát (SSL) được áp dụng. Nghiên cứu của Tahmasebi et al. (2023) áp dụng kỹ thuật thao túng nội dung tự động (thay thế sự kiện, xóa thực thể), đạt độ chính xác khoảng 75% và giúp cải thiện khả năng tổng quát hóa chéo miền. Song song đó, kiến trúc SSDL [Mu et al., 2023] đề xuất cơ chế Chưng cất Tri thức (Knowledge Distillation) từ một mạng Giáo viên sang mạng Học sinh, giúp mô hình vượt mức hiệu suất cơ sở dù chỉ dùng 50% lượng dữ liệu huấn luyện.
+
+Giai đoạn 4: Sử dụng AI Tạo sinh làm công cụ xác minh. Một phương pháp gần đây đã sử dụng AI tạo sinh (DALL-E 2 hoặc Stable Diffusion) để sinh ra một bức ảnh mới từ chú thích, sau đó dùng CLIP để đo khoảng cách vector so với ảnh gốc, đạt độ chính xác 68.3% trên tập COSMOS [Papadopoulos et al., 2023]. Mặc dù phương pháp này có thể phát hiện sự lệch pha ở mức độ ngữ nghĩa trực quan, tuy nhiên, phương pháp này tồn tại những hạn chế căn bản. Cụ thể, AI tạo sinh không thể biểu diễn được các thực thể mang tính xác thực lịch sử và phi thị giác (non-visual contexts) như ngày tháng chính xác, vị trí địa lý cụ thể, hoặc danh tính nhân vật. Điều này đòi hỏi một sự chuyển dịch tất yếu sang việc thu thập bằng chứng ngoại vi từ thế giới thực.
+
+3.3. Tích hợp Bằng chứng Ngoại vi và MLLM (External Evidence & Agents)
+
+Sự bế tắc của các phương pháp kiểm tra nội bộ đã thúc đẩy lĩnh vực chuyển hướng sang truy xuất bằng chứng ngoại vi (external checking).
+
+Hướng tiếp cận 1: Truy xuất và đối chiếu thô. Kiến trúc CCN (Consistency-Checking Network) sử dụng Google Vision API để tìm kiếm hình ảnh ngược, sau đó đưa bằng chứng vào Mạng bộ nhớ (Memory Network) để đối chiếu, đạt độ chính xác khoảng 78% trên NewsCLIPpings. Điểm mạnh của CCN là cung cấp một góc nhìn đa chiều từ web, nhưng điểm yếu là sự phụ thuộc hoàn toàn vào API tìm kiếm thô, dẫn đến dễ bị "nhiễu loạn thông tin" (evidence entanglement).
+
+Hướng tiếp cận 2: Khai thác lập trường và cấu trúc đồ thị. Nghiên cứu Support or Refute đề xuất Mạng trích xuất lập trường (SEN) tính toán Điểm số Ủng hộ - Bác bỏ dựa trên sự đồng xuất hiện của các thực thể có tên giữa tuyên bố và bằng chứng [Yuan et al., 2023], nâng độ chính xác lên 87.1% trên NewsCLIPpings. Để thiết lập mối liên hệ logic chặt chẽ hơn, mô hình EGMMG sử dụng Mạng nơ-ron đồ thị (GNN) kết hợp cơ chế Chú ý chéo (Cross-Attention) để truyền thông điệp giữa "Đồ thị bằng chứng" và "Đồ thị tuyên bố", đạt độ chính xác ấn tượng 93.05% [Khalid et al., 2025]. Tuy nhiên, thuật toán bóc tách văn bản thành đồ thị hiện tại vẫn chưa hoàn thiện, làm mất mát nhiều ngữ cảnh phi cấu trúc.
+
+Hướng tiếp cận 3: Các MLLM đã được tinh chỉnh để thực hiện fact-checking, điển hình là SNIFFER đạt độ chính xác 88.4% [Qi et al., 2024]. Kiến trúc HiEAG giải quyết bài toán nhiễu loạn bằng cách dùng MLLM để tinh lọc (rerank) và viết lại (rewrite) bằng chứng trước khi suy luận [Sun et al., 2025]. Một hướng tiếp cận tiêu biểu cho hệ thống đa tác tử là EXCLAIM, chia nhỏ truy xuất thành cấp độ thực thể và sự kiện, giao cho GPT-4o sinh lời giải thích, đạt 92.7% trên NewsCLIPpings [Lin et al., 2025]. Dù vậy, các hệ thống này phải trả giá bằng độ trễ (latency) tính toán cao. Ngoài ra, chúng vẫn gặp khó khăn trong việc suy luận các sai lệch thị giác ở mức độ quá vi mô (fine-grained visual details), và vẫn chưa chạm tới việc suy luận ý đồ lừa dối (creator intent) – vấn đề mà DECEPTIONDECODED mới bắt đầu khám phá qua dữ liệu tổng hợp bằng FLUX.1.
+
+Bảng 2 trình bày bức tranh toàn cảnh về các bộ dữ liệu được sử dụng phổ biến nhất trong lĩnh vực. Các cột quan trọng bao gồm phương pháp tạo mẫu và đặc biệt là phân tích về các hạn chế cũng như hiện tượng thiên kiến, giúp người đọc đánh giá mức độ tin cậy của các con số hiệu suất được báo cáo trên những bộ dữ liệu này.
+
+Bảng 2: Bức tranh toàn cảnh các Bộ dữ liệu Phát hiện Tin giả Đa phương thức
+
+[TABLE]
+Bộ dữ liệu | Năm | Quy mô | Phương pháp tạo mẫu (Generation) | Hạn chế & Hiện tượng Thiên kiến (Bias Phenomena)
+MediaEval | 2015-16 | ~14k | Thu thập thủ công dữ liệu thực tế trên Twitter. | Quy mô nhỏ, thiên về các sự kiện cũ, khó hội tụ khi huấn luyện mô hình sâu.
+Fakeddit | 2019 | ~1M | Thu thập từ Reddit qua giám sát từ xa. | Chứa lượng lớn nhiễu nhãn (label noise) do nhãn được lấy tự động từ cộng đồng.
+COSMOS | 2020 | ~200k (Train) / 1.7k (Test) | Lấy từ các trang web fact-checking và báo chí. | Tồn tại lỗi rò rỉ thông tin (information leakage) ở caption thứ hai.
+NewsCLIPpings | 2021 | ~71k | Lọc đối kháng (Adversarial Filtering) dựa trên CLIP. | Gây ra hiện tượng bất đối xứng (Asymmetric-MM). Thực nghiệm cho thấy mô hình có xu hướng khai thác lối tắt thống kê để đạt điểm cao chỉ bằng phân tích văn bản.
+Twitter-COMMs | 2021 | 884k | Dữ liệu thực tế trên Twitter (Khí hậu, COVID-19). | Phụ thuộc đặc thù văn bản ngắn, dữ liệu bị giới hạn chặt trong 3 miền chủ đề cụ thể.
+MuMiN | 2022 | 21M | Dữ liệu đồ thị mạng xã hội với 41 ngôn ngữ. | Tập trung mạnh vào cấu trúc lan truyền đồ thị hơn là phân tích sự lệch pha ảnh-văn bản.
+VERITE | 2023 | ~1000 | Giao thức Cân bằng Phương thức Đối xứng nghiêm ngặt. | Khắc phục hoàn toàn Unimodal Bias. Tuy nhiên quy mô nhỏ, chỉ phù hợp dùng làm bộ kiểm thử.
+DECEPTIONDECODED | 2025 (Preprint) | 12k | Dùng AI tạo sinh (GPT-4o, FLUX.1) tổng hợp tin giả. | Dữ liệu nhân tạo (synthetic), tạo ra cuộc chạy đua vũ trang với các mô hình tạo sinh.
+MultiCaption | 2026 (Preprint) | ~11k | Gán nhãn bằng LLM (GPT-5) đánh giá mâu thuẫn. | Nguy cơ lan truyền lỗi ảo giác (hallucination) từ LLM và các lỗi dịch thuật máy.
+[/TABLE]
+
+3.4. Bức tranh Toàn cảnh về Dữ liệu và Sự tiến hóa phương pháp tạo mẫu
+
+Sự gia tăng về mặt hiệu suất của các mô hình học sâu và MLLM – từ mức 66.1% năm 2021 lên tới 94.6% năm 2026 với mô hình M&M-RAG – tạo ra một bức tranh đầy lạc quan. Tuy nhiên, phân tích hệ sinh thái các bộ dữ liệu kiểm thử (Bảng 2) cho thấy sự tiến hóa của dữ liệu MMD mang lại cả lợi ích lẫn những rủi ro đánh giá tiềm ẩn:
+
+Dữ liệu thực tế gán nhãn thủ công: Các nghiên cứu (như COSMOS) thu thập trực tiếp hình ảnh và văn bản từ các trang web tin tức, blog và nền tảng mạng xã hội với quy mô lớn lên tới 200.000 mẫu. Mặc dù thu thập tự động giúp gia tăng số lượng dữ liệu huấn luyện, việc mở rộng quy mô dữ liệu chất lượng cao là một thách thức lớn do chi phí dán nhãn thủ công đắt đỏ; do đó, chỉ có 1.700 mẫu trong COSMOS được con người trực tiếp kiểm chứng và gán nhãn để phục vụ cho mục đích kiểm thử
+
+Sinh dữ liệu tự động và Kỹ thuật đối kháng: Để giải quyết bài toán quy mô, bộ dữ liệu NewsCLIPpings (hơn 71.000 mẫu) đã áp dụng kỹ thuật Lọc đối kháng (Adversarial Filtering) dựa trên mô hình CLIP để tự động truy xuất và tráo đổi các cặp ảnh-chú thích [Luo et al., 2021].
+
+Dữ liệu đa ngôn ngữ và Nhận thức ý đồ: Các nỗ lực gần đây mở rộng đa ngôn ngữ (MultiCaption) hoặc sử dụng AI tạo sinh (như GPT-4o và FLUX.1) để tổng hợp hình ảnh và văn bản mang "ý đồ lừa dối" có chủ đích (DECEPTIONDECODED).
+
+Mặc dù quy mô dữ liệu đã được giải quyết, phương pháp tạo mẫu giả tự động bằng kỹ thuật đối kháng trong các bộ dữ liệu khổng lồ như NewsCLIPpings lại vô tình đặt ra thách thức đáng kể về độ tin cậy đánh giá của các hệ thống AI.
+
+3.5. Cuộc khủng hoảng đánh giá: Thiên kiến đơn phương thức và Khoảng trống VERITE
+
+Dù các mô hình hiện tại đạt điểm số rất cao trên NewsCLIPpings, các phân tích sâu hơn chỉ ra rằng hiệu suất này phần lớn là kết quả của việc mô hình học được các "lối tắt" (shortcuts) thống kê thay vì thực sự có năng lực suy luận chéo đa phương thức.
+
+Lỗ hổng của chuẩn mực hiện tại (Asymmetric-MM): Kỹ thuật tạo mẫu đối kháng của NewsCLIPpings đã vô tình sinh ra hiện tượng bất đối xứng (Asymmetric-MM). Hậu quả là sinh ra "Thiên kiến đơn phương thức" (Unimodal bias): các mô hình thay vì phải nhìn vào cả ảnh và văn bản để tìm mâu thuẫn, chúng chỉ cần khai thác các đặc trưng nội tại trong ngôn ngữ của chú thích hoặc đặc điểm hình ảnh đơn lẻ để đoán nhãn. Thực nghiệm cho thấy mô hình có thể đạt độ chính xác xấp xỉ 80% trên NewsCLIPpings chỉ bằng cách dựa vào văn bản mà không cần nhìn vào hình ảnh [Luo et al., 2021].
+
+VERITE và Sự sụt giảm của SOTA: Cuộc khủng hoảng thiên kiến này chỉ thực sự được phơi bày một cách định lượng khi bộ dữ liệu VERITE ra mắt [Papadopoulos et al., 2023]. Khác với NewsCLIPpings, VERITE thiết lập giao thức "Cân bằng phương thức đối xứng nghiêm ngặt" (Strict Modality Balancing): bắt buộc mỗi hình ảnh và mỗi đoạn văn bản phải xuất hiện chính xác hai lần – một lần ở nhãn thật và một lần ở nhãn giả. Cơ chế này triệt tiêu hoàn toàn các lối tắt thống kê.
+
+Thực nghiệm trên VERITE đã chứng minh một khoảng cách (gap) khổng lồ về hiệu suất:
+
+Toàn bộ các mô hình học sâu trước năm 2024 (bao gồm CLIP, ALBEF, BLIP) đều sụt giảm hiệu suất xuống tiệm cận mức 50%, tức chỉ tương đương với việc đoán ngẫu nhiên [Papadopoulos et al., 2023].
+
+Với các mô hình MLLM hiện đại, kiến trúc HiEAG là mô hình duy nhất công bố kết quả trên cả hai chuẩn. Dù đạt tới 89.9% trên NewsCLIPpings, hiệu suất của HiEAG lập tức sụt giảm đáng kể 15.5 điểm phần trăm khi đối mặt với VERITE, rớt xuống chỉ còn 74.4% [Sun et al., 2025].
+
+3.6. Khoảng trống nghiên cứu và Định hướng đề xuất Từ các phân tích toàn diện trên, có thể thấy lĩnh vực đang tồn tại hai khoảng trống lớn chưa được giải quyết trọn vẹn.Thứ nhất, có một khoảng cách chênh lệch hiệu suất khổng lồ—từ 15.5 điểm phần trăm đối với các MLLM tiên tiến như HiEAG [Sun et al., 2025] lên đến 24 điểm phần trăm đối với các mô hình kiểm tra nội bộ như BLIP [Papadopoulos et al., 2023]—khi so sánh kết quả giữa tập dữ liệu NewsCLIPpings và VERITE. Khoảng cách này là bằng chứng thực nghiệm rõ ràng cho thấy hiệu suất của các hệ thống SOTA hiện tại đang bị đánh giá quá cao do học các "lối tắt" thiên kiến. Giới hạn 74.4% trên VERITE của HiEAG cho thấy lĩnh vực này vẫn còn khoảng trống sai số lên tới hơn 25% đối với các dữ liệu thực tế được kiểm soát thiên kiến nghiêm ngặt. Thứ hai, gần như toàn bộ các phương pháp kiểm chứng có hiệu suất cao đều độc quyền trên ngữ liệu tiếng Anh, bỏ ngỏ hoàn toàn tiềm năng kiểm chứng chéo đối với các luồng thông tin sai lệch tại các khu vực ít tài nguyên ngôn ngữ như Đông Nam Á.
+
+Dựa trên thực trạng này và nhằm giải quyết triệt để các hạn chế của những thế hệ mô hình trước, trong nghiên cứu này, chúng tôi đề xuất một pipeline giải pháp mới kết hợp Truy xuất bằng chứng và Mô hình ngôn ngữ lớn lập luận nhiều bước (multi-step reasoning). Cấu trúc này được thiết kế đặc biệt nhằm triệt tiêu thiên kiến đơn phương thức. Các thử nghiệm ban đầu cho thấy framework của chúng tôi đạt độ chính xác xấp xỉ 75% trên không gian dữ liệu nghiêm ngặt của VERITE, vượt qua kết quả tốt nhất hiện tại (HiEAG: 74.4% [Sun et al., 2025]). Dù mức chênh lệch này cần được diễn giải thận trọng do giới hạn về quy mô mẫu của VERITE, nó cung cấp bằng chứng vững chắc cho thấy sự kết hợp giữa truy xuất bằng chứng đa bước và LLM giúp mô hình duy trì tín hiệu suy luận chéo đích thực, cho thấy tiềm năng cải thiện so với các hệ thống chỉ dựa vào kiểm tra nội bộ. Cấu trúc chi tiết của pipeline này sẽ được trình bày ở phần tiếp theo.
