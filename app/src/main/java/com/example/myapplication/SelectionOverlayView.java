@@ -57,14 +57,14 @@ public class SelectionOverlayView extends FrameLayout {
         cancelButton = new Button(getContext());
         cancelButton.setText("Hủy");
         cancelButton.setAllCaps(false);
-        cancelButton.setTextColor(Color.parseColor("#17212B"));
+        cancelButton.setTextColor(Color.parseColor("#1E5AA8"));
         cancelButton.setBackground(createButtonBackground(Color.parseColor("#EEF2F6"), Color.parseColor("#D8E0EA")));
         cancelButton.setOnClickListener(v -> {
             if (listener != null) listener.onCancel();
         });
 
         confirmButton = new Button(getContext());
-        confirmButton.setText("Dùng vùng này");
+        confirmButton.setText("Xác nhận");
         confirmButton.setAllCaps(false);
         confirmButton.setTextColor(Color.WHITE);
         confirmButton.setBackground(createButtonBackground(Color.parseColor("#1E5AA8"), Color.parseColor("#1E5AA8")));
