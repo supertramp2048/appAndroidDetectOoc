@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <!-- Top Toolbar -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/post_detail_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/app_surface"
+        app:navigationIcon="@drawable/ic_close_24"
+        app:title="Chi tiết bài viết">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/btn_share_post"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Chia sẻ"
+                android:src="@drawable/ic_send_24" />
+
+            <ImageButton
+                android:id="@+id/btn_overflow_menu"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Tùy chọn"
+                android:src="@drawable/ic_retake_24" />
+        </LinearLayout>
+    </androidx.appcompat.widget.Toolbar>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/post_detail_swipe_refresh"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <androidx.core.widget.NestedScrollView
+                android:id="@+id/post_detail_content_container"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:fillViewport="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <!-- Cover Thumbnail -->
+                    <ImageView
+                        android:id="@+id/post_detail_thumbnail"
+                        android:layout_width="match_parent"
+                        android:layout_height="200dp"
+                        android:contentDescription="Ảnh bài viết"
+                        android:scaleType="centerCrop"
+                        android:visibility="gone"
+                        tools:src="@android:drawable/ic_menu_gallery"
+                        tools:visibility="visible" />
+
+                    <!-- Category & Time -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/post_detail_category"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/bg_chip_neutral"
+                            android:paddingHorizontal="10dp"
+                            android:paddingVertical="4dp"
+                            android:textColor="#1976D2"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            tools:text="Thời sự" />
+
+                        <TextView
+                            android:id="@+id/post_detail_time"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:textColor="#757575"
+                            android:textSize="12sp"
+                            tools:text="10 phút trước" />
+                    </LinearLayout>
+
+                    <!-- Title -->
+                    <TextView
+                        android:id="@+id/post_detail_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:textColor="@color/black"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        tools:text="Tiêu đề chi tiết của bài viết tin tức mới nhất..." />
+
+                    <!-- Author Bar -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <com.socialapp.core.ui.UserAvatarView
+                            android:id="@+id/post_detail_author_avatar"
+                            android:layout_width="44dp"
+                            android:layout_height="44dp" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/post_detail_author_name"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textColor="@color/black"
+                                android:textSize="15sp"
+                                android:textStyle="bold"
+                                tools:text="Tên Tác Giả" />
+                        </LinearLayout>
+
+                        <Button
+                            android:id="@+id/btn_follow_author"
+                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Theo dõi"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+
+                    <!-- Content WebView -->
+                    <WebView
+                        android:id="@+id/post_detail_web_view"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp" />
+
+                    <!-- Source Text -->
+                    <TextView
+                        android:id="@+id/post_detail_source_text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:textColor="@color/app_primary"
+                        android:textSize="13sp"
+                        android:visibility="gone"
+                        tools:text="Nguồn: Báo Tuổi Trẻ (bấm để xem nguồn)" />
+
+                    <!-- Vote Bar -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="20dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <Button
+                            android:id="@+id/btn_upvote"
+                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="▲ Upvote" />
+
+                        <TextView
+                            android:id="@+id/post_detail_vote_score"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginHorizontal="16dp"
+                            android:textColor="@color/black"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            tools:text="15" />
+
+                        <Button
+                            android:id="@+id/btn_downvote"
+                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="▼ Downvote" />
+                    </LinearLayout>
+
+                    <!-- Action Buttons -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:orientation="horizontal">
+
+                        <Button
+                            android:id="@+id/btn_comments"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="💬 Bình luận (0)" />
+
+                        <Button
+                            android:id="@+id/btn_factcheck"
+                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:layout_weight="1"
+                            android:text="🔍 Kiểm tra tin giả"
+                            android:visibility="gone"
+                            tools:visibility="visible" />
+                    </LinearLayout>
+
+                    <!-- Ad Slot -->
+                    <com.socialapp.core.ui.AdSlotView
+                        android:id="@+id/post_detail_ad_slot"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="20dp" />
+                </LinearLayout>
+            </androidx.core.widget.NestedScrollView>
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+        <com.socialapp.core.ui.LoadingSkeletonView
+            android:id="@+id/post_detail_loading_skeleton"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone" />
+
+        <com.socialapp.core.ui.ErrorStateView
+            android:id="@+id/post_detail_error_state"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone" />
+    </FrameLayout>
+</LinearLayout>

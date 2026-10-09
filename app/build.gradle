@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace 'com.example.myapplication'
+    namespace 'com.socialapp'
     compileSdk 36
 
     defaultConfig {
-        applicationId "com.example.myapplication"
+        applicationId "com.socialapp"
         minSdk 24
         //noinspection ExpiredTargetSdkVersion
         targetSdk 36
@@ -18,13 +18,25 @@ android {
     }
 
     buildTypes {
+        debug {
+            buildConfigField "String", "BASE_URL", '"https://socialappbe-8tjc.onrender.com"'
+            buildConfigField "String", "FACTCHECK_BASE_URL", '"https://kiendao744-backend-ooc.hf.space/api/v1/"'
+        }
         release {
+            buildConfigField "String", "BASE_URL", '"https://socialappbe-8tjc.onrender.com"'
+            buildConfigField "String", "FACTCHECK_BASE_URL", '"https://kiendao744-backend-ooc.hf.space/api/v1/"'
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
+
     buildFeatures {
         viewBinding true
+        buildConfig true
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11
@@ -38,13 +50,15 @@ dependencies {
     implementation libs.material
     implementation libs.activity
     implementation libs.constraintlayout
-    
+    implementation libs.swiperefreshlayout
+    implementation libs.browser
+
     // CameraX
     implementation libs.camera.core
     implementation libs.camera.camera2
     implementation libs.camera.lifecycle
     implementation libs.camera.view
-    
+
     // Retrofit & OkHttp
     implementation libs.retrofit
     implementation libs.converter.gson
@@ -52,7 +66,17 @@ dependencies {
     implementation libs.logging.interceptor
     implementation libs.ucrop
 
+    // Glide
+    implementation libs.glide
+    annotationProcessor libs.glide.compiler
+
+    // Navigation
+    implementation libs.navigation.fragment
+    implementation libs.navigation.ui
+
     testImplementation libs.junit
+    testImplementation libs.mockwebserver
+    testImplementation libs.core.testing
     androidTestImplementation libs.ext.junit
     androidTestImplementation libs.espresso.core
 }

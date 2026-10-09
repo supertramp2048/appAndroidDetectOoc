@@ -1,0 +1,4702 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Social App API Documentation",
+    "description": "## Hệ thống API Toàn diện cho Social App (Laravel 9)\n\nTài liệu Swagger / OpenAPI 3.0 bao quát **100% 74 routes** của toàn bộ hệ thống Social App backend, bao gồm:\n- **Xác thực & Ủy quyền:** Sanctum Token, Phân quyền RBAC (User, Moderator, Admin, Superadmin), OAuth Google & GitHub, Email Verification, Quên & Đặt lại mật khẩu.\n- **Bài viết (Posts):** CRUD bài viết, danh mục, upload ảnh Cloudinary, upvote/downvote, bộ lọc và sắp xếp (newest, hot, following).\n- **Bình luận (Comments):** Bình luận đa cấp (nested replies), cập nhật, xóa, kiểm duyệt trạng thái.\n- **Tương tác & Mạng xã hội:** Theo dõi người dùng (Follow/Unfollow), tìm kiếm người dùng, xem trang cá nhân.\n- **Báo cáo vi phạm (Reports):** Báo cáo bài viết, bình luận, người dùng.\n- **Bảng điều khiển & Kiểm duyệt (Moderator):** Xử lý báo cáo, thống kê Dashboard, khôi phục nội dung đã xóa/ẩn.\n- **Quản trị hệ thống (Admin & Superadmin):** Quản lý quảng cáo, cấu hình nhận diện (Logo, Ảnh nền, Footer), quản lý cấm tài khoản (Ban/Unban), phân quyền vai trò.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Kỹ thuật viên Backend",
+      "email": "admin@socialapp.local"
+    }
+  },
+  "servers": [
+    {
+      "url": "/",
+      "description": "Máy chủ hiện tại (Tự động thích ứng Localhost & Render Production)"
+    },
+    {
+      "url": "https://socialappbe-8tjc.onrender.com",
+      "description": "Máy chủ Render Production"
+    },
+    {
+      "url": "http://localhost:8000",
+      "description": "Máy chủ phát triển cục bộ (Localhost)"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Auth",
+      "description": "Xác thực tài khoản, đăng ký, đăng nhập, khôi phục mật khẩu, OAuth"
+    },
+    {
+      "name": "Posts",
+      "description": "Quản lý bài viết, xem chi tiết, đăng bài, sửa, xóa, bình chọn (Upvote/Downvote)"
+    },
+    {
+      "name": "Comments",
+      "description": "Quản lý bình luận bài viết, phản hồi phân cấp"
+    },
+    {
+      "name": "Categories",
+      "description": "Danh mục bài viết (Công khai)"
+    },
+    {
+      "name": "Profiles",
+      "description": "Hồ sơ người dùng, tìm kiếm tài khoản, danh sách Follow"
+    },
+    {
+      "name": "User Settings",
+      "description": "Cập nhật tài khoản cá nhân, đổi mật khẩu, đổi avatar, ảnh bìa, xóa tài khoản"
+    },
+    {
+      "name": "Advertisements",
+      "description": "Lấy danh sách quảng cáo hiển thị theo vị trí"
+    },
+    {
+      "name": "Reports",
+      "description": "Báo cáo vi phạm nội dung và người dùng"
+    },
+    {
+      "name": "Media & Upload",
+      "description": "Upload ảnh tối ưu hóa lên Cloudinary cho trình soạn thảo"
+    },
+    {
+      "name": "System Settings",
+      "description": "Cài đặt giao diện công khai (Logo, Background, Footer)"
+    },
+    {
+      "name": "Moderator",
+      "description": "Khu vực Kiểm duyệt viên: Xử lý báo cáo vi phạm, khôi phục nội dung, thống kê Dashboard"
+    },
+    {
+      "name": "Admin - Ads",
+      "description": "Quản trị viên: Quản lý banner quảng cáo"
+    },
+    {
+      "name": "Admin - Categories",
+      "description": "Quản trị viên: Quản lý danh mục chuyên mục"
+    },
+    {
+      "name": "Admin - Settings",
+      "description": "Quản trị viên: Cập nhật tài nguyên hệ thống"
+    },
+    {
+      "name": "Admin - Users",
+      "description": "Quản trị viên: Quản lý cấm/mở cấm tài khoản, lịch sử kiểm duyệt"
+    },
+    {
+      "name": "Superadmin",
+      "description": "Quản trị viên cấp cao: Danh sách quản trị và cập nhật quyền"
+    }
+  ],
+  "paths": {
+    "/api/register": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Đăng ký tài khoản người dùng",
+        "description": "Tạo mới người dùng trong cơ sở dữ liệu, kích hoạt sự kiện Registered và phát hành Sanctum token.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name",
+                  "email",
+                  "password",
+                  "password_confirmation"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "example": "Nguyen Van A"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "maxLength": 255,
+                    "example": "user@example.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "format": "password",
+                    "minLength": 8,
+                    "example": "password123"
+                  },
+                  "password_confirmation": {
+                    "type": "string",
+                    "format": "password",
+                    "example": "password123"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Đăng ký thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "user": {
+                      "$ref": "#/components/schemas/UserResource"
+                    },
+                    "token": {
+                      "type": "string",
+                      "example": "1|abcdef123..."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/422ValidationError"
+          }
+        }
+      }
+    },
+    "/api/login": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Đăng nhập tài khoản",
+        "description": "Xác thực email và mật khẩu qua LoginRequest. Kiểm tra trạng thái cấm (banned). Nếu hợp lệ, cấp phát Sanctum token.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email",
+                  "password"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "user@example.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "format": "password",
+                    "example": "password123"
+                  },
+                  "remember": {
+                    "type": "boolean",
+                    "example": false
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Đăng nhập thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "user": {
+                      "$ref": "#/components/schemas/UserResource"
+                    },
+                    "token": {
+                      "type": "string",
+                      "example": "2|abcdef123..."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/422ValidationError"
+          }
+        }
+      }
+    },
+    "/api/logout": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Đăng xuất tài khoản",
+        "description": "Xóa bỏ token hiện tại của người dùng đang đăng nhập.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Đăng xuất thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Logged out successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/forgot-password": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Quên mật khẩu - Gửi email xác nhận",
+        "description": "Gửi đường link đặt lại mật khẩu đến địa chỉ email đã đăng ký.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "user@example.com"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Đã gửi link đặt lại mật khẩu",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "passwords.sent"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/422ValidationError"
+          }
+        }
+      }
+    },
+    "/api/reset-password": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Đặt lại mật khẩu mới",
+        "description": "Thiết lập mật khẩu mới thông qua mã token đã nhận được từ email.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "token",
+                  "email",
+                  "password",
+                  "password_confirmation"
+                ],
+                "properties": {
+                  "token": {
+                    "type": "string",
+                    "example": "3f4b5c6d..."
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "user@example.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "format": "password",
+                    "minLength": 8,
+                    "example": "newpassword123"
+                  },
+                  "password_confirmation": {
+                    "type": "string",
+                    "format": "password",
+                    "example": "newpassword123"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Mật khẩu đã được đặt lại thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "passwords.reset"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/422ValidationError"
+          }
+        }
+      }
+    },
+    "/api/verify-email/{id}/{hash}": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Xác thực địa chỉ email",
+        "description": "Xác thực tài khoản người dùng theo đường dẫn có chữ ký số (Signed URL) gửi trong email.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID người dùng"
+          },
+          {
+            "name": "hash",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "SHA-1 hash email"
+          },
+          {
+            "name": "expires",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Thời hạn chữ ký"
+          },
+          {
+            "name": "signature",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Chữ ký HMAC-SHA256 của Laravel"
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "Chuyển hướng đến giao diện chính"
+          },
+          "403": {
+            "description": "Chữ ký không hợp lệ"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          }
+        }
+      }
+    },
+    "/api/email/verification-notification": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Gửi lại thư xác thực email",
+        "description": "Gửi lại email kích hoạt cho tài khoản đang đăng nhập.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Đã gửi liên kết kích hoạt",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "verification-link-sent"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/login/google/redirect": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Khởi tạo luồng đăng nhập Google OAuth",
+        "description": "Tạo URL xác thực và chuyển hướng người dùng sang hệ thống Google.",
+        "responses": {
+          "302": {
+            "description": "Chuyển hướng sang Google Accounts"
+          }
+        }
+      }
+    },
+    "/api/login/google/callback": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Xử lý phản hồi từ Google OAuth",
+        "description": "Tiếp nhận thông tin người dùng từ Google, tự động tạo tài khoản hoặc đăng nhập, trả về view callback chứa token.",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Trả về trang web callback chứa thông tin token và người dùng"
+          }
+        }
+      }
+    },
+    "/api/login/github/redirect": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Khởi tạo luồng đăng nhập GitHub OAuth",
+        "description": "Tạo URL xác thực và chuyển hướng người dùng sang GitHub.",
+        "responses": {
+          "302": {
+            "description": "Chuyển hướng sang GitHub Authorization"
+          }
+        }
+      }
+    },
+    "/api/login/github/callback": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Xử lý phản hồi từ GitHub OAuth",
+        "description": "Tiếp nhận thông tin người dùng từ GitHub, tự động tạo tài khoản hoặc đăng nhập, trả về view callback chứa token.",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Trả về trang web callback chứa thông tin token và người dùng"
+          }
+        }
+      }
+    },
+    "/api/admin/login": {
+      "post": {
+        "tags": [
+          "Auth",
+          "Admin - Users"
+        ],
+        "summary": "Đăng nhập cổng Quản trị (Admin/Moderator)",
+        "description": "Chỉ cho phép tài khoản có vai trò moderator, admin hoặc superadmin đăng nhập. Trả về token và quyền role.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email",
+                  "password"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "admin@example.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "format": "password",
+                    "example": "password123"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Đăng nhập cổng quản trị thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "user": {
+                      "$ref": "#/components/schemas/UserResource"
+                    },
+                    "token": {
+                      "type": "string",
+                      "example": "3|admin_token..."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/422ValidationError"
+          }
+        }
+      }
+    },
+    "/api/user": {
+      "get": {
+        "tags": [
+          "User Settings"
+        ],
+        "summary": "Lấy thông tin tài khoản hiện tại",
+        "description": "Lấy thông tin của người dùng đang đăng nhập thông qua token Bearer.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Thông tin tài khoản",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResource"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/profile/details": {
+      "patch": {
+        "tags": [
+          "User Settings"
+        ],
+        "summary": "Cập nhật tên người dùng",
+        "description": "Thay đổi tên hiển thị của tài khoản hiện tại.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "example": "Nguyen Van B"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cập nhật thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResource"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "422": {
+            "$ref": "#/components/responses/422ValidationError"
+          }
+        }
+      }
+    },
+    "/api/profile/password": {
+      "patch": {
+        "tags": [
+          "User Settings"
+        ],
+        "summary": "Đổi mật khẩu người dùng",
+        "description": "Kiểm tra mật khẩu hiện tại và cập nhật mật khẩu mới.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "current_password",
+                  "password",
+                  "password_confirmation"
+                ],
+                "properties": {
+                  "current_password": {
+                    "type": "string",
+                    "example": "oldpassword123"
+                  },
+                  "password": {
+                    "type": "string",
+                    "format": "password",
+                    "minLength": 8,
+                    "example": "newpassword456"
+                  },
+                  "password_confirmation": {
+                    "type": "string",
+                    "format": "password",
+                    "example": "newpassword456"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Đổi mật khẩu thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Mật khẩu đã được thay đổi."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "422": {
+            "$ref": "#/components/responses/422ValidationError"
+          }
+        }
+      }
+    },
+    "/api/user/avatar": {
+      "post": {
+        "tags": [
+          "User Settings"
+        ],
+        "summary": "Cập nhật ảnh đại diện (Avatar)",
+        "description": "Tải lên ảnh đại diện mới qua Cloudinary (tối đa 5MB).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "avatar"
+                ],
+                "properties": {
+                  "avatar": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "File ảnh định dạng jpg, png (tối đa 5MB)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cập nhật ảnh đại diện thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResource"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "422": {
+            "$ref": "#/components/responses/422ValidationError"
+          },
+          "500": {
+            "$ref": "#/components/responses/500InternalError"
+          }
+        }
+      }
+    },
+    "/api/user/cover-photo": {
+      "post": {
+        "tags": [
+          "User Settings"
+        ],
+        "summary": "Cập nhật ảnh bìa (Cover Photo)",
+        "description": "Tải lên ảnh bìa hồ sơ qua Cloudinary (tối đa 10MB).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "cover"
+                ],
+                "properties": {
+                  "cover": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "File ảnh bìa jpeg, png, gif (tối đa 10MB)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cập nhật ảnh bìa thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResource"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "422": {
+            "$ref": "#/components/responses/422ValidationError"
+          }
+        }
+      }
+    },
+    "/api/profile/delete": {
+      "delete": {
+        "tags": [
+          "User Settings"
+        ],
+        "summary": "Xóa tài khoản cá nhân",
+        "description": "Xác nhận mật khẩu hiện tại và xóa vĩnh viễn tài khoản người dùng.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "password"
+                ],
+                "properties": {
+                  "password": {
+                    "type": "string",
+                    "example": "password123"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tài khoản đã được xóa",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Tài khoản của bạn đã được xóa"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "422": {
+            "$ref": "#/components/responses/422ValidationError"
+          }
+        }
+      }
+    },
+    "/api/posts": {
+      "get": {
+        "tags": [
+          "Posts"
+        ],
+        "summary": "Lấy danh sách bài viết",
+        "description": "Lấy danh sách bài viết công khai có phân trang, hỗ trợ sắp xếp theo mới nhất hoặc nổi bật, lọc theo chuyên mục, từ khóa tìm kiếm hoặc lọc bài của người đang theo dõi.",
+        "parameters": [
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "newest",
+                "hot"
+              ]
+            },
+            "description": "Sắp xếp theo newest hoặc hot"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 10
+            },
+            "description": "Số lượng bài viết trên mỗi trang"
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID chuyên mục cần lọc"
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 255
+            },
+            "description": "Từ khóa tìm kiếm tiêu đề bài viết"
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Lọc bài viết theo ID tác giả"
+          },
+          {
+            "name": "feed",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "following"
+              ]
+            },
+            "description": "Lọc theo nguồn tin: all (tất cả) hoặc following (người đang theo dõi, yêu cầu đăng nhập)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Danh sách bài viết",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/PostResource"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Cần đăng nhập nếu chọn feed=following"
+          },
+          "422": {
+            "$ref": "#/components/responses/422ValidationError"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Posts"
+        ],
+        "summary": "Tạo bài viết mới",
+        "description": "Người dùng đã xác thực (và đã kích hoạt email) đăng một bài viết mới.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "title",
+                  "content_html",
+                  "category_id"
+                ],
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "example": "Bài viết mới về lập trình"
+                  },
+                  "content_html": {
+                    "type": "string",
+                    "example": "<p>Nội dung chi tiết của bài viết...</p>"
+                  },
+                  "category_id": {
+                    "type": "integer",
+                    "example": 1
+                  },
+                  "thumbnail_url": {
+                    "type": "string",
+                    "format": "uri",
+                    "maxLength": 500,
+                    "nullable": true,
+                    "example": "https://res.cloudinary.com/.../thumb.jpg"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Tạo bài viết thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostResource"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "422": {
+            "$ref": "#/components/responses/422ValidationError"
+          }
+        }
+      }
+    },
+    "/api/posts/{post}": {
+      "get": {
+        "tags": [
+          "Posts"
+        ],
+        "summary": "Xem chi tiết bài viết",
+        "description": "Lấy chi tiết một bài viết kèm content_html, danh mục, tác giả và trạng thái bầu chọn của người dùng hiện tại (nếu có token).",
+        "parameters": [
+          {
+            "name": "post",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID của bài viết"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Chi tiết bài viết",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostResource"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Posts"
+        ],
+        "summary": "Cập nhật bài viết",
+        "description": "Chỉ tác giả của bài viết mới có quyền cập nhật (được kiểm soát qua PostPolicy).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "post",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID của bài viết"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "title",
+                  "content_html",
+                  "category_id"
+                ],
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "example": "Tiêu đề bài viết đã cập nhật"
+                  },
+                  "content_html": {
+                    "type": "string",
+                    "example": "<p>Nội dung bài viết đã cập nhật...</p>"
+                  },
+                  "category_id": {
+                    "type": "integer",
+                    "example": 1
+                  },
+                  "thumbnail_url": {
+                    "type": "string",
+                    "format": "uri",
+                    "maxLength": 500,
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cập nhật thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostResource"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "422": {
+            "$ref": "#/components/responses/422ValidationError"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Posts"
+        ],
+        "summary": "Xóa bài viết",
+        "description": "Tác giả xóa bài viết của mình.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "post",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID bài viết"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Đã xóa bài viết thành công (No Content)"
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          }
+        }
+      }
+    },
+    "/api/posts/{post}/upvote": {
+      "post": {
+        "tags": [
+          "Posts"
+        ],
+        "summary": "Bầu chọn ủng hộ bài viết (Upvote)",
+        "description": "Tăng 1 điểm vote cho bài viết. Nếu đã upvote trước đó thì hủy vote (trở về 0).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "post",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID bài viết"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Kết quả bầu chọn",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "vote_score": {
+                      "type": "integer",
+                      "example": 43
+                    },
+                    "user_vote": {
+                      "type": "integer",
+                      "enum": [
+                        1,
+                        0
+                      ],
+                      "example": 1
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          }
+        }
+      }
+    },
+    "/api/posts/{post}/downvote": {
+      "post": {
+        "tags": [
+          "Posts"
+        ],
+        "summary": "Bầu chọn phản đối bài viết (Downvote)",
+        "description": "Giảm 1 điểm vote của bài viết. Nếu đã downvote trước đó thì hủy vote (trở về 0).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "post",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID bài viết"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Kết quả bầu chọn",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "vote_score": {
+                      "type": "integer",
+                      "example": 41
+                    },
+                    "user_vote": {
+                      "type": "integer",
+                      "enum": [
+                        -1,
+                        0
+                      ],
+                      "example": -1
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          }
+        }
+      }
+    },
+    "/api/posts/{post}/comments": {
+      "get": {
+        "tags": [
+          "Comments"
+        ],
+        "summary": "Lấy danh sách bình luận của bài viết",
+        "description": "Lấy các bình luận gốc (top-level) của bài viết, có kèm số lượng phản hồi con.",
+        "parameters": [
+          {
+            "name": "post",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID bài viết"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 10
+            },
+            "description": "Giới hạn số bình luận"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Danh sách bình luận",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CommentResource"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          }
+        }
+      }
+    },
+    "/api/comments/{comment}/replies": {
+      "get": {
+        "tags": [
+          "Comments"
+        ],
+        "summary": "Lấy các phản hồi của bình luận",
+        "description": "Lấy danh sách các phản hồi trực tiếp (replies) của một bình luận cha.",
+        "parameters": [
+          {
+            "name": "comment",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID bình luận cha"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Danh sách phản hồi",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CommentResource"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          }
+        }
+      }
+    },
+    "/api/comments": {
+      "post": {
+        "tags": [
+          "Comments"
+        ],
+        "summary": "Thêm bình luận mới",
+        "description": "Đăng bình luận vào bài viết hoặc gửi phản hồi cho bình luận khác (nếu truyền parent_id).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "content",
+                  "post_id"
+                ],
+                "properties": {
+                  "content": {
+                    "type": "string",
+                    "example": "Ý kiến phản hồi của tôi..."
+                  },
+                  "post_id": {
+                    "type": "integer",
+                    "example": 10
+                  },
+                  "parent_id": {
+                    "type": "integer",
+                    "nullable": true,
+                    "example": null
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Tạo bình luận thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommentResource"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "422": {
+            "$ref": "#/components/responses/422ValidationError"
+          }
+        }
+      }
+    },
+    "/api/comments/{comment}": {
+      "patch": {
+        "tags": [
+          "Comments"
+        ],
+        "summary": "Chỉnh sửa bình luận",
+        "description": "Chỉ tác giả bình luận mới có quyền cập nhật nội dung.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "comment",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID bình luận"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "content"
+                ],
+                "properties": {
+                  "content": {
+                    "type": "string",
+                    "example": "Nội dung bình luận đã chỉnh sửa..."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cập nhật thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommentResource"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "422": {
+            "$ref": "#/components/responses/422ValidationError"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Comments"
+        ],
+        "summary": "Xóa bình luận",
+        "description": "Tác giả xóa bình luận của chính mình.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "comment",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID bình luận"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Đã xóa bình luận thành công"
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          }
+        }
+      }
+    },
+    "/api/categories": {
+      "get": {
+        "tags": [
+          "Categories"
+        ],
+        "summary": "Lấy danh sách chuyên mục",
+        "description": "Lấy toàn bộ chuyên mục đang có để hiển thị danh mục bài viết.",
+        "responses": {
+          "200": {
+            "description": "Danh sách chuyên mục",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CategoryResource"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/categories/{category}": {
+      "get": {
+        "tags": [
+          "Categories"
+        ],
+        "summary": "Xem chi tiết chuyên mục",
+        "description": "Lấy thông tin của một chuyên mục cụ thể.",
+        "parameters": [
+          {
+            "name": "category",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID chuyên mục"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Thông tin chuyên mục",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoryResource"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          }
+        }
+      }
+    },
+    "/api/profiles/{user}": {
+      "get": {
+        "tags": [
+          "Profiles"
+        ],
+        "summary": "Xem hồ sơ người dùng công khai",
+        "description": "Lấy thông tin trang cá nhân, bao gồm số bài viết, người theo dõi, đang theo dõi và trạng thái theo dõi hiện tại.",
+        "parameters": [
+          {
+            "name": "user",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID người dùng"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Thông tin hồ sơ người dùng",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileResource"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          }
+        }
+      }
+    },
+    "/api/profiles/{user}/followers": {
+      "get": {
+        "tags": [
+          "Profiles"
+        ],
+        "summary": "Lấy danh sách người đang theo dõi",
+        "description": "Danh sách các tài khoản đang theo dõi người dùng này.",
+        "parameters": [
+          {
+            "name": "user",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID người dùng"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Danh sách Followers",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/UserResource"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          }
+        }
+      }
+    },
+    "/api/profiles/{user}/following": {
+      "get": {
+        "tags": [
+          "Profiles"
+        ],
+        "summary": "Lấy danh sách đang theo dõi",
+        "description": "Danh sách các tài khoản mà người dùng này đang theo dõi.",
+        "parameters": [
+          {
+            "name": "user",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID người dùng"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Danh sách Following",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/UserResource"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          }
+        }
+      }
+    },
+    "/api/users/search": {
+      "get": {
+        "tags": [
+          "Profiles"
+        ],
+        "summary": "Tìm kiếm người dùng",
+        "description": "Tìm kiếm tài khoản người dùng theo tên để kết bạn hoặc gắn thẻ.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 100
+            },
+            "description": "Từ khóa tìm kiếm tên"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 20,
+              "default": 5
+            },
+            "description": "Giới hạn kết quả"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Kết quả tìm kiếm",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/UserSearchResource"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/422ValidationError"
+          }
+        }
+      }
+    },
+    "/api/users/{user}/follow": {
+      "post": {
+        "tags": [
+          "Profiles"
+        ],
+        "summary": "Bật / Tắt theo dõi người dùng (Toggle Follow)",
+        "description": "Theo dõi hoặc hủy theo dõi một người dùng. Không được tự theo dõi chính mình.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID người dùng cần follow"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Trạng thái theo dõi cập nhật",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "is_following": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "followers_count": {
+                      "type": "integer",
+                      "example": 26
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "422": {
+            "description": "Không thể tự theo dõi chính mình"
+          }
+        }
+      }
+    },
+    "/api/posts/{post}/report": {
+      "post": {
+        "tags": [
+          "Reports"
+        ],
+        "summary": "Báo cáo vi phạm bài viết",
+        "description": "Gửi báo cáo vi phạm tiêu chuẩn cộng đồng cho bài viết.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "post",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID bài viết"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "reason"
+                ],
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 500,
+                    "example": "Bài viết chứa nội dung quấy rối hoặc sai sự thật."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Gửi báo cáo thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Báo cáo bài viết thành công."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "422": {
+            "$ref": "#/components/responses/422ValidationError"
+          }
+        }
+      }
+    },
+    "/api/comments/{comment}/report": {
+      "post": {
+        "tags": [
+          "Reports"
+        ],
+        "summary": "Báo cáo vi phạm bình luận",
+        "description": "Gửi báo cáo vi phạm cho một bình luận xấu.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "comment",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID bình luận"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "reason"
+                ],
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 500,
+                    "example": "Bình luận chứa ngôn từ thù ghét."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Gửi báo cáo thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Báo cáo bình luận thành công."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "422": {
+            "$ref": "#/components/responses/422ValidationError"
+          }
+        }
+      }
+    },
+    "/api/users/{user}/report": {
+      "post": {
+        "tags": [
+          "Reports"
+        ],
+        "summary": "Báo cáo vi phạm người dùng",
+        "description": "Báo cáo tài khoản có hành vi vi phạm điều khoản dịch vụ.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID người dùng bị báo cáo"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "reason"
+                ],
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 500,
+                    "example": "Tài khoản liên tục spam quảng cáo bẩn."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Gửi báo cáo thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Báo cáo người dùng thành công."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "422": {
+            "description": "Lỗi validation hoặc tự báo cáo chính mình"
+          }
+        }
+      }
+    },
+    "/api/advertisements": {
+      "get": {
+        "tags": [
+          "Advertisements"
+        ],
+        "summary": "Lấy quảng cáo theo vị trí",
+        "description": "Lấy danh sách các quảng cáo đang kích hoạt (active) theo vị trí chỉ định.",
+        "parameters": [
+          {
+            "name": "position",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 100,
+              "example": "sidebar_top"
+            },
+            "description": "Vị trí đặt banner quảng cáo"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Danh sách quảng cáo",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/PublicAdvertisementResource"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/422ValidationError"
+          }
+        }
+      }
+    },
+    "/api/image-upload": {
+      "post": {
+        "tags": [
+          "Media & Upload"
+        ],
+        "summary": "Tải lên hình ảnh cho trình soạn thảo",
+        "description": "Tải ảnh lên dịch vụ Cloudinary để chèn vào nội dung bài viết HTML (Tối đa 5MB).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "File ảnh jpeg, png, jpg, gif (tối đa 5MB)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Upload thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "location": {
+                      "type": "string",
+                      "format": "uri",
+                      "example": "https://res.cloudinary.com/.../image.webp"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "422": {
+            "$ref": "#/components/responses/422ValidationError"
+          },
+          "500": {
+            "$ref": "#/components/responses/500InternalError"
+          }
+        }
+      }
+    },
+    "/api/settings/logo": {
+      "get": {
+        "tags": [
+          "System Settings"
+        ],
+        "summary": "Lấy Logo website",
+        "description": "Lấy đường dẫn URL logo trang chủ của hệ thống.",
+        "responses": {
+          "200": {
+            "description": "Logo website",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "logo_url": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true,
+                      "example": "https://res.cloudinary.com/.../logo.png"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/settings/background": {
+      "get": {
+        "tags": [
+          "System Settings"
+        ],
+        "summary": "Lấy hình nền website",
+        "description": "Lấy đường dẫn URL hình nền trang web.",
+        "responses": {
+          "200": {
+            "description": "Hình nền website",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "background_url": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true,
+                      "example": "https://res.cloudinary.com/.../bg.jpg"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/settings/footer": {
+      "get": {
+        "tags": [
+          "System Settings"
+        ],
+        "summary": "Lấy cấu hình chân trang (Footer)",
+        "description": "Lấy thông tin mô tả, bản quyền, liên kết và mạng xã hội của chân trang.",
+        "responses": {
+          "200": {
+            "description": "Cấu hình Footer",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "description": {
+                      "type": "string",
+                      "example": "Mạng xã hội chia sẻ tri thức."
+                    },
+                    "copyright": {
+                      "type": "string",
+                      "example": "© 2026 SocialApp. All rights reserved."
+                    },
+                    "links": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    },
+                    "socials": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/moderator/dashboard/stats": {
+      "get": {
+        "tags": [
+          "Moderator"
+        ],
+        "summary": "Thống kê tổng quan bảng điều khiển Kiểm duyệt",
+        "description": "Lấy số lượng người dùng, bài viết, bình luận, báo cáo vi phạm, tốc độ tăng trưởng và bài viết nổi bật.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dữ liệu thống kê",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "counts": {
+                      "type": "object",
+                      "properties": {
+                        "users": {
+                          "type": "integer"
+                        },
+                        "posts_total": {
+                          "type": "integer"
+                        },
+                        "posts_published": {
+                          "type": "integer"
+                        },
+                        "posts_removed": {
+                          "type": "integer"
+                        },
+                        "comments": {
+                          "type": "integer"
+                        },
+                        "banned_users": {
+                          "type": "integer"
+                        },
+                        "reports_post": {
+                          "type": "integer"
+                        },
+                        "reports_comment": {
+                          "type": "integer"
+                        },
+                        "reports_user": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "growth": {
+                      "type": "object"
+                    },
+                    "top_content": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          }
+        }
+      }
+    },
+    "/api/moderator/content/removed-posts": {
+      "get": {
+        "tags": [
+          "Moderator"
+        ],
+        "summary": "Danh sách bài viết đã bị gỡ bỏ/ẩn",
+        "description": "Lấy danh sách các bài viết bị ẩn để xem xét khôi phục hoặc xóa triệt để.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "newest",
+                "hot"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Danh sách bài viết bị gỡ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/PostResource"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          }
+        }
+      }
+    },
+    "/api/moderator/posts/{post}/restore": {
+      "post": {
+        "tags": [
+          "Moderator"
+        ],
+        "summary": "Khôi phục bài viết đã bị gỡ",
+        "description": "Chuyển trạng thái bài viết trở lại published.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "post",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID bài viết"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Khôi phục thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Đã khôi phục bài viết thành công."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "422": {
+            "description": "Bài viết đang hiển thị bình thường"
+          }
+        }
+      }
+    },
+    "/api/moderator/content/removed-comments": {
+      "get": {
+        "tags": [
+          "Moderator"
+        ],
+        "summary": "Danh sách bình luận đã bị gỡ",
+        "description": "Lấy các bình luận đang bị ẩn bởi kiểm duyệt.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "user",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Danh sách bình luận bị gỡ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CommentResource"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          }
+        }
+      }
+    },
+    "/api/moderator/comments/{comment}/restore": {
+      "post": {
+        "tags": [
+          "Moderator"
+        ],
+        "summary": "Khôi phục bình luận đã bị gỡ",
+        "description": "Khôi phục hiển thị bình luận về trạng thái published.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "comment",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID bình luận"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Khôi phục bình luận thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Đã khôi phục bình luận thành công."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          }
+        }
+      }
+    },
+    "/api/moderator/reports/posts": {
+      "get": {
+        "tags": [
+          "Moderator"
+        ],
+        "summary": "Danh sách báo cáo bài viết",
+        "description": "Xem danh sách các báo cáo vi phạm bài viết cần giải quyết.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Danh sách báo cáo bài viết",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ReportPostResource"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          }
+        }
+      }
+    },
+    "/api/moderator/reports/posts/{reportPost}": {
+      "delete": {
+        "tags": [
+          "Moderator"
+        ],
+        "summary": "Giải quyết / Xóa báo cáo bài viết",
+        "description": "Xác nhận xử lý hoàn tất hoặc bỏ qua một bản ghi báo cáo bài viết.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "reportPost",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID bản ghi báo cáo"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Xử lý báo cáo thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Báo cáo đã được giải quyết."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          }
+        }
+      }
+    },
+    "/api/moderator/reports/comments": {
+      "get": {
+        "tags": [
+          "Moderator"
+        ],
+        "summary": "Danh sách báo cáo bình luận",
+        "description": "Xem danh sách các báo cáo vi phạm bình luận.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Danh sách báo cáo bình luận",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ReportCommentResource"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          }
+        }
+      }
+    },
+    "/api/moderator/reports/comments/{reportComment}": {
+      "delete": {
+        "tags": [
+          "Moderator"
+        ],
+        "summary": "Giải quyết / Xóa báo cáo bình luận",
+        "description": "Đánh dấu đã giải quyết hoặc đóng báo cáo bình luận.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "reportComment",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID bản ghi báo cáo"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Xử lý báo cáo thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Báo cáo đã được giải quyết."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          }
+        }
+      }
+    },
+    "/api/moderator/reports/users": {
+      "get": {
+        "tags": [
+          "Moderator"
+        ],
+        "summary": "Danh sách báo cáo người dùng",
+        "description": "Xem danh sách các báo cáo tố cáo hành vi của thành viên.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Danh sách báo cáo người dùng",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ReportUserResource"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          }
+        }
+      }
+    },
+    "/api/moderator/reports/users/{reportUser}": {
+      "delete": {
+        "tags": [
+          "Moderator"
+        ],
+        "summary": "Giải quyết / Xóa báo cáo người dùng",
+        "description": "Đánh dấu giải quyết hoặc đóng hồ sơ báo cáo thành viên.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "reportUser",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID bản ghi báo cáo"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Xử lý báo cáo thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Báo cáo đã được giải quyết."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          }
+        }
+      }
+    },
+    "/api/admin/advertisements": {
+      "get": {
+        "tags": [
+          "Admin - Ads"
+        ],
+        "summary": "Admin - Danh sách tất cả quảng cáo",
+        "description": "Lấy danh sách tất cả banner quảng cáo (cả active và inactive) để quản trị.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "position",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Danh sách quảng cáo quản trị",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/AdvertisementResource"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Admin - Ads"
+        ],
+        "summary": "Admin - Tạo banner quảng cáo mới",
+        "description": "Thêm quảng cáo mới, upload hình banner lên Cloudinary.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "title",
+                  "link_url",
+                  "position",
+                  "status",
+                  "image_file"
+                ],
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "example": "Khóa học React"
+                  },
+                  "link_url": {
+                    "type": "string",
+                    "format": "uri",
+                    "maxLength": 500,
+                    "example": "https://example.com/course"
+                  },
+                  "position": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "example": "sidebar_top"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "active",
+                      "inactive"
+                    ],
+                    "example": "active"
+                  },
+                  "display_order": {
+                    "type": "integer",
+                    "example": 1
+                  },
+                  "image_file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "File ảnh (tối đa 2MB)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Tạo quảng cáo thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdvertisementResource"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "422": {
+            "$ref": "#/components/responses/422ValidationError"
+          },
+          "500": {
+            "$ref": "#/components/responses/500InternalError"
+          }
+        }
+      }
+    },
+    "/api/admin/advertisements/{advertisement}": {
+      "post": {
+        "tags": [
+          "Admin - Ads"
+        ],
+        "summary": "Admin - Cập nhật quảng cáo",
+        "description": "Cập nhật thông tin và file ảnh quảng cáo (sử dụng POST kèm form-data).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "advertisement",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID quảng cáo"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "maxLength": 255
+                  },
+                  "link_url": {
+                    "type": "string",
+                    "format": "uri",
+                    "maxLength": 500
+                  },
+                  "position": {
+                    "type": "string",
+                    "maxLength": 100
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "active",
+                      "inactive"
+                    ]
+                  },
+                  "display_order": {
+                    "type": "integer"
+                  },
+                  "image_file": {
+                    "type": "string",
+                    "format": "binary",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cập nhật thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdvertisementResource"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "422": {
+            "$ref": "#/components/responses/422ValidationError"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Admin - Ads"
+        ],
+        "summary": "Admin - Xóa quảng cáo",
+        "description": "Xóa vĩnh viễn banner quảng cáo khỏi hệ thống.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "advertisement",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID quảng cáo"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Đã xóa quảng cáo (No Content)"
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          }
+        }
+      }
+    },
+    "/api/admin/categories": {
+      "get": {
+        "tags": [
+          "Admin - Categories"
+        ],
+        "summary": "Admin - Danh sách tất cả chuyên mục",
+        "description": "Lấy danh sách các chuyên mục phục vụ trang quản trị.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Danh sách chuyên mục",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CategoryResource"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Admin - Categories"
+        ],
+        "summary": "Admin - Thêm chuyên mục mới",
+        "description": "Thêm chuyên mục mới vào cơ sở dữ liệu (tự động tạo slug nếu không cung cấp).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "example": "Đời sống"
+                  },
+                  "slug": {
+                    "type": "string",
+                    "maxLength": 150,
+                    "example": "doi-song"
+                  },
+                  "description": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "nullable": true,
+                    "example": "Chuyên mục chia sẻ về đời sống thường ngày"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Thêm chuyên mục thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoryResource"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "422": {
+            "$ref": "#/components/responses/422ValidationError"
+          }
+        }
+      }
+    },
+    "/api/admin/categories/{category}": {
+      "get": {
+        "tags": [
+          "Admin - Categories"
+        ],
+        "summary": "Admin - Xem chi tiết chuyên mục",
+        "description": "Lấy chi tiết chuyên mục theo ID.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "category",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID chuyên mục"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Chi tiết chuyên mục",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoryResource"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Admin - Categories"
+        ],
+        "summary": "Admin - Cập nhật chuyên mục",
+        "description": "Cập nhật tên, slug hoặc mô tả chuyên mục.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "category",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID chuyên mục"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "example": "Đời sống hiện đại"
+                  },
+                  "slug": {
+                    "type": "string",
+                    "maxLength": 150,
+                    "example": "doi-song-hien-dai"
+                  },
+                  "description": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cập nhật thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoryResource"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "422": {
+            "$ref": "#/components/responses/422ValidationError"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Admin - Categories"
+        ],
+        "summary": "Admin - Cập nhật chuyên mục",
+        "description": "Cập nhật tên, slug hoặc mô tả chuyên mục.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "category",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID chuyên mục"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "example": "Đời sống hiện đại"
+                  },
+                  "slug": {
+                    "type": "string",
+                    "maxLength": 150,
+                    "example": "doi-song-hien-dai"
+                  },
+                  "description": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cập nhật thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoryResource"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "422": {
+            "$ref": "#/components/responses/422ValidationError"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Admin - Categories"
+        ],
+        "summary": "Admin - Xóa chuyên mục",
+        "description": "Xóa một chuyên mục khỏi hệ thống.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "category",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID chuyên mục"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Xóa thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Đã xóa chuyên mục thành công."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          }
+        }
+      }
+    },
+    "/api/admin/settings/logo": {
+      "post": {
+        "tags": [
+          "Admin - Settings"
+        ],
+        "summary": "Admin - Cập nhật Logo website",
+        "description": "Tải lên logo website mới lên Cloudinary (tối đa 2MB).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "logo"
+                ],
+                "properties": {
+                  "logo": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "File ảnh jpeg, png, jpg, gif, svg (max 2MB)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cập nhật logo thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Logo đã được cập nhật thành công."
+                    },
+                    "logo_url": {
+                      "type": "string",
+                      "format": "uri"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "422": {
+            "$ref": "#/components/responses/422ValidationError"
+          }
+        }
+      }
+    },
+    "/api/admin/settings/background": {
+      "post": {
+        "tags": [
+          "Admin - Settings"
+        ],
+        "summary": "Admin - Cập nhật ảnh nền website",
+        "description": "Tải lên hình nền trang chủ mới (max 2MB).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "File ảnh jpeg, png, jpg, gif, svg (max 2MB)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cập nhật hình nền thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Background đã được cập nhật thành công."
+                    },
+                    "background_url": {
+                      "type": "string",
+                      "format": "uri"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "422": {
+            "$ref": "#/components/responses/422ValidationError"
+          }
+        }
+      }
+    },
+    "/api/admin/settings/footer": {
+      "post": {
+        "tags": [
+          "Admin - Settings"
+        ],
+        "summary": "Admin - Cập nhật thông tin chân trang (Footer)",
+        "description": "Cập nhật nội dung mô tả, bản quyền và mảng JSON các liên kết Footer.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "footer_description": {
+                    "type": "string",
+                    "maxLength": 500,
+                    "example": "Mạng xã hội chia sẻ bài viết kiến thức hàng đầu."
+                  },
+                  "footer_copyright": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "example": "© 2026 SocialApp."
+                  },
+                  "footer_links": {
+                    "type": "array",
+                    "items": {
+                      "type": "object"
+                    }
+                  },
+                  "footer_socials": {
+                    "type": "array",
+                    "items": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cập nhật Footer thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Cài đặt footer đã được lưu."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          }
+        }
+      }
+    },
+    "/api/admin/users/banned": {
+      "get": {
+        "tags": [
+          "Admin - Users"
+        ],
+        "summary": "Admin - Danh sách tài khoản đang bị cấm",
+        "description": "Xem danh sách các tài khoản đang chịu hình phạt khóa tài khoản (banned).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "user",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Danh sách người dùng bị cấm",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/UserResource"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          }
+        }
+      }
+    },
+    "/api/admin/users/{user}/ban": {
+      "post": {
+        "tags": [
+          "Admin - Users"
+        ],
+        "summary": "Admin - Khóa / Cấm tài khoản người dùng",
+        "description": "Khóa tài khoản theo số ngày hoặc vĩnh viễn (nếu duration_days để trống). Không thể ban Super Admin.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID người dùng bị ban"
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "duration_days": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 3650,
+                    "nullable": true,
+                    "example": 7,
+                    "description": "Số ngày ban (để trống nếu muốn ban vĩnh viễn)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cấm tài khoản thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Người dùng đã bị cấm 7 ngày."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "403": {
+            "description": "Không thể ban Super Admin hoặc không đủ quyền"
+          },
+          "422": {
+            "$ref": "#/components/responses/422ValidationError"
+          }
+        }
+      }
+    },
+    "/api/admin/users/{user}/unban": {
+      "post": {
+        "tags": [
+          "Admin - Users"
+        ],
+        "summary": "Admin - Gỡ cấm tài khoản người dùng",
+        "description": "Mở khóa tài khoản cho người dùng, đưa banned_until về null.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID người dùng"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Gỡ cấm thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Người dùng đã được gỡ ban."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          }
+        }
+      }
+    },
+    "/api/admin/users/{user}/moderation-history": {
+      "get": {
+        "tags": [
+          "Admin - Users"
+        ],
+        "summary": "Admin - Xem lịch sử vi phạm và kiểm duyệt của người dùng",
+        "description": "Xem chi tiết các bài viết bị gỡ, bình luận bị gỡ và các báo cáo đang hoạt động nhắm vào người dùng này.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID người dùng"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lịch sử vi phạm chi tiết",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "user_info": {
+                      "type": "object"
+                    },
+                    "violations": {
+                      "type": "object",
+                      "properties": {
+                        "removed_posts": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/PostResource"
+                          }
+                        },
+                        "removed_comments": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/CommentResource"
+                          }
+                        },
+                        "active_user_reports": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/ReportUserResource"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          }
+        }
+      }
+    },
+    "/api/superadmin/adminlist": {
+      "get": {
+        "tags": [
+          "Superadmin"
+        ],
+        "summary": "Superadmin - Danh sách các quản trị viên và kiểm duyệt viên",
+        "description": "Tìm kiếm và liệt kê các tài khoản có vai trò moderator, admin hoặc superadmin.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "role",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Lọc theo vai trò"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 20
+            }
+          },
+          {
+            "name": "user",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Danh sách ban quản trị",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/UserResource"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          }
+        }
+      }
+    },
+    "/api/superadmin/users/{user}/role": {
+      "patch": {
+        "tags": [
+          "Superadmin"
+        ],
+        "summary": "Superadmin - Cập nhật vai trò người dùng (RBAC)",
+        "description": "Thay đổi vai trò của người dùng thành user, moderator, admin hoặc superadmin. Không thể thay đổi vai trò của Superadmin khác.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID người dùng"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "role"
+                ],
+                "properties": {
+                  "role": {
+                    "type": "string",
+                    "enum": [
+                      "user",
+                      "moderator",
+                      "admin",
+                      "superadmin"
+                    ],
+                    "example": "moderator"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cập nhật vai trò thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Đã cập nhật vai trò người dùng."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "403": {
+            "description": "Không thể đổi vai trò của Superadmin khác hoặc không đủ thẩm quyền"
+          },
+          "422": {
+            "$ref": "#/components/responses/422ValidationError"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "Sanctum Token",
+        "description": "Nhập token Sanctum nhận được từ API đăng nhập theo định dạng: `Bearer {token}`"
+      }
+    },
+    "responses": {
+      "401Unauthorized": {
+        "description": "Chưa xác thực hoặc Token không hợp lệ",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Unauthenticated."
+                }
+              }
+            }
+          }
+        }
+      },
+      "403Forbidden": {
+        "description": "Không có quyền truy cập hành động hoặc tài nguyên này",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "This action is unauthorized."
+                }
+              }
+            }
+          }
+        }
+      },
+      "404NotFound": {
+        "description": "Không tìm thấy tài nguyên yêu cầu",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Nội dung này không tồn tại hoặc đã bị gỡ bỏ."
+                }
+              }
+            }
+          }
+        }
+      },
+      "422ValidationError": {
+        "description": "Lỗi dữ liệu đầu vào không hợp lệ (Validation Failure)",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ValidationErrorResponse"
+            }
+          }
+        }
+      },
+      "500InternalError": {
+        "description": "Lỗi máy chủ nội bộ hoặc lỗi xử lý bên thứ ba (Cloudinary)",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Upload thất bại: Cloudinary error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "UserResource": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "Nguyễn Văn A"
+          },
+          "avatar": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri",
+            "example": "https://res.cloudinary.com/.../avatar.jpg"
+          },
+          "cover_photo_url": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri",
+            "example": "https://res.cloudinary.com/.../cover.jpg"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-01T12:00:00.000000Z"
+          },
+          "banned_until": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "example": null
+          }
+        }
+      },
+      "ProfileResource": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "Nguyễn Văn A"
+          },
+          "avatar": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri"
+          },
+          "cover_photo_url": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "user",
+              "moderator",
+              "admin",
+              "superadmin"
+            ],
+            "example": "user"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "followers_count": {
+            "type": "integer",
+            "example": 25
+          },
+          "following_count": {
+            "type": "integer",
+            "example": 12
+          },
+          "posts_count": {
+            "type": "integer",
+            "example": 8
+          },
+          "is_following": {
+            "type": "boolean",
+            "example": false
+          }
+        }
+      },
+      "UserSearchResource": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "Nguyễn Văn A"
+          },
+          "avatar": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri"
+          }
+        }
+      },
+      "CategoryResource": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "Công nghệ"
+          },
+          "slug": {
+            "type": "string",
+            "example": "cong-nghe"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "example": "Chuyên mục tin tức công nghệ"
+          }
+        }
+      },
+      "PostResource": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 10
+          },
+          "title": {
+            "type": "string",
+            "example": "Khám phá kiến trúc microservices hiện đại"
+          },
+          "thumbnail_url": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri"
+          },
+          "content_html": {
+            "type": "string",
+            "description": "Nội dung HTML chi tiết (chỉ xuất hiện trong API xem chi tiết bài viết)"
+          },
+          "category": {
+            "$ref": "#/components/schemas/CategoryResource"
+          },
+          "source_url": {
+            "type": "string",
+            "nullable": true,
+            "example": "https://example.com/source"
+          },
+          "source_name": {
+            "type": "string",
+            "nullable": true,
+            "example": "Tech Blog"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string",
+            "description": "Trạng thái hiển thị (published, hidden...)",
+            "example": "published"
+          },
+          "author": {
+            "$ref": "#/components/schemas/UserResource"
+          },
+          "comments_count": {
+            "type": "integer",
+            "example": 5
+          },
+          "vote_score": {
+            "type": "integer",
+            "example": 42
+          },
+          "user_vote": {
+            "type": "integer",
+            "enum": [
+              1,
+              0,
+              -1
+            ],
+            "description": "1: Upvote, -1: Downvote, 0: Chưa bầu chọn",
+            "example": 0
+          },
+          "is_following_author": {
+            "type": "boolean",
+            "example": false
+          }
+        }
+      },
+      "CommentResource": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 5
+          },
+          "content": {
+            "type": "string",
+            "example": "Bài viết rất hữu ích và chi tiết!"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string",
+            "description": "Trạng thái kiểm duyệt"
+          },
+          "parent_id": {
+            "type": "integer",
+            "nullable": true,
+            "example": null
+          },
+          "author": {
+            "$ref": "#/components/schemas/UserResource"
+          },
+          "replies_count": {
+            "type": "integer",
+            "example": 2
+          },
+          "replies": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CommentResource"
+            }
+          }
+        }
+      },
+      "AdvertisementResource": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "title": {
+            "type": "string",
+            "example": "Khóa học Lập trình Web Fullstack"
+          },
+          "image_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "link_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "position": {
+            "type": "string",
+            "example": "sidebar_top"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "inactive"
+            ],
+            "example": "active"
+          },
+          "display_order": {
+            "type": "integer",
+            "nullable": true,
+            "example": 1
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "PublicAdvertisementResource": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "image_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "link_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "position": {
+            "type": "string",
+            "example": "sidebar_top"
+          }
+        }
+      },
+      "ReportPostResource": {
+        "type": "object",
+        "properties": {
+          "report_id": {
+            "type": "integer",
+            "example": 1
+          },
+          "reason": {
+            "type": "string",
+            "example": "Nội dung spam hoặc quảng cáo không phù hợp"
+          },
+          "reported_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reporter": {
+            "$ref": "#/components/schemas/UserResource"
+          },
+          "evidence_post": {
+            "$ref": "#/components/schemas/PostResource"
+          }
+        }
+      },
+      "ReportCommentResource": {
+        "type": "object",
+        "properties": {
+          "report_id": {
+            "type": "integer",
+            "example": 2
+          },
+          "reason": {
+            "type": "string",
+            "example": "Bình luận mang tính xúc phạm"
+          },
+          "reported_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reporter": {
+            "$ref": "#/components/schemas/UserResource"
+          },
+          "evidence_comment": {
+            "$ref": "#/components/schemas/CommentResource"
+          }
+        }
+      },
+      "ReportUserResource": {
+        "type": "object",
+        "properties": {
+          "report_id": {
+            "type": "integer",
+            "example": 3
+          },
+          "reason": {
+            "type": "string",
+            "example": "Tài khoản giả mạo người khác"
+          },
+          "reported_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reporter": {
+            "$ref": "#/components/schemas/UserResource"
+          },
+          "reported_user": {
+            "$ref": "#/components/schemas/UserResource"
+          }
+        }
+      },
+      "ValidationErrorResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "The given data was invalid."
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

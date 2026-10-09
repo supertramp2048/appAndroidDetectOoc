@@ -1,5 +1,38 @@
 <resources>
-    <string name="app_name">Phát hiện Tin giả</string>
+    <string name="app_name">Đọc tin &amp; Kiểm chứng</string>
+    <string name="app_title">Mạng Xã Hội Đọc Tin</string>
+    <string name="app_subtitle">Kiểm tra nội dung từ ảnh và ảnh chụp màn hình</string>
+
+    <!-- Navigation Tabs -->
+    <string name="nav_home">Trang chủ</string>
+    <string name="nav_factcheck">Kiểm chứng</string>
+    <string name="nav_search">Tìm kiếm</string>
+    <string name="nav_profile">Hồ sơ</string>
+    <string name="action_create_post">Viết bài</string>
+
+    <!-- Common Actions & States -->
+    <string name="action_retry">Thử lại</string>
+    <string name="action_confirm">Xác nhận</string>
+    <string name="action_cancel">Hủy</string>
+    <string name="action_submit">Gửi</string>
+    <string name="action_login">Đăng nhập</string>
+    <string name="action_logout">Đăng xuất</string>
+    <string name="action_register">Đăng ký</string>
+    <string name="action_report">Báo cáo</string>
+    <string name="action_close">Đóng</string>
+
+    <!-- Messages & Errors -->
+    <string name="error_generic">Đã xảy ra lỗi. Vui lòng thử lại sau.</string>
+    <string name="error_network">Không thể kết nối mạng. Vui lòng kiểm tra lại.</string>
+    <string name="empty_generic">Không có dữ liệu hiển thị.</string>
+    <string name="require_login_title">Yêu cầu đăng nhập</string>
+    <string name="require_login_message">Bạn cần đăng nhập để thực hiện hành động này.</string>
+
+    <!-- Report Sheet -->
+    <string name="report_sheet_title">Báo cáo vi phạm</string>
+    <string name="report_sheet_hint">Nhập lý do báo cáo (10–500 ký tự)...</string>
+
+    <!-- Existing strings -->
     <string name="retake">Chụp lại</string>
     <string name="gallery">Thư viện</string>
     <string name="check">Kiểm tra</string>
@@ -13,8 +46,6 @@
     <string name="dialog_caption_hint">Nếu ảnh gửi không có caption, hãy viết caption vào đây...</string>
     <string name="skip">Bỏ qua</string>
     <string name="send">Gửi</string>
-    <string name="app_title">Phát hiện Tin giả</string>
-    <string name="app_subtitle">Kiểm tra nội dung từ ảnh và ảnh chụp màn hình</string>
     <string name="start_detection">Kiểm tra ảnh</string>
     <string name="start_detection_desc">Chụp ảnh hoặc chọn ảnh từ thư viện</string>
     <string name="history_desc">Xem lại các kết quả đã kiểm tra</string>
