@@ -23,6 +23,27 @@ public class FactCheckTabFragment extends Fragment {
     }
 
     @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        View btnGoToDetection = view.findViewById(R.id.btnGoToDetection);
+        if (btnGoToDetection != null) {
+            btnGoToDetection.setOnClickListener(v -> {
+                Intent intent = new Intent(requireContext(), MediaProjectionActivity.class);
+                startActivity(intent);
+            });
+        }
+
+        View btnGoToHistory = view.findViewById(R.id.btnGoToHistory);
+        if (btnGoToHistory != null) {
+            btnGoToHistory.setOnClickListener(v -> {
+                Intent intent = new Intent(requireContext(), HistoryActivity.class);
+                startActivity(intent);
+            });
+        }
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
         if (getActivity() != null) {

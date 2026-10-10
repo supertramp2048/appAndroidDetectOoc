@@ -3,6 +3,7 @@ package com.socialapp.feature.post;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.Html;
 import android.view.View;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
@@ -108,8 +109,19 @@ public class PostDetailActivity extends AppCompatActivity {
 
         binding.btnFactcheck.setOnClickListener(v -> {
             PostResource post = viewModel.getCurrentPost();
-            if (post != null && post.thumbnailUrl != null) {
-                Navigator.navigateToCreatePost(this, post.title, post.thumbnailUrl, null);
+            if (post != null && post.thumbnailUrl != null && !post.thumbnailUrl.trim().isEmpty()) {
+                String plainTextSummary = "";
+                if (post.contentHtml != null && !post.contentHtml.trim().isEmpty()) {
+                    String fullText = Html.fromHtml(post.contentHtml, Html.FROM_HTML_MODE_LEGACY).toString().trim();
+                    if (fullText.length() > 300) {
+                        plainTextSummary = fullText.substring(0, 300) + "...";
+                    } else {
+                        plainTextSummary = fullText;
+                    }
+                }
+                String caption = (post.title != null ? post.title : "") + (plainTextSummary.isEmpty() ? "" : "\n" + plainTextSummary);
+                String route = "factcheck?imageUrl=" + Uri.encode(post.thumbnailUrl) + "&postId=" + post.id + "&caption=" + Uri.encode(caption);
+                Navigator.navigateTo(this, route);
             }
         });
 

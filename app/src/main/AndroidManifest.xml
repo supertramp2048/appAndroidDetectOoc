@@ -48,6 +48,31 @@
             android:exported="false" />
 
         <activity
+            android:name="com.socialapp.feature.compose.ComposeActivity"
+            android:theme="@style/Theme.SocialApp"
+            android:exported="false" />
+
+        <activity
+            android:name="com.socialapp.feature.profile.ProfileActivity"
+            android:theme="@style/Theme.SocialApp"
+            android:exported="false" />
+
+        <activity
+            android:name="com.socialapp.feature.profile.UserListActivity"
+            android:theme="@style/Theme.SocialApp"
+            android:exported="false" />
+
+        <activity
+            android:name="com.socialapp.feature.settings.SettingsActivity"
+            android:theme="@style/Theme.SocialApp"
+            android:exported="false" />
+
+        <activity
+            android:name="com.socialapp.feature.factcheck.FactCheckHelperActivity"
+            android:theme="@style/Theme.SocialApp"
+            android:exported="false" />
+
+        <activity
             android:name="com.socialapp.feature.auth.AuthActivity"
             android:exported="true">
             <intent-filter>

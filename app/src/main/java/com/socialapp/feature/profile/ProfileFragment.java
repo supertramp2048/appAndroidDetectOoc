@@ -1,5 +1,6 @@
 package com.socialapp.feature.profile;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -47,6 +48,8 @@ public class ProfileFragment extends Fragment {
         sessionManager = MyApplication.getAppContainer(requireContext()).getSessionManager();
 
         binding.btnProfileGuestLogin.setOnClickListener(v -> Navigator.navigateTo(requireContext(), Navigator.ROUTE_LOGIN));
+
+        binding.btnProfileSettings.setOnClickListener(v -> Navigator.navigateTo(requireContext(), Navigator.ROUTE_SETTINGS));
 
         binding.btnProfileLogout.setOnClickListener(v -> {
             ConfirmDialog dialog = new ConfirmDialog(
@@ -114,6 +117,27 @@ public class ProfileFragment extends Fragment {
 
         binding.profileAvatar.loadAvatar(currentUser.getAvatarUrl());
 
+        if (currentUser.coverPhotoUrl != null && !currentUser.coverPhotoUrl.trim().isEmpty()) {
+            Glide.with(this)
+                    .load(currentUser.coverPhotoUrl)
+                            .centerCrop()
+                            .into(binding.profileCoverImage);
+        }
+
+        binding.btnOpenFollowers.setOnClickListener(v -> {
+            Intent intent = new Intent(requireContext(), UserListActivity.class);
+            intent.putExtra(UserListActivity.EXTRA_USER_ID, currentUser.id);
+            intent.putExtra(UserListActivity.EXTRA_LIST_TYPE, UserListActivity.TYPE_FOLLOWERS);
+            startActivity(intent);
+        });
+
+        binding.btnOpenFollowing.setOnClickListener(v -> {
+            Intent intent = new Intent(requireContext(), UserListActivity.class);
+            intent.putExtra(UserListActivity.EXTRA_USER_ID, currentUser.id);
+            intent.putExtra(UserListActivity.EXTRA_LIST_TYPE, UserListActivity.TYPE_FOLLOWING);
+            startActivity(intent);
+        });
+
         ProfileRepository repository = new ProfileRepository(MyApplication.getAppContainer(requireContext()).getSocialAppApiService());
         viewModel = new ViewModelProvider(this, new ProfileViewModelFactory(repository)).get(ProfileViewModel.class);
         viewModel.setUserId(currentUser.id);
@@ -130,13 +154,24 @@ public class ProfileFragment extends Fragment {
             if (result.status == ApiResult.Status.SUCCESS && result.data != null) {
                 ProfileResource profile = result.data;
 
+                if (profile.getName() != null) {
+                    binding.profileNameText.setText(profile.getName());
+                }
+                if (profile.getAvatarUrl() != null) {
+                    binding.profileAvatar.loadAvatar(profile.getAvatarUrl());
+                }
+                if (profile.getRole() != null) {
+                    binding.profileRoleChip.setText(profile.getRole().toUpperCase());
+                }
+
                 binding.profilePostsCountText.setText(String.valueOf(profile.postsCount));
                 binding.profileFollowersCountText.setText(String.valueOf(profile.followersCount));
                 binding.profileFollowingCountText.setText(String.valueOf(profile.followingCount));
 
-                if (profile.coverPhotoUrl != null && !profile.coverPhotoUrl.trim().isEmpty()) {
+                String coverUrl = profile.getCoverPhotoUrl();
+                if (coverUrl != null && !coverUrl.trim().isEmpty()) {
                     Glide.with(this)
-                            .load(profile.coverPhotoUrl)
+                            .load(coverUrl)
                             .centerCrop()
                             .into(binding.profileCoverImage);
                 }

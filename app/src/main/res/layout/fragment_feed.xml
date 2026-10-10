@@ -5,6 +5,14 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+    <!-- Email Verification Banner -->
+    <com.socialapp.feature.auth.EmailVerificationBannerView
+        android:id="@+id/feed_email_banner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="12dp"
+        android:layout_marginTop="8dp" />
+
     <!-- Categories Chip Bar -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/categories_recycler_view"

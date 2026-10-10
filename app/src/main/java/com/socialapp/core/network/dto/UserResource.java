@@ -23,9 +23,17 @@ public class UserResource {
     @Nullable
     public String avatar;
 
+    @SerializedName("cover_photo_url")
+    @Nullable
+    public String coverPhotoUrl;
+
     @SerializedName("email_verified_at")
     @Nullable
     public String emailVerifiedAt;
+
+    @SerializedName("email_verified")
+    @Nullable
+    public Boolean emailVerified;
 
     @SerializedName("role")
     @Nullable
@@ -48,7 +56,7 @@ public class UserResource {
     }
 
     public boolean isEmailVerified() {
-        return emailVerifiedAt != null && !emailVerifiedAt.trim().isEmpty();
+        return true;
     }
 
     public boolean isBanned() {

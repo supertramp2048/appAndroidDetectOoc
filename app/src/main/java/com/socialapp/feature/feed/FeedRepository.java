@@ -8,11 +8,13 @@ import androidx.lifecycle.MutableLiveData;
 import com.socialapp.core.network.ApiErrorParser;
 import com.socialapp.core.network.ApiResult;
 import com.socialapp.core.network.SocialAppApiService;
+import com.socialapp.core.network.dto.CategoryListResponse;
 import com.socialapp.core.network.dto.CategoryResource;
 import com.socialapp.core.network.dto.PostListResponse;
 import com.socialapp.core.network.dto.PostResource;
 import com.socialapp.core.pagination.PageLoader;
 
+import java.util.Collections;
 import java.util.List;
 
 import retrofit2.Call;
@@ -30,19 +32,20 @@ public class FeedRepository {
     public LiveData<ApiResult<List<CategoryResource>>> getCategories() {
         MutableLiveData<ApiResult<List<CategoryResource>>> resultLiveData = new MutableLiveData<>(ApiResult.loading());
 
-        apiService.getCategories().enqueue(new Callback<List<CategoryResource>>() {
+        apiService.getCategories().enqueue(new Callback<CategoryListResponse>() {
             @Override
-            public void onResponse(@NonNull Call<List<CategoryResource>> call,
-                                   @NonNull Response<List<CategoryResource>> response) {
+            public void onResponse(@NonNull Call<CategoryListResponse> call,
+                                   @NonNull Response<CategoryListResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    resultLiveData.setValue(ApiResult.success(response.body()));
+                    List<CategoryResource> categories = response.body().data != null ? response.body().data : Collections.emptyList();
+                    resultLiveData.setValue(ApiResult.success(categories));
                 } else {
                     resultLiveData.setValue(ApiResult.error(ApiErrorParser.parse(response)));
                 }
             }
 
             @Override
-            public void onFailure(@NonNull Call<List<CategoryResource>> call, @NonNull Throwable t) {
+            public void onFailure(@NonNull Call<CategoryListResponse> call, @NonNull Throwable t) {
                 resultLiveData.setValue(ApiResult.error(ApiErrorParser.parseThrowable(t)));
             }
         });

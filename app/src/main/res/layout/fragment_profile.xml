@@ -117,11 +117,23 @@
                             tools:text="USER" />
 
                         <Button
+                            android:id="@+id/btn_profile_settings"
+                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:paddingHorizontal="12dp"
+                            android:text="Cài đặt"
+                            android:textColor="#1976D2"
+                            android:textSize="12sp"
+                            app:strokeColor="#1976D2" />
+
+                        <Button
                             android:id="@+id/btn_profile_logout"
                             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="12dp"
+                            android:layout_marginStart="8dp"
                             android:paddingHorizontal="12dp"
                             android:text="@string/action_logout"
                             android:textColor="#D32F2F"
@@ -178,9 +190,11 @@
                         android:background="#E0E0E0" />
 
                     <LinearLayout
+                        android:id="@+id/btn_open_followers"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
+                        android:background="?attr/selectableItemBackground"
                         android:gravity="center"
                         android:orientation="vertical">
 
@@ -207,9 +221,11 @@
                         android:background="#E0E0E0" />
 
                     <LinearLayout
+                        android:id="@+id/btn_open_following"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
+                        android:background="?attr/selectableItemBackground"
                         android:gravity="center"
                         android:orientation="vertical">
 

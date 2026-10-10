@@ -113,6 +113,8 @@ public class FeedFragment extends Fragment {
     }
 
     private void observeViewModel() {
+        binding.feedEmailBanner.setupObserver(getViewLifecycleOwner());
+
         viewModel.getCategories().observe(getViewLifecycleOwner(), result -> {
             if (result != null && result.status == ApiResult.Status.SUCCESS && result.data != null) {
                 categoryChipAdapter.setCategories(result.data);

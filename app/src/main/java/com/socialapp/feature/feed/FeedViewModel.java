@@ -46,12 +46,12 @@ public class FeedViewModel extends ViewModel {
         PageLoader.PageFetcher<PostResource> fetcher = (page, callback) -> {
             FeedTab activeTab = activeTabLiveData.getValue() != null ? activeTabLiveData.getValue() : FeedTab.NEWEST;
             CategoryResource activeCategory = activeCategoryLiveData.getValue();
-            String categorySlug = activeCategory != null ? activeCategory.slug : null;
+            String categoryParam = activeCategory != null ? String.valueOf(activeCategory.id) : null;
             String query = searchQueryLiveData.getValue();
 
             repository.createPostPageFetcher(
                     activeTab.sort,
-                    categorySlug,
+                    categoryParam,
                     query,
                     null,
                     activeTab.feed

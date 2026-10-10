@@ -2,17 +2,19 @@ package com.socialapp.core.network;
 
 import com.socialapp.core.network.dto.AdvertisementResource;
 import com.socialapp.core.network.dto.AuthResponse;
+import com.socialapp.core.network.dto.CategoryListResponse;
 import com.socialapp.core.network.dto.CategoryResource;
 import com.socialapp.core.network.dto.CommentListResponse;
-import com.socialapp.core.network.dto.CommentResource;
 import com.socialapp.core.network.dto.CommentSingleResponse;
 import com.socialapp.core.network.dto.LoginRequest;
 import com.socialapp.core.network.dto.PostDetailResponse;
 import com.socialapp.core.network.dto.PostListResponse;
+import com.socialapp.core.network.dto.ProfileDetailResponse;
 import com.socialapp.core.network.dto.ProfileResource;
 import com.socialapp.core.network.dto.RegisterRequest;
 import com.socialapp.core.network.dto.ReportRequest;
 import com.socialapp.core.network.dto.SettingResource;
+import com.socialapp.core.network.dto.UserDetailResponse;
 import com.socialapp.core.network.dto.UserResource;
 import com.socialapp.core.network.dto.UserSearchResponse;
 import com.socialapp.core.network.dto.VoteResponse;
@@ -61,7 +63,7 @@ public interface SocialAppApiService {
 
     // Categories
     @GET("api/categories")
-    Call<List<CategoryResource>> getCategories();
+    Call<CategoryListResponse> getCategories();
 
     // Posts
     @GET("api/posts")
@@ -117,37 +119,37 @@ public interface SocialAppApiService {
 
     // Profiles & Users
     @GET("api/profiles/{user}")
-    Call<ProfileResource> getProfile(@Path("user") int userId);
+    Call<ProfileDetailResponse> getProfile(@Path("user") int userId);
 
     @GET("api/profiles/{user}/followers")
-    Call<List<UserResource>> getFollowers(@Path("user") int userId, @Query("page") Integer page);
+    Call<UserSearchResponse> getFollowers(@Path("user") int userId, @Query("page") Integer page);
 
     @GET("api/profiles/{user}/following")
-    Call<List<UserResource>> getFollowing(@Path("user") int userId, @Query("page") Integer page);
+    Call<UserSearchResponse> getFollowing(@Path("user") int userId, @Query("page") Integer page);
 
     @GET("api/users/search")
     Call<UserSearchResponse> searchUsers(@Query("q") String query, @Query("limit") Integer limit);
 
     @POST("api/users/{user}/follow")
-    Call<ProfileResource> toggleFollow(@Path("user") int userId);
+    Call<ProfileDetailResponse> toggleFollow(@Path("user") int userId);
 
     @POST("api/users/{user}/report")
     Call<ResponseBody> reportUser(@Path("user") int userId, @Body ReportRequest request);
 
     // Settings
     @PATCH("api/profile/details")
-    Call<UserResource> updateProfileDetails(@Body Map<String, String> body);
+    Call<UserDetailResponse> updateProfileDetails(@Body Map<String, String> body);
 
     @PATCH("api/profile/password")
     Call<ResponseBody> updatePassword(@Body Map<String, String> body);
 
     @Multipart
     @POST("api/user/avatar")
-    Call<UserResource> updateAvatar(@Part MultipartBody.Part avatar);
+    Call<UserDetailResponse> updateAvatar(@Part MultipartBody.Part avatar);
 
     @Multipart
     @POST("api/user/cover-photo")
-    Call<UserResource> updateCoverPhoto(@Part MultipartBody.Part cover);
+    Call<UserDetailResponse> updateCoverPhoto(@Part MultipartBody.Part cover);
 
     @HTTP(method = "DELETE", path = "api/profile/delete", hasBody = true)
     Call<ResponseBody> deleteAccount(@Body Map<String, String> body);

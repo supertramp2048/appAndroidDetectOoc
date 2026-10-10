@@ -11,7 +11,12 @@ import androidx.annotation.Nullable;
 
 import com.socialapp.feature.auth.AuthActivity;
 import com.socialapp.feature.comments.CommentsActivity;
+import com.socialapp.feature.compose.ComposeActivity;
+import com.socialapp.feature.factcheck.FactCheckHelperActivity;
 import com.socialapp.feature.post.PostDetailActivity;
+import com.socialapp.feature.profile.ProfileActivity;
+import com.socialapp.feature.profile.UserListActivity;
+import com.socialapp.feature.settings.SettingsActivity;
 
 public class Navigator {
 
@@ -81,6 +86,88 @@ public class Navigator {
             return;
         }
 
+        if (ROUTE_SETTINGS.equalsIgnoreCase(route)) {
+            Intent intent = new Intent(context, SettingsActivity.class);
+            if (!(context instanceof Activity)) {
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            }
+            context.startActivity(intent);
+            return;
+        }
+
+        if (route.startsWith("factcheck")) {
+            Uri uri = Uri.parse("http://dummy?" + (route.contains("?") ? route.substring(route.indexOf("?") + 1) : ""));
+            String imageUrl = uri.getQueryParameter("imageUrl");
+            String postIdStr = uri.getQueryParameter("postId");
+            String caption = uri.getQueryParameter("caption");
+            int postId = -1;
+            if (postIdStr != null) {
+                try {
+                    postId = Integer.parseInt(postIdStr);
+                } catch (Exception ignored) {
+                }
+            }
+
+            if (imageUrl != null && !imageUrl.trim().isEmpty()) {
+                Intent intent = new Intent(context, FactCheckHelperActivity.class);
+                if (!(context instanceof Activity)) {
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                }
+                intent.putExtra("IMAGE_URL", imageUrl);
+                intent.putExtra("POST_ID", postId);
+                intent.putExtra("CAPTION", caption);
+                context.startActivity(intent);
+                return;
+            }
+        }
+
+        if (route.startsWith("profile/")) {
+            String pathPart = route.substring("profile/".length());
+            if (pathPart.contains("/followers")) {
+                try {
+                    String idStr = pathPart.substring(0, pathPart.indexOf("/followers"));
+                    int userId = Integer.parseInt(idStr);
+                    Intent intent = new Intent(context, UserListActivity.class);
+                    if (!(context instanceof Activity)) {
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    }
+                    intent.putExtra(UserListActivity.EXTRA_USER_ID, userId);
+                    intent.putExtra(UserListActivity.EXTRA_LIST_TYPE, UserListActivity.TYPE_FOLLOWERS);
+                    context.startActivity(intent);
+                    return;
+                } catch (Exception ignored) {
+                }
+            }
+
+            if (pathPart.contains("/following")) {
+                try {
+                    String idStr = pathPart.substring(0, pathPart.indexOf("/following"));
+                    int userId = Integer.parseInt(idStr);
+                    Intent intent = new Intent(context, UserListActivity.class);
+                    if (!(context instanceof Activity)) {
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    }
+                    intent.putExtra(UserListActivity.EXTRA_USER_ID, userId);
+                    intent.putExtra(UserListActivity.EXTRA_LIST_TYPE, UserListActivity.TYPE_FOLLOWING);
+                    context.startActivity(intent);
+                    return;
+                } catch (Exception ignored) {
+                }
+            }
+
+            try {
+                int userId = Integer.parseInt(pathPart);
+                Intent intent = new Intent(context, ProfileActivity.class);
+                if (!(context instanceof Activity)) {
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                }
+                intent.putExtra(ProfileActivity.EXTRA_USER_ID, userId);
+                context.startActivity(intent);
+                return;
+            } catch (Exception ignored) {
+            }
+        }
+
         if (route.startsWith("post/")) {
             String pathPart = route.substring("post/".length());
             if (pathPart.contains("/comments")) {
@@ -99,11 +186,32 @@ public class Navigator {
             }
 
             if (pathPart.contains("/edit")) {
-                Toast.makeText(context, "Đang mở màn sửa bài: " + route, Toast.LENGTH_SHORT).show();
-                return;
+                try {
+                    String idStr = pathPart.substring(0, pathPart.indexOf("/edit"));
+                    int postId = Integer.parseInt(idStr);
+                    Intent intent = new Intent(context, ComposeActivity.class);
+                    if (!(context instanceof Activity)) {
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    }
+                    intent.putExtra(ComposeActivity.EXTRA_POST_ID, postId);
+                    context.startActivity(intent);
+                    return;
+                } catch (Exception ignored) {
+                }
             }
+
             if (pathPart.startsWith("new")) {
-                Toast.makeText(context, "Đang mở màn tạo bài mới: " + route, Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(context, ComposeActivity.class);
+                if (!(context instanceof Activity)) {
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                }
+                if (pathPart.contains("?")) {
+                    Uri uri = Uri.parse("http://dummy?" + pathPart.substring(pathPart.indexOf("?") + 1));
+                    intent.putExtra(ComposeActivity.EXTRA_PREFILL_TITLE, uri.getQueryParameter("title"));
+                    intent.putExtra(ComposeActivity.EXTRA_PREFILL_IMAGE, uri.getQueryParameter("imageUrl"));
+                    intent.putExtra(ComposeActivity.EXTRA_PREFILL_BODY, uri.getQueryParameter("body"));
+                }
+                context.startActivity(intent);
                 return;
             }
 

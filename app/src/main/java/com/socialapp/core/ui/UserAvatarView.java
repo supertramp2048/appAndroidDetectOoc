@@ -28,19 +28,19 @@ public class UserAvatarView extends ShapeableImageView {
     }
 
     private void init() {
-        setImageResource(android.R.drawable.ic_menu_gallery);
+        setImageResource(R.drawable.ic_profile_placeholder);
     }
 
     public void loadAvatar(@Nullable String url) {
         if (url != null && !url.trim().isEmpty()) {
             Glide.with(this)
                     .load(url)
-                    .placeholder(android.R.drawable.ic_menu_gallery)
-                    .error(android.R.drawable.ic_menu_gallery)
+                    .placeholder(R.drawable.ic_profile_placeholder)
+                    .error(R.drawable.ic_profile_placeholder)
                     .circleCrop()
                     .into(this);
         } else {
-            setImageResource(android.R.drawable.ic_menu_gallery);
+            setImageResource(R.drawable.ic_profile_placeholder);
         }
     }
 }

@@ -9,6 +9,7 @@ import com.socialapp.core.network.ApiResult;
 import com.socialapp.core.network.SocialAppApiService;
 import com.socialapp.core.network.dto.PostDetailResponse;
 import com.socialapp.core.network.dto.PostResource;
+import com.socialapp.core.network.dto.ProfileDetailResponse;
 import com.socialapp.core.network.dto.ProfileResource;
 import com.socialapp.core.network.dto.ReportRequest;
 import com.socialapp.core.network.dto.VoteResponse;
@@ -95,18 +96,18 @@ public class PostDetailRepository {
     public LiveData<ApiResult<ProfileResource>> toggleFollowAuthor(int authorId) {
         MutableLiveData<ApiResult<ProfileResource>> resultLiveData = new MutableLiveData<>(ApiResult.loading());
 
-        apiService.toggleFollow(authorId).enqueue(new Callback<ProfileResource>() {
+        apiService.toggleFollow(authorId).enqueue(new Callback<ProfileDetailResponse>() {
             @Override
-            public void onResponse(@NonNull Call<ProfileResource> call, @NonNull Response<ProfileResource> response) {
+            public void onResponse(@NonNull Call<ProfileDetailResponse> call, @NonNull Response<ProfileDetailResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    resultLiveData.setValue(ApiResult.success(response.body()));
+                    resultLiveData.setValue(ApiResult.success(response.body().getProfile()));
                 } else {
                     resultLiveData.setValue(ApiResult.error(ApiErrorParser.parse(response)));
                 }
             }
 
             @Override
-            public void onFailure(@NonNull Call<ProfileResource> call, @NonNull Throwable t) {
+            public void onFailure(@NonNull Call<ProfileDetailResponse> call, @NonNull Throwable t) {
                 resultLiveData.setValue(ApiResult.error(ApiErrorParser.parseThrowable(t)));
             }
         });
