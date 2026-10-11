@@ -1,18 +1,22 @@
-# Task List - AI Search in SearchFragment with Post Detail Navigation on Recommendation Click
+# Task List - True Single Permission Grant Zero-Popup Overlay Architecture
 
-- [/] Phase 1: Planning Implementation
-  - [x] Simplify `ChatRequest.java`: serialize ONLY `query` field (`{"query": "..."}`).
-  - [x] Update `ChatResponse.java`: add `id` field to `ArticleRec` (`title`, `id`, `url`).
-  - [x] Remove `btn_ai_chat` from `PostDetailActivity.java` & `activity_post_detail.xml`.
-  - [x] Integrate AI Search on `SearchFragment.java` & `fragment_search.xml`: add "🤖 Tìm bằng AI" button, render AI answer card and recommended articles list.
-  - [x] Handle click on recommendation items: call `Navigator.navigateToPostDetail(context, Integer.parseInt(rec.id))` to open post detail screen.
-  - [/] Formulate implementation plan and submit to user for approval
+- [/] Phase 1: Planning Fix
+  - [x] Analyze issue:
+    - User expects granting permission ONCE when starting the floating widget.
+    - All subsequent taps on the floating camera icon (whether inside `com.socialapp` or on external apps like Google Chrome) MUST capture instantly with **ZERO PERMISSION POPUPS**.
+  - [/] Formulate 100% zero-popup architecture:
+    - `MediaProjectionActivity`: Asks system permission ONCE when starting floating widget in `FactCheckTabFragment`. Forwards `resultCode` and `projectionData` to `ScreenCaptureService` and finishes immediately.
+    - `ScreenCaptureService`:
+      - Starts as Foreground Service (`FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION`).
+      - Obtains `mediaProjection = manager.getMediaProjection(resultCode, projectionData)` and calls `mediaProjection.registerCallback(mediaProjectionCallback, handler)` ONCE.
+      - Retains `mediaProjection` alive in memory.
+      - When user taps floating widget and confirms crop region, captures screen DIRECTLY inside `ScreenCaptureService` with **ZERO permission popups**.
+      - Releases `virtualDisplay` (`DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR`) after frame capture while keeping `mediaProjection` alive for future captures.
+      - Launches `ScreenshotCropActivity` and `ResultActivity` using `PendingIntent.send()`.
+  - [ ] Submit `implementation_plan.artifact.md` and notify user for approval
 - [ ] Phase 2: Implementation
-  - [ ] Update `ChatRequest.java`: query-only field
-  - [ ] Update `ChatResponse.java`: add `id` to `ArticleRec`
-  - [ ] Clean up `PostDetailActivity.java` & `activity_post_detail.xml`: remove `btn_ai_chat`
-  - [ ] Update `fragment_search.xml`: add "🤖 Tìm bằng AI" button and AI Search result card layout
-  - [ ] Update `SearchFragment.java`: implement AI Search calling `POST /api/v1/chat`, render result, bind recommendation click listener to `Navigator.navigateToPostDetail()`
+  - [ ] Update `MediaProjectionActivity.java`: Request permission ONCE, forward intent to `ScreenCaptureService`, and finish
+  - [ ] Update `ScreenCaptureService.java`: Retain `mediaProjection` in foreground service, perform captures directly upon floating icon selection with 0 popups, and launch UI via `PendingIntent.send()`
 - [ ] Phase 3: Verification & Testing
   - [ ] Run build & unit tests using `gradle_build`
   - [ ] Deploy updated app to emulator

@@ -1,11 +1,11 @@
 package com.socialapp.feature.factcheck;
 
+import android.app.ActivityOptions;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ServiceInfo;
 import android.content.res.Configuration;
@@ -20,16 +20,14 @@ import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Environment;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
-import android.provider.MediaStore;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
-import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -60,9 +58,18 @@ import retrofit2.Response;
 public class ScreenCaptureService extends Service {
 
     private static final String CHANNEL_ID = "ScreenCaptureChannel";
+    public static final String ACTION_INIT_MEDIA_PROJECTION = "ACTION_INIT_MEDIA_PROJECTION";
+    public static final String ACTION_EXECUTE_CAPTURE = "ACTION_EXECUTE_CAPTURE";
     public static final String ACTION_SHOW_CAPTION_FOR_IMAGE = "ACTION_SHOW_CAPTION_FOR_IMAGE";
+    public static final String ACTION_UPLOAD_GALLERY = "ACTION_UPLOAD_GALLERY";
     public static final String ACTION_CROP_CANCELED = "ACTION_CROP_CANCELED";
     public static final String EXTRA_IMAGE_PATH = "IMAGE_PATH";
+
+    private static volatile boolean isProjectionInitialized = false;
+
+    public static boolean isProjectionReady() {
+        return isProjectionInitialized;
+    }
 
     private WindowManager windowManager;
     private View floatingWidget;
@@ -71,11 +78,17 @@ public class ScreenCaptureService extends Service {
     private ImageReader imageReader;
     private VirtualDisplay virtualDisplay;
     private int screenWidth, screenHeight, screenDensity;
-    private int resultCode;
-    private Intent projectionData;
     private FactCheckApiService apiService;
     private boolean isUploading = false;
     private boolean pendingStop = false;
+
+    private final MediaProjection.Callback mediaProjectionCallback = new MediaProjection.Callback() {
+        @Override
+        public void onStop() {
+            releaseProjectionResources();
+            isProjectionInitialized = false;
+        }
+    };
 
     @Override
     public void onCreate() {
@@ -101,6 +114,13 @@ public class ScreenCaptureService extends Service {
 
     private void showFloatingIcon() {
         if (!Settings.canDrawOverlays(this)) {
+            Toast.makeText(this, "Chưa cấp quyền hiển thị trên ứng dụng khác", Toast.LENGTH_LONG).show();
+            try {
+                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                        Uri.parse("package:" + getPackageName()));
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+            } catch (Exception ignored) {}
             stopSelf();
             return;
         }
@@ -198,13 +218,18 @@ public class ScreenCaptureService extends Service {
                 if (floatingWidget != null) {
                     floatingWidget.setVisibility(View.GONE);
                 }
-                new Handler(Looper.getMainLooper()).postDelayed(() -> startCapture(rect), 500);
+                new Handler(Looper.getMainLooper()).postDelayed(() -> captureCurrentScreen(rect), 200);
             }
 
             @Override
             public void onCancel() {
-                windowManager.removeView(selectionOverlay);
+                if (windowManager != null && selectionOverlay != null) {
+                    windowManager.removeView(selectionOverlay);
+                }
                 selectionOverlay = null;
+                if (floatingWidget != null) {
+                    floatingWidget.setVisibility(View.VISIBLE);
+                }
             }
         });
 
@@ -223,80 +248,151 @@ public class ScreenCaptureService extends Service {
         windowManager.addView(selectionOverlay, params);
     }
 
-    private void startCapture(Rect cropRect) {
-        if (projectionData == null) {
-            requestMediaProjectionAgain();
+    private void initMediaProjection(int resCode, Intent pData) {
+        if (pData == null) return;
+
+        MediaProjectionManager manager = (MediaProjectionManager) getSystemService(MEDIA_PROJECTION_SERVICE);
+        if (manager == null) return;
+
+        try {
+            if (mediaProjection != null) {
+                try { mediaProjection.stop(); } catch (Exception ignored) {}
+            }
+            mediaProjection = manager.getMediaProjection(resCode, pData);
+            if (mediaProjection == null) {
+                isProjectionInitialized = false;
+                return;
+            }
+            mediaProjection.registerCallback(mediaProjectionCallback, new Handler(Looper.getMainLooper()));
+        } catch (Exception e) {
+            Log.e("ScreenCapture", "Error obtaining mediaProjection", e);
+            isProjectionInitialized = false;
             return;
         }
 
         updateScreenMetrics();
-        if (mediaProjection == null) {
-            MediaProjectionManager manager = (MediaProjectionManager) getSystemService(MEDIA_PROJECTION_SERVICE);
-            try {
-                mediaProjection = manager.getMediaProjection(resultCode, projectionData);
-            } catch (SecurityException | IllegalStateException e) {
-                requestMediaProjectionAgain();
-                return;
-            }
-
-            if (mediaProjection == null) {
-                requestMediaProjectionAgain();
-                return;
-            }
-        }
-
-        if (imageReader != null) {
-            imageReader.close();
-            imageReader = null;
-        }
+        releaseCaptureReader();
 
         imageReader = ImageReader.newInstance(screenWidth, screenHeight, PixelFormat.RGBA_8888, 2);
 
-        if (virtualDisplay == null) {
-            try {
-                virtualDisplay = mediaProjection.createVirtualDisplay("ScreenCapture",
-                        screenWidth, screenHeight, screenDensity,
-                        DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
-                        imageReader.getSurface(), null, null);
-            } catch (SecurityException | IllegalStateException e) {
-                requestMediaProjectionAgain();
-                return;
-            }
-        } else {
-            try {
-                virtualDisplay.setSurface(imageReader.getSurface());
-            } catch (SecurityException | IllegalStateException e) {
-                requestMediaProjectionAgain();
-                return;
-            }
+        try {
+            int displayFlags = DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR;
+            virtualDisplay = mediaProjection.createVirtualDisplay("ScreenCapture",
+                    screenWidth, screenHeight, screenDensity,
+                    displayFlags,
+                    imageReader.getSurface(), null, null);
+            isProjectionInitialized = true;
+        } catch (Exception e) {
+            Log.e("ScreenCapture", "Error creating virtual display", e);
+            releaseProjectionResources();
+            isProjectionInitialized = false;
+            return;
+        }
+
+        showFloatingIcon();
+    }
+
+    private void captureCurrentScreen(Rect cropRect) {
+        if (mediaProjection == null || virtualDisplay == null || imageReader == null) {
+            requestFreshMediaProjection(cropRect);
+            return;
         }
 
         Handler mainHandler = new Handler(Looper.getMainLooper());
-        imageReader.setOnImageAvailableListener(reader -> {
-            reader.setOnImageAvailableListener(null, null);
-            Image image = reader.acquireLatestImage();
-            if (image != null) {
-                processImage(image, cropRect);
-                mainHandler.post(this::releaseCaptureReader);
-            } else {
-                mainHandler.post(() -> {
-                    if (floatingWidget != null) floatingWidget.setVisibility(View.VISIBLE);
-                });
+        final boolean[] frameProcessed = {false};
+
+        Image immediateImage = null;
+        try {
+            immediateImage = imageReader.acquireLatestImage();
+        } catch (Exception ignored) {}
+
+        if (immediateImage != null) {
+            frameProcessed[0] = true;
+            processImage(immediateImage, cropRect);
+            if (floatingWidget != null) {
+                floatingWidget.setVisibility(View.VISIBLE);
             }
+            return;
+        }
+
+        imageReader.setOnImageAvailableListener(reader -> {
+            if (frameProcessed[0]) return;
+
+            Image image = null;
+            try {
+                image = reader.acquireLatestImage();
+                if (image == null) {
+                    image = reader.acquireNextImage();
+                }
+            } catch (Exception ignored) {}
+
+            if (image == null) return;
+
+            frameProcessed[0] = true;
+            reader.setOnImageAvailableListener(null, null);
+
+            processImage(image, cropRect);
+
+            mainHandler.post(() -> {
+                if (floatingWidget != null) floatingWidget.setVisibility(View.VISIBLE);
+            });
         }, mainHandler);
+
+        mainHandler.postDelayed(() -> {
+            if (!frameProcessed[0]) {
+                frameProcessed[0] = true;
+                if (imageReader != null) {
+                    imageReader.setOnImageAvailableListener(null, null);
+                }
+                Toast.makeText(this, "Không thể lấy khung hình, vui lòng thử lại.", Toast.LENGTH_SHORT).show();
+                if (floatingWidget != null) floatingWidget.setVisibility(View.VISIBLE);
+            }
+        }, 1500);
+    }
+
+    private void requestFreshMediaProjection(Rect cropRect) {
+        if (floatingWidget != null) floatingWidget.setVisibility(View.VISIBLE);
+        Intent intent = new Intent(this, MediaProjectionActivity.class);
+        if (cropRect != null) {
+            intent.putExtra(MediaProjectionActivity.EXTRA_CROP_LEFT, cropRect.left);
+            intent.putExtra(MediaProjectionActivity.EXTRA_CROP_TOP, cropRect.top);
+            intent.putExtra(MediaProjectionActivity.EXTRA_CROP_RIGHT, cropRight(cropRect));
+            intent.putExtra(MediaProjectionActivity.EXTRA_CROP_BOTTOM, cropBottom(cropRect));
+        }
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+    }
+
+    private int cropRight(Rect rect) {
+        return rect != null ? rect.right : -1;
+    }
+
+    private int cropBottom(Rect rect) {
+        return rect != null ? rect.bottom : -1;
     }
 
     private void releaseCaptureReader() {
         if (virtualDisplay != null) {
             try {
-                virtualDisplay.setSurface(null);
+                virtualDisplay.release();
             } catch (Exception ignored) {}
+            virtualDisplay = null;
         }
         if (imageReader != null) {
             try {
                 imageReader.close();
             } catch (Exception ignored) {}
             imageReader = null;
+        }
+    }
+
+    private void releaseProjectionResources() {
+        releaseCaptureReader();
+        if (mediaProjection != null) {
+            try {
+                mediaProjection.stop();
+            } catch (Exception ignored) {}
+            mediaProjection = null;
         }
     }
 
@@ -316,15 +412,17 @@ public class ScreenCaptureService extends Service {
             );
             bitmap.copyPixelsFromBuffer(buffer);
 
-            int left = Math.max(0, cropRect.left);
-            int top = Math.max(0, cropRect.top);
-            int width = Math.min(bitmap.getWidth() - left, cropRect.width());
-            int height = Math.min(bitmap.getHeight() - top, cropRect.height());
+            int left = (cropRect != null && cropRect.left >= 0) ? Math.min(cropRect.left, screenWidth - 1) : 0;
+            int top = (cropRect != null && cropRect.top >= 0) ? Math.min(cropRect.top, screenHeight - 1) : 0;
+            int width = (cropRect != null && cropRect.width() > 0) ? Math.min(screenWidth - left, cropRect.width()) : (screenWidth - left);
+            int height = (cropRect != null && cropRect.height() > 0) ? Math.min(screenHeight - top, cropRect.height()) : (screenHeight - top);
 
             if (width > 0 && height > 0) {
                 cropped = Bitmap.createBitmap(bitmap, left, top, width, height);
             }
             bitmap.recycle();
+        } catch (Exception e) {
+            Log.e("ScreenCapture", "Error processing image", e);
         } finally {
             image.close();
         }
@@ -342,11 +440,39 @@ public class ScreenCaptureService extends Service {
         }
     }
 
+    private void launchActivityViaPendingIntent(Intent intent) {
+        PendingIntent pendingIntent = PendingIntent.getActivity(
+                this,
+                (int) System.currentTimeMillis(),
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
+
+        Bundle options = null;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            options = ActivityOptions.makeBasic()
+                    .setPendingIntentBackgroundActivityStartMode(ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED)
+                    .toBundle();
+        }
+
+        try {
+            if (options != null) {
+                pendingIntent.send(this, 0, null, null, null, null, options);
+            } else {
+                pendingIntent.send();
+            }
+        } catch (Exception e) {
+            try {
+                startActivity(intent);
+            } catch (Exception ignored) {}
+        }
+    }
+
     private void openScreenshotCrop(File imageFile) {
         Intent intent = new Intent(this, ScreenshotCropActivity.class);
         intent.putExtra(ScreenshotCropActivity.EXTRA_IMAGE_PATH, imageFile.getAbsolutePath());
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        launchActivityViaPendingIntent(intent);
     }
 
     private void uploadScreenshot(File file, String caption) {
@@ -376,17 +502,15 @@ public class ScreenCaptureService extends Service {
                             ? result.uploadedImageUrl
                             : file.getAbsolutePath();
 
-                    DatabaseHelper dbHelper = new DatabaseHelper(ScreenCaptureService.this);
-                    dbHelper.insertHistory(result.verdict, imageReference, new Gson().toJson(result));
-
-                    String message = "Kết quả: " + result.verdict + ". Nhấn để xem chi tiết.";
-                    if (MyApplication.isAppInForeground()) {
-                        openResultActivity(result, imageReference);
-                    } else {
-                        updateNotificationWithResult(message, result, imageReference);
+                    try (DatabaseHelper dbHelper = new DatabaseHelper(ScreenCaptureService.this)) {
+                        dbHelper.insertHistory(result.verdict, imageReference, new Gson().toJson(result));
                     }
 
-                    Toast.makeText(ScreenCaptureService.this, "Đã có kết quả! Vui lòng kiểm tra thông báo.", Toast.LENGTH_LONG).show();
+                    String message = "Kết quả: " + result.verdict + ". Nhấn để xem chi tiết.";
+                    openResultActivity(result, imageReference);
+                    updateNotificationWithResult(message, result, imageReference);
+
+                    Toast.makeText(ScreenCaptureService.this, "Đã có kết quả kiểm chứng!", Toast.LENGTH_LONG).show();
 
                     if (pendingStop) {
                         stopSelf();
@@ -422,7 +546,7 @@ public class ScreenCaptureService extends Service {
         intent.putExtra("PREDICTION_JSON", new Gson().toJson(result));
         intent.putExtra("IMAGE_PATH", imageReference);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        startActivity(intent);
+        launchActivityViaPendingIntent(intent);
     }
 
     private void updateNotificationWithResult(String text, PredictionResponse result, String imageReference) {
@@ -481,6 +605,9 @@ public class ScreenCaptureService extends Service {
     }
 
     private void updateScreenMetrics() {
+        if (windowManager == null) {
+            windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+        }
         DisplayMetrics metrics = new DisplayMetrics();
         windowManager.getDefaultDisplay().getRealMetrics(metrics);
         screenWidth = metrics.widthPixels;
@@ -488,30 +615,17 @@ public class ScreenCaptureService extends Service {
         screenDensity = metrics.densityDpi;
     }
 
-    private void requestMediaProjectionAgain() {
-        releaseProjectionResources();
-        projectionData = null;
-        resultCode = 0;
-        if (floatingWidget != null) {
-            floatingWidget.setVisibility(View.VISIBLE);
-        }
-        Intent intent = new Intent(this, MediaProjectionActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);
-    }
-
-    private void releaseProjectionResources() {
-        if (virtualDisplay != null) {
-            try { virtualDisplay.release(); } catch (Exception ignored) {}
-            virtualDisplay = null;
-        }
-        if (imageReader != null) {
-            try { imageReader.close(); } catch (Exception ignored) {}
-            imageReader = null;
-        }
-        if (mediaProjection != null) {
-            try { mediaProjection.stop(); } catch (Exception ignored) {}
-            mediaProjection = null;
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        updateScreenMetrics();
+        if (virtualDisplay != null && imageReader != null) {
+            try {
+                imageReader.close();
+                imageReader = ImageReader.newInstance(screenWidth, screenHeight, PixelFormat.RGBA_8888, 2);
+                virtualDisplay.resize(screenWidth, screenHeight, screenDensity);
+                virtualDisplay.setSurface(imageReader.getSurface());
+            } catch (Exception ignored) {}
         }
     }
 
@@ -521,32 +635,71 @@ public class ScreenCaptureService extends Service {
 
         String action = intent.getAction();
 
-        if ("START_CAPTURE".equals(action)) {
+        if (ACTION_INIT_MEDIA_PROJECTION.equals(action)) {
             int type = 0;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 type = ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION;
             }
-            setupForegroundNotification("Đang chụp màn hình", "Chạm vào biểu tượng nổi để chọn vùng.", type);
-            this.resultCode = intent.getIntExtra("RESULT_CODE", 0);
-            this.projectionData = intent.getParcelableExtra("DATA");
-            showFloatingIcon();
-        } else if ("ACTION_UPLOAD_GALLERY".equals(action)) {
+            setupForegroundNotification("Phát hiện Tin giả", "Bong bóng kiểm tra tin giả đang hoạt động.", type);
+
+            int resCode = intent.getIntExtra("RESULT_CODE", 0);
+            Intent pData = intent.getParcelableExtra("DATA");
+            initMediaProjection(resCode, pData);
+            Toast.makeText(this, "Bong bóng quét tin giả đã sẵn sàng! Chạm biểu tượng nổi để khoanh vùng.", Toast.LENGTH_LONG).show();
+        } else if (ACTION_EXECUTE_CAPTURE.equals(action)) {
+            int type = 0;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                type = ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION;
+            }
+            setupForegroundNotification("Phát hiện Tin giả", "Đang xử lý ảnh...", type);
+
+            int resCode = intent.getIntExtra("RESULT_CODE", 0);
+            Intent pData = intent.getParcelableExtra("DATA");
+            int cLeft = intent.getIntExtra(MediaProjectionActivity.EXTRA_CROP_LEFT, -1);
+            int cTop = intent.getIntExtra(MediaProjectionActivity.EXTRA_CROP_TOP, -1);
+            int cRight = intent.getIntExtra(MediaProjectionActivity.EXTRA_CROP_RIGHT, -1);
+            int cBottom = intent.getIntExtra(MediaProjectionActivity.EXTRA_CROP_BOTTOM, -1);
+
+            initMediaProjection(resCode, pData);
+            captureCurrentScreen(new Rect(cLeft, cTop, cRight, cBottom));
+        } else if (ACTION_SHOW_CAPTION_FOR_IMAGE.equals(action)) {
+            String imagePath = intent.getStringExtra(EXTRA_IMAGE_PATH);
+            int type = 0;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                type = isProjectionInitialized ?
+                        ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION :
+                        ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC;
+            }
+            setupForegroundNotification("Phát hiện Tin giả", "Đang phân tích ảnh chụp màn hình...", type);
+            if (imagePath != null) {
+                uploadScreenshot(new File(imagePath), "");
+            }
+        } else if (ACTION_UPLOAD_GALLERY.equals(action)) {
             String imagePath = intent.getStringExtra("IMAGE_PATH");
             String caption = intent.getStringExtra("CAPTION");
             int type = 0;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                type = ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC;
+                type = isProjectionInitialized ?
+                        ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION :
+                        ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC;
             }
             setupForegroundNotification("Phát hiện Tin giả", "Đang tải ảnh từ thư viện...", type);
             if (imagePath != null) {
                 uploadScreenshot(new File(imagePath), caption != null ? caption : "");
             }
+        } else if (ACTION_CROP_CANCELED.equals(action)) {
+            if (floatingWidget != null) {
+                floatingWidget.setVisibility(View.VISIBLE);
+            }
         } else {
             int type = 0;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                type = ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC;
+                type = isProjectionInitialized ?
+                        ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION :
+                        ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC;
             }
-            setupForegroundNotification("Đang chụp màn hình", "Dịch vụ đang chạy.", type);
+            setupForegroundNotification("Phát hiện Tin giả", "Dịch vụ đang chạy.", type);
+            showFloatingIcon();
         }
 
         return START_NOT_STICKY;
@@ -572,6 +725,7 @@ public class ScreenCaptureService extends Service {
     public void onDestroy() {
         super.onDestroy();
         releaseProjectionResources();
+        isProjectionInitialized = false;
         if (floatingWidget != null) {
             try {
                 windowManager.removeView(floatingWidget);

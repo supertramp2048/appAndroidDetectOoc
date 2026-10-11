@@ -1,54 +1,42 @@
-# Kế hoạch Hoàn thiện Tích hợp AI Search trên Màn Tìm kiếm & Mở Bài viết Chi tiết khi bấm Khuyến nghị
+# Kế hoạch Hoàn thiện Luồng Chụp Màn hình Bong bóng Nổi 0-Popup (Cấp quyền 1 Lần Duy nhất)
 
 ---
 
-## 🔍 Chi tiết Phương án Kỹ thuật
+## 🔍 Phân tích Lỗi Vòng lặp Xin quyền
 
-1. **Payload `ChatRequest` Tinh gọn 100%**:
-   - [ChatRequest.java](file:///C:/Users/ADMIN88/AndroidStudioProjects/BtckAndroid/app/src/main/java/com/socialapp/feature/factcheck/ChatRequest.java): Chỉ chứa duy nhất trường `query`.
-   - JSON gửi lên `POST /api/v1/chat`:
-     ```json
-     {
-       "query": "tim cac bai ve van hoa, xa hoi"
-     }
-     ```
+- **Hiện tượng**:
+  - Mỗi khi bạn khoanh vùng trên Icon nổi, hệ thống lại mở lại màn hình xin quyền Android, tạo thành một vòng lặp phiền phức.
+- **Nguyên nhân**:
+  - Do các chỉnh sửa trước đó đã mở lại `MediaProjectionActivity` mỗi lần khoanh vùng.
+- **Cách hoạt động chuẩn mượt mà 100%**:
+  1. Khi bạn bấm **"Bắt đầu chụp màn hình"** trong app -> Bảng xin quyền của Android hiện ra **1 LẦN DUY NHẤT**.
+  2. Bạn bấm *"Bắt đầu ngay"* -> Icon nổi xuất hiện.
+  3. Từ thời điểm này trở đi, bạn có thể chuyển sang **Google Chrome**, **Facebook**, **Youtube** hay ở trong chính app -> Chạm Icon nổi khoanh vùng chụp **N LẦN LIÊN TỤC** -> **TỰ ĐỘNG CHỤP TỨC THÌ VÀ HIỆN KẾT QUẢ VỚI 0 POPUP XIN QUYỀN!**
 
-2. **Model `ChatResponse.ArticleRec`**:
-   - [ChatResponse.java](file:///C:/Users/ADMIN88/AndroidStudioProjects/BtckAndroid/app/src/main/java/com/socialapp/feature/factcheck/ChatResponse.java): Ánh xạ bổ sung trường `id` bên cạnh `title` và `url`:
-     ```json
-     {
-       "title": "Khám phá miền Tây mùa nước nổi",
-       "id": "6"
-     }
-     ```
+---
 
-3. **Chuyển hướng Mở Chi tiết Bài viết (`PostDetailActivity`) khi bấm vào Kết quả AI Khuyến nghị**:
-   - Trong [SearchFragment.java](file:///C:/Users/ADMIN88/AndroidStudioProjects/BtckAndroid/app/src/main/java/com/socialapp/feature/feed/SearchFragment.java):
-     - Mỗi bài viết khuyến nghị (`ArticleRec`) được vẽ thành một mục liên kết có icon.
-     - Khi người dùng chạm vào một tiêu đề bài viết:
-       - Kiểm tra nếu có `rec.id`: Gọi `Navigator.navigateToPostDetail(requireContext(), Integer.parseInt(rec.id))` để mở thẳng màn hình **Chi tiết bài viết (`PostDetailActivity`)**!
-       - Nếu có `rec.url`: Gọi `Navigator.navigateTo(requireContext(), rec.url)`.
+## Giải pháp Kiến trúc Hoàn chỉnh 100%
 
-4. **Tích hợp Nút & Giao diện AI Search trên Màn Tìm kiếm (`SearchFragment`)**:
-   - [fragment_search.xml](file:///C:/Users/ADMIN88/AndroidStudioProjects/BtckAndroid/app/src/main/res/layout/fragment_search.xml):
-     - Bổ sung nút **"🤖 Tìm bằng AI"** (`btn_search_ai`).
-     - Bổ sung Card `card_ai_search_result` chứa văn bản trả lời từ AI (`tv_ai_answer`) và danh sách bài viết khuyến nghị (`container_ai_recommendations`).
-   - Dọn dẹp nút `btn_ai_chat` khỏi màn Chi tiết bài viết (`PostDetailActivity`).
+1. **`MediaProjectionActivity.java` (Xin quyền 1 lần khi bật Bong bóng nổi)**:
+   - Khi bạn bấm "Bắt đầu chụp màn hình" trong app: `MediaProjectionActivity` mở ra, bạn bấm *"Bắt đầu ngay"*.
+   - Chuyển `resultCode` và `data` cho `ScreenCaptureService` rồi tự đóng lại (`finish()`).
+
+2. **`ScreenCaptureService.java` (Giữ phiên chụp sống & Chụp trực tiếp từ Icon nổi 0-Popup)**:
+   - `ScreenCaptureService` chạy Foreground Service (`FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION`).
+   - Ngay khi nhận mã cấp phép, gọi `mediaProjection = manager.getMediaProjection(...)` và `registerCallback(...)` **1 LẦN DUY NHẤT** và giữ `mediaProjection` sống trong bộ nhớ.
+   - Khi bạn chạm Icon nổi khoanh vùng chụp ở bất kỳ đâu (Google Chrome, Facebook, trong app...):
+     - `ScreenCaptureService` **tự động chụp ngay trực tiếp từ `mediaProjection` sẵn có với flag `VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR`**, tuyệt đối KHÔNG mở lại `MediaProjectionActivity` và KHÔNG bao giờ hỏi lại quyền của Android nữa!
+     - Giải phóng `virtualDisplay` sau khi lấy ảnh, giữ `mediaProjection` sống cho các lần chụp tiếp theo.
+
+3. **Mở giao diện đè ứng dụng ngoài bằng `PendingIntent.send()`**:
+   - Sử dụng `PendingIntent.send()` để mở `ScreenshotCropActivity` và màn hình **Kết quả kiểm chứng (`ResultActivity`)** đè trực tiếp lên Google Chrome hay ứng dụng bất kỳ.
 
 ---
 
 ## Các File Sẽ Sửa
 
-### 1. Model Payload & Response (`com.socialapp.feature.factcheck`)
-- [EDIT] [ChatRequest.java](file:///C:/Users/ADMIN88/AndroidStudioProjects/BtckAndroid/app/src/main/java/com/socialapp/feature/factcheck/ChatRequest.java): Giữ duy nhất trường `query`.
-- [EDIT] [ChatResponse.java](file:///C:/Users/ADMIN88/AndroidStudioProjects/BtckAndroid/app/src/main/java/com/socialapp/feature/factcheck/ChatResponse.java): Ánh xạ `id`, `title`, `url` trong `ArticleRec`.
-
-### 2. Màn Chi tiết Bài viết (`com.socialapp.feature.post`)
-- [EDIT] [activity_post_detail.xml](file:///C:/Users/ADMIN88/AndroidStudioProjects/BtckAndroid/app/src/main/res/layout/activity_post_detail.xml) & [PostDetailActivity.java](file:///C:/Users/ADMIN88/AndroidStudioProjects/BtckAndroid/app/src/main/java/com/socialapp/feature/post/PostDetailActivity.java): Loại bỏ `btn_ai_chat`.
-
-### 3. Tích hợp AI Search trên Màn Tìm kiếm (`com.socialapp.feature.feed`)
-- [EDIT] [fragment_search.xml](file:///C:/Users/ADMIN88/AndroidStudioProjects/BtckAndroid/app/src/main/res/layout/fragment_search.xml): Thêm nút **"🤖 Tìm bằng AI"** và Card kết quả AI Search.
-- [EDIT] [SearchFragment.java](file:///C:/Users/ADMIN88/AndroidStudioProjects/BtckAndroid/app/src/main/java/com/socialapp/feature/feed/SearchFragment.java): Xử lý gọi `POST /api/v1/chat`, hiển thị câu trả lời AI và gắn sự kiện click vào bài viết khuyến nghị để gọi `Navigator.navigateToPostDetail()`.
+- [EDIT] [MediaProjectionActivity.java](file:///C:/Users/ADMIN88/AndroidStudioProjects/BtckAndroid/app/src/main/java/com/socialapp/feature/factcheck/MediaProjectionActivity.java): Xin quyền 1 lần duy nhất khi bật Bong bóng nổi, chuyển token cho Service rồi đóng lại.
+- [EDIT] [ScreenCaptureService.java](file:///C:/Users/ADMIN88/AndroidStudioProjects/BtckAndroid/app/src/main/java/com/socialapp/feature/factcheck/ScreenCaptureService.java): Giữ `mediaProjection` sống trong Foreground Service, chụp ảnh trực tiếp từ Icon nổi với **0 Popup xin quyền**, mở giao diện đè ứng dụng ngoài bằng `PendingIntent.send()`.
 
 ---
 

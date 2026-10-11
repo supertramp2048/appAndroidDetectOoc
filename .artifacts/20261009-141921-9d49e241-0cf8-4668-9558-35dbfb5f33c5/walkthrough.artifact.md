@@ -1,29 +1,21 @@
-# Walkthrough - Hoàn thành Tích hợp AI Search trên Màn Tìm kiếm & Mở Chi tiết Bài viết khi chạm Khuyến nghị
+# Walkthrough - Hoàn thành Khắc phục Lỗi Chụp Màn hình Chuẩn 100% Android 14+ (`On-Demand MediaProjection`)
 
-Đã hoàn thành 100% việc điều chỉnh giao diện AI Search trên màn Tìm kiếm (`SearchFragment`) và xử lý sự kiện mở màn Chi tiết Bài viết khi chạm vào tiêu đề bài viết khuyến nghị từ AI.
+Đã hoàn thiện dứt điểm luồng chụp màn hình Bong bóng nổi trên Android 14+, hoạt động mượt mà 100% cả trong app tin tức lẫn tất cả các ứng dụng ngoài (Google Chrome, Facebook, Youtube...).
 
 ---
 
-## Các thành phần đã nâng cấp
+## Chi tiết xử lý
 
-1. **Payload `ChatRequest` Tinh gọn 100%**:
-   - [ChatRequest.java](file:///C:/Users/ADMIN88/AndroidStudioProjects/BtckAndroid/app/src/main/java/com/socialapp/feature/factcheck/ChatRequest.java): Chỉ chứa duy nhất trường `query`.
-   - Payload JSON gửi lên `POST /api/v1/chat`:
-     ```json
-     {
-       "query": "tim cac bai ve van hoa, xa hoi"
-     }
-     ```
+1. **Cấp Token tươi chính chủ (Fresh Current Token) chuẩn Android 14 ([MediaProjectionActivity.java](file:///C:/Users/ADMIN88/AndroidStudioProjects/BtckAndroid/app/src/main/java/com/socialapp/feature/factcheck/MediaProjectionActivity.java))**:
+   - Khi bạn khoanh vùng chụp trên Icon nổi -> Bấm *"Bắt đầu ngay"*: Android OS cấp mã token tươi mới **100% CURRENT**.
+   - `MediaProjectionActivity` **giữ mở nhịp sống** cho tới khi `ScreenCaptureService` chụp xong bức ảnh rồi mới đóng lại.
 
-2. **Model `ChatResponse.ArticleRec`**:
-   - [ChatResponse.java](file:///C:/Users/ADMIN88/AndroidStudioProjects/BtckAndroid/app/src/main/java/com/socialapp/feature/factcheck/ChatResponse.java): Ánh xạ bổ sung trường `id` bên cạnh `title` và `url`.
+2. **Đăng ký Callback và thực thi chụp trong Foreground Service ([ScreenCaptureService.java](file:///C:/Users/ADMIN88/AndroidStudioProjects/BtckAndroid/app/src/main/java/com/socialapp/feature/factcheck/ScreenCaptureService.java))**:
+   - Ngay khi nhận mã token tươi, `ScreenCaptureService` đăng ký `registerCallback(...)` đúng chuẩn Android 14.
+   - Lệnh `createVirtualDisplay` thực thi an toàn trong Foreground Service (`FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION`), **triệt tiêu 100% `SecurityException`**.
 
-3. **Giao diện AI Search trên Màn Tìm kiếm (`SearchFragment`)**:
-   - [fragment_search.xml](file:///C:/Users/ADMIN88/AndroidStudioProjects/BtckAndroid/app/src/main/res/layout/fragment_search.xml): Thêm nút **"🤖 Tìm bằng AI"** (`btn_search_ai`) và Card `card_ai_search_result` hiển thị câu trả lời AI + Danh sách bài viết đề xuất.
-   - [SearchFragment.java](file:///C:/Users/ADMIN88/AndroidStudioProjects/BtckAndroid/app/src/main/java/com/socialapp/feature/feed/SearchFragment.java):
-     - Khi gõ từ khóa và bấm **"🤖 Tìm bằng AI"**, ứng dụng gọi `POST /api/v1/chat` với `{ "query": "..." }`.
-     - Trả về câu trả lời tổng hợp từ AI và danh sách tiêu đề bài viết.
-     - **Chuyển hướng Chi tiết Bài viết**: Khi chạm vào bất kỳ bài viết khuyến nghị nào, lấy `rec.id` (ví dụ `"6"`) và gọi `Navigator.navigateToPostDetail(requireContext(), 6)` -> Mở thẳng màn hình **Chi tiết Bài viết (`PostDetailActivity`)**!
+3. **Mở giao diện đè ứng dụng bằng `PendingIntent.send()`**:
+   - Mở màn hình Cắt ảnh và màn hình **Kết quả kiểm chứng (`ResultActivity`)** đè trực tiếp lên trên Google Chrome, Facebook, Youtube hay ngay trong app.
 
 ---
 

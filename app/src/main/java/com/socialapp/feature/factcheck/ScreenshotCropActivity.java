@@ -88,7 +88,6 @@ public class ScreenshotCropActivity extends AppCompatActivity {
     }
 
     private void finishToPreviousApp() {
-        moveTaskToBack(true);
         finish();
     }
 }
