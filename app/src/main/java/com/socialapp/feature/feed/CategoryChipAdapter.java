@@ -1,5 +1,6 @@
 package com.socialapp.feature.feed;
 
+import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -76,11 +77,13 @@ public class CategoryChipAdapter extends RecyclerView.Adapter<CategoryChipAdapte
 
     private void updateChipStyle(TextView chipText, boolean isSelected) {
         if (isSelected) {
-            chipText.setBackgroundResource(R.drawable.bg_chip_success);
+            chipText.setBackgroundResource(R.drawable.bg_chip_selected);
             chipText.setTextColor(0xFFFFFFFF);
+            chipText.setTypeface(null, Typeface.BOLD);
         } else {
             chipText.setBackgroundResource(R.drawable.bg_chip_neutral);
             chipText.setTextColor(0xFF333333);
+            chipText.setTypeface(null, Typeface.NORMAL);
         }
     }
 

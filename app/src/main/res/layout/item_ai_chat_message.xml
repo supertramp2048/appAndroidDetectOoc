@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingVertical="6dp">
+
+    <!-- User Message Row -->
+    <LinearLayout
+        android:id="@+id/layout_user_message"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:layout_marginStart="48dp"
+        android:background="@drawable/bg_dialog_surface"
+        android:backgroundTint="@color/app_primary"
+        android:orientation="vertical"
+        android:padding="12dp"
+        android:visibility="visible">
+
+        <TextView
+            android:id="@+id/tv_user_message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:textSize="14sp"
+            tools:text="Tìm bài viết về công nghệ AI mới nhất" />
+    </LinearLayout>
+
+    <!-- AI Message Row -->
+    <LinearLayout
+        android:id="@+id/layout_ai_message"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="32dp"
+        android:orientation="horizontal"
+        android:visibility="gone"
+        tools:visibility="visible">
+
+        <ImageView
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_marginTop="2dp"
+            android:contentDescription="@string/action_ai_assistant"
+            android:src="@drawable/ic_bot_24"
+            app:tint="@color/app_primary" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_dialog_surface"
+            android:backgroundTint="@color/app_surface_variant"
+            android:orientation="vertical"
+            android:padding="12dp">
+
+            <ProgressBar
+                android:id="@+id/progress_ai_thinking"
+                style="?android:attr/progressBarStyleSmall"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/tv_ai_message"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:lineSpacingExtra="3dp"
+                android:textColor="@color/app_text_primary"
+                android:textSize="14sp"
+                tools:text="Dưới đây là tổng hợp kết quả tìm kiếm AI từ hệ thống..." />
+
+            <TextView
+                android:id="@+id/tv_ai_recommendations_header"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@string/ai_recommendations_header"
+                android:textColor="@color/app_text_primary"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                tools:visibility="visible" />
+
+            <LinearLayout
+                android:id="@+id/container_ai_recommendations"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:orientation="vertical" />
+
+        </LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>

@@ -1,26 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/bg_bottom_sheet"
     android:orientation="vertical"
-    android:padding="20dp">
+    android:padding="16dp">
 
+    <!-- Header Bar -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:orientation="horizontal">
 
+        <ImageView
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:contentDescription="@string/action_ai_assistant"
+            android:src="@drawable/ic_bot_24"
+            app:tint="@color/app_primary" />
+
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
             android:layout_weight="1"
-            android:text="🔍 Trợ lý AI Tìm kiếm &amp; Gợi ý Bài viết"
+            android:text="@string/ai_chat_title"
             android:textColor="@color/app_text_primary"
-            android:textSize="18sp"
+            android:textSize="17sp"
             android:textStyle="bold" />
 
         <ImageButton
@@ -33,10 +41,12 @@
             app:tint="@color/app_text_secondary" />
     </LinearLayout>
 
+    <!-- Suggestion Chips Bar -->
     <HorizontalScrollView
+        android:id="@+id/scroll_quick_prompts"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="8dp"
         android:scrollbars="none">
 
         <LinearLayout
@@ -72,100 +82,55 @@
         </LinearLayout>
     </HorizontalScrollView>
 
-    <com.google.android.material.textfield.TextInputLayout
+    <!-- Chat Messages Scroll / List Container -->
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scroll_chat_messages"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:hint="Nhập chủ đề bài viết bạn muốn tìm..."
-        app:boxBackgroundMode="outline"
-        app:boxCornerRadiusBottomEnd="12dp"
-        app:boxCornerRadiusBottomStart="12dp"
-        app:boxCornerRadiusTopEnd="12dp"
-        app:boxCornerRadiusTopStart="12dp"
-        app:boxStrokeColor="@color/app_primary">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/et_ai_chat_query"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="textMultiLine"
-            android:maxLines="3"
-            android:textColor="@color/app_text_primary" />
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <Button
-        android:id="@+id/btn_send_ai_query"
-        style="@style/Widget.MaterialComponents.Button"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:layout_marginTop="12dp"
-        android:text="Gửi tìm kiếm AI"
-        android:textSize="14sp"
-        app:backgroundTint="@color/app_primary" />
-
-    <ProgressBar
-        android:id="@+id/ai_chat_progress"
-        android:layout_width="36dp"
-        android:layout_height="36dp"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="16dp"
-        android:visibility="gone" />
-
-    <!-- AI Answer Container -->
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/card_ai_answer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:visibility="gone"
-        app:cardBackgroundColor="@color/app_surface"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="0dp"
-        app:strokeColor="@color/app_border"
-        app:strokeWidth="1dp">
+        android:layout_height="320dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:fillViewport="true">
 
         <LinearLayout
+            android:id="@+id/container_chat_messages"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
+            android:orientation="vertical" />
+    </androidx.core.widget.NestedScrollView>
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Kết quả tổng hợp từ AI:"
-                android:textColor="@color/app_text_primary"
-                android:textSize="14sp"
-                android:textStyle="bold" />
+    <!-- Input Bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
 
-            <TextView
-                android:id="@+id/tv_ai_answer"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:lineSpacingExtra="4dp"
-                android:textColor="@color/app_text_primary"
-                android:textSize="14sp"
-                tools:text="Hệ thống đã tìm thấy các bài viết liên quan..." />
+        <EditText
+            android:id="@+id/et_ai_chat_query"
+            android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_weight="1"
+            android:autofillHints=""
+            android:background="@drawable/bg_dialog_surface"
+            android:hint="@string/ai_chat_hint"
+            android:imeOptions="actionSend"
+            android:inputType="textMultiLine"
+            android:maxLines="3"
+            android:paddingHorizontal="12dp"
+            android:textColor="@color/app_text_primary"
+            android:textSize="14sp" />
 
-            <TextView
-                android:id="@+id/tv_recommendations_label"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="14dp"
-                android:text="Danh sách bài viết gợi ý:"
-                android:textColor="@color/app_text_primary"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:visibility="gone" />
-
-            <LinearLayout
-                android:id="@+id/container_ai_recommendations"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:orientation="vertical" />
-        </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
+        <ImageButton
+            android:id="@+id/btn_send_ai_query"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/bg_dialog_surface"
+            android:backgroundTint="@color/app_primary"
+            android:contentDescription="@string/send"
+            android:padding="10dp"
+            android:src="@drawable/ic_send_24"
+            app:tint="@color/white" />
+    </LinearLayout>
 
 </LinearLayout>

@@ -7,14 +7,13 @@ import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
 
-import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.socialapp.MyApplication;
 import com.socialapp.R;
 import com.socialapp.core.navigation.Navigator;
 import com.socialapp.core.session.SessionManager;
 import com.socialapp.core.ui.RequireLoginBottomSheet;
 import com.socialapp.databinding.ActivityHomeBinding;
+import com.socialapp.feature.factcheck.AiChatBottomSheet;
 
 public class HomeActivity extends AppCompatActivity {
 
@@ -45,6 +44,11 @@ public class HomeActivity extends AppCompatActivity {
                 bottomSheet.setOnLoginClickListener(() -> Navigator.navigateTo(this, Navigator.ROUTE_LOGIN));
                 bottomSheet.show(getSupportFragmentManager(), "RequireLogin");
             }
+        });
+
+        binding.fabAiAssistant.setOnClickListener(v -> {
+            AiChatBottomSheet bottomSheet = AiChatBottomSheet.newInstanceForSearch();
+            bottomSheet.show(getSupportFragmentManager(), "AiChatBottomSheet");
         });
     }
 }

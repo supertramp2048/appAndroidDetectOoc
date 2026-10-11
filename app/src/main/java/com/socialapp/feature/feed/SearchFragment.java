@@ -7,8 +7,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -18,18 +16,14 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.socialapp.MyApplication;
-import com.socialapp.R;
 import com.socialapp.core.navigation.Navigator;
 import com.socialapp.core.network.ApiErrorParser;
-import com.socialapp.core.network.FactCheckApiService;
 import com.socialapp.core.network.SocialAppApiService;
 import com.socialapp.core.network.dto.PostResource;
 import com.socialapp.core.network.dto.UserResource;
 import com.socialapp.core.network.dto.UserSearchResponse;
 import com.socialapp.core.pagination.PageLoader;
 import com.socialapp.databinding.FragmentSearchBinding;
-import com.socialapp.feature.factcheck.ChatRequest;
-import com.socialapp.feature.factcheck.ChatResponse;
 
 import java.util.Collections;
 import java.util.List;
@@ -105,16 +99,10 @@ public class SearchFragment extends Fragment {
             performSearch();
         });
 
-        binding.btnSearchAi.setOnClickListener(v -> {
-            hideSoftKeyboard(v);
-            performAiSearch();
-        });
-
         binding.searchErrorState.setOnRetryClickListener(v -> performSearch());
     }
 
     private void performSearch() {
-        binding.cardAiSearchResult.setVisibility(View.GONE);
         String query = binding.searchInputEditText.getText() != null ? binding.searchInputEditText.getText().toString().trim() : "";
         boolean searchUsers = binding.checkboxSearchUsers.isChecked();
 
@@ -154,95 +142,6 @@ public class SearchFragment extends Fragment {
         }
     }
 
-    private void performAiSearch() {
-        String query = binding.searchInputEditText.getText() != null ? binding.searchInputEditText.getText().toString().trim() : "";
-        if (query.isEmpty()) {
-            Toast.makeText(requireContext(), "Vui lòng nhập từ khóa/câu hỏi để AI tìm kiếm", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        showLoading(true);
-        binding.cardAiSearchResult.setVisibility(View.GONE);
-
-        FactCheckApiService factCheckApiService = MyApplication.getAppContainer(requireContext()).getFactCheckApiService();
-        ChatRequest request = new ChatRequest(query);
-        String apiKey = "my_super_secret_key_2026";
-
-        factCheckApiService.chat(apiKey, request).enqueue(new Callback<ChatResponse>() {
-            @Override
-            public void onResponse(@NonNull Call<ChatResponse> call, @NonNull Response<ChatResponse> response) {
-                if (!isAdded()) return;
-                showLoading(false);
-
-                if (response.isSuccessful() && response.body() != null) {
-                    ChatResponse result = response.body();
-                    displayAiSearchResult(result);
-                } else {
-                    showResultsState(false, true, "Lỗi phản hồi từ AI Search");
-                }
-            }
-
-            @Override
-            public void onFailure(@NonNull Call<ChatResponse> call, @NonNull Throwable t) {
-                if (!isAdded()) return;
-                showLoading(false);
-                showResultsState(false, true, "Lỗi kết nối AI Search: " + t.getMessage());
-            }
-        });
-    }
-
-    private void displayAiSearchResult(ChatResponse result) {
-        binding.searchResultsRecyclerView.setVisibility(View.GONE);
-        binding.searchEmptyState.setVisibility(View.GONE);
-        binding.searchErrorState.setVisibility(View.GONE);
-        binding.cardAiSearchResult.setVisibility(View.VISIBLE);
-
-        binding.tvAiAnswer.setText(result.answer != null && !result.answer.trim().isEmpty() ? result.answer : "Không tìm thấy kết quả từ AI.");
-
-        binding.containerAiRecommendations.removeAllViews();
-        if (result.recommendations != null && !result.recommendations.isEmpty()) {
-            binding.tvAiRecommendationsHeader.setVisibility(View.VISIBLE);
-            for (ChatResponse.ArticleRec rec : result.recommendations) {
-                if (rec == null) continue;
-
-                TextView textView = new TextView(requireContext());
-                String title = rec.title != null && !rec.title.trim().isEmpty() ? rec.title : "Bài viết tham khảo";
-                textView.setText("📄 " + title);
-                textView.setTextColor(requireContext().getColor(R.color.app_primary));
-                textView.setTextSize(15);
-                textView.setPadding(dp(12), dp(10), dp(12), dp(10));
-                textView.setBackgroundResource(R.drawable.bg_source_item);
-
-                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT
-                );
-                params.setMargins(0, 0, 0, dp(8));
-                textView.setLayoutParams(params);
-
-                textView.setOnClickListener(v -> {
-                    if (rec.id != null && !rec.id.trim().isEmpty()) {
-                        try {
-                            int postId = Integer.parseInt(rec.id.trim());
-                            Navigator.navigateToPostDetail(requireContext(), postId);
-                            return;
-                        } catch (Exception ignored) {
-                        }
-                    }
-                    if (rec.url != null && !rec.url.trim().isEmpty()) {
-                        Navigator.navigateTo(requireContext(), rec.url);
-                    } else {
-                        Toast.makeText(requireContext(), "Không thể mở bài viết", Toast.LENGTH_SHORT).show();
-                    }
-                });
-
-                binding.containerAiRecommendations.addView(textView);
-            }
-        } else {
-            binding.tvAiRecommendationsHeader.setVisibility(View.GONE);
-        }
-    }
-
     private void observeViewModel() {
         PageLoader<PostResource> pageLoader = viewModel.getPostPageLoader();
         if (pageLoader != null) {
@@ -268,7 +167,6 @@ public class SearchFragment extends Fragment {
             binding.searchResultsRecyclerView.setVisibility(View.GONE);
             binding.searchEmptyState.setVisibility(View.GONE);
             binding.searchErrorState.setVisibility(View.GONE);
-            binding.cardAiSearchResult.setVisibility(View.GONE);
         }
     }
 
@@ -294,10 +192,6 @@ public class SearchFragment extends Fragment {
         if (imm != null) {
             imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
-    }
-
-    private int dp(int value) {
-        return Math.round(value * getResources().getDisplayMetrics().density);
     }
 
     @Override
