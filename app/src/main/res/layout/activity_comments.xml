@@ -4,23 +4,32 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/app_surface"
     android:fitsSystemWindows="true"
     android:orientation="vertical">
 
-    <!-- Top Toolbar -->
+    <!-- Top Toolbar (Minimalist Editorial) -->
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/comments_toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:background="@color/app_surface"
         app:navigationIcon="@drawable/ic_close_24"
-        app:title="Bình luận" />
+        app:title="Bình luận"
+        app:titleTextAppearance="@style/TextAppearance.MaterialComponents.Headline6" />
+
+    <!-- Toolbar bottom hairline -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/app_border" />
 
     <!-- Comments List Area -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:background="@color/app_surface">
 
         <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
             android:id="@+id/comments_swipe_refresh"
@@ -32,7 +41,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:clipToPadding="false"
-                android:paddingBottom="12dp" />
+                android:paddingBottom="16dp" />
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
         <com.socialapp.core.ui.LoadingSkeletonView
@@ -59,11 +68,11 @@
         android:id="@+id/replying_to_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#F0F4F8"
+        android:background="@color/app_surface_variant"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:paddingHorizontal="16dp"
-        android:paddingVertical="8dp"
+        android:paddingVertical="10dp"
         android:visibility="gone"
         tools:visibility="visible">
 
@@ -72,8 +81,9 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:textColor="#1976D2"
-            android:textSize="12sp"
+            android:fontFamily="sans-serif-medium"
+            android:textColor="@color/app_primary"
+            android:textSize="12.5sp"
             tools:text="Đang trả lời @Nguyễn Văn A" />
 
         <ImageButton
@@ -82,16 +92,23 @@
             android:layout_height="24dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Hủy trả lời"
-            android:src="@drawable/ic_close_24" />
+            android:src="@drawable/ic_close_24"
+            app:tint="@color/app_text_secondary" />
     </LinearLayout>
+
+    <!-- Hairline Divider above Input -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/app_border" />
 
     <!-- Bottom Input Bar -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/app_surface"
-        android:elevation="4dp"
-        android:padding="8dp">
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="8dp">
 
         <!-- Input Bar for Logged-In User -->
         <LinearLayout
@@ -106,15 +123,17 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:background="@drawable/bg_dialog_surface"
-                android:hint="Viết bình luận..."
+                android:background="@drawable/bg_source_item"
+                android:fontFamily="sans-serif"
+                android:hint="Viết ý kiến thảo luận..."
                 android:imeOptions="actionSend"
                 android:inputType="textMultiLine"
                 android:maxLength="2000"
                 android:maxLines="4"
-                android:paddingHorizontal="12dp"
+                android:paddingHorizontal="14dp"
                 android:paddingVertical="10dp"
-                android:textColor="@color/black"
+                android:textColor="@color/app_text_primary"
+                android:textColorHint="@color/app_text_secondary"
                 android:textSize="14sp" />
 
             <ImageButton
@@ -124,7 +143,8 @@
                 android:layout_marginStart="8dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="Gửi bình luận"
-                android:src="@drawable/ic_send_24" />
+                android:src="@drawable/ic_send_24"
+                app:tint="@color/app_primary" />
         </LinearLayout>
 
         <!-- Guest Prompt for Non-Logged-In User -->
@@ -132,11 +152,12 @@
             android:id="@+id/comment_guest_prompt"
             android:layout_width="match_parent"
             android:layout_height="44dp"
-            android:background="@drawable/bg_dialog_surface"
+            android:background="@drawable/bg_source_item"
+            android:fontFamily="sans-serif-medium"
             android:gravity="center"
-            android:text="Đăng nhập để bình luận"
-            android:textColor="#1976D2"
-            android:textSize="14sp"
+            android:text="Đăng nhập để tham gia thảo luận"
+            android:textColor="@color/app_primary"
+            android:textSize="13.5sp"
             android:textStyle="bold"
             android:visibility="gone" />
     </FrameLayout>

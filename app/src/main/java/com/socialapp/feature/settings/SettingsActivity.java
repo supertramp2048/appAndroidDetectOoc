@@ -104,6 +104,16 @@ public class SettingsActivity extends AppCompatActivity {
                 UserResource user = state.user;
                 binding.settingsUserNameText.setText(user.name != null ? user.name : "Thành viên");
 
+                if (binding.settingsUserAvatar != null && user.getAvatarUrl() != null) {
+                    binding.settingsUserAvatar.loadAvatar(user.getAvatarUrl());
+                }
+                if (binding.settingsUserEmailText != null && user.email != null) {
+                    binding.settingsUserEmailText.setText(user.email);
+                }
+                if (binding.settingsUserRoleChip != null && user.role != null) {
+                    binding.settingsUserRoleChip.setText(user.role.toUpperCase());
+                }
+
                 if (user.role != null && ("admin".equalsIgnoreCase(user.role)
                         || "moderator".equalsIgnoreCase(user.role)
                         || "superadmin".equalsIgnoreCase(user.role))) {

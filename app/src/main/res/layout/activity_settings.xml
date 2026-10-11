@@ -4,6 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/app_background"
+    android:fitsSystemWindows="true"
     android:orientation="vertical">
 
     <!-- Top Toolbar -->
@@ -13,7 +15,13 @@
         android:layout_height="?attr/actionBarSize"
         android:background="@color/app_surface"
         app:navigationIcon="@drawable/ic_close_24"
-        app:title="Cài đặt tài khoản" />
+        app:title="Cài đặt tài khoản"
+        app:titleTextAppearance="@style/TextAppearance.MaterialComponents.Headline6" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/app_border" />
 
     <ScrollView
         android:layout_width="match_parent"
@@ -26,263 +34,488 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Section 1: Personal Info -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Thông tin cá nhân"
-                android:textColor="@color/app_primary"
-                android:textSize="14sp"
-                android:textStyle="bold" />
-
-            <com.google.android.material.card.MaterialCardView
+            <!-- Mini Profile Summary Header -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="1dp">
+                android:background="@drawable/bg_input_editorial"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="14dp">
+
+                <com.socialapp.core.ui.UserAvatarView
+                    android:id="@+id/settings_user_avatar"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    app:strokeColor="@color/app_border"
+                    app:strokeWidth="1dp" />
 
                 <LinearLayout
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_weight="1"
                     android:orientation="vertical">
 
                     <LinearLayout
-                        android:id="@+id/item_edit_name"
-                        android:layout_width="match_parent"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:background="?attr/selectableItemBackground"
-                        android:orientation="vertical"
-                        android:padding="16dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Tên hiển thị"
-                            android:textColor="@color/black"
-                            android:textSize="15sp" />
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
 
                         <TextView
                             android:id="@+id/settings_user_name_text"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:textColor="#757575"
-                            android:textSize="13sp"
-                            tools:text="Nguyễn Văn A" />
+                            android:fontFamily="serif"
+                            android:textColor="@color/app_text_primary"
+                            android:textSize="15sp"
+                            android:textStyle="bold"
+                            tools:text="Nguyễn Văn An" />
+
+                        <TextView
+                            android:id="@+id/settings_user_role_chip"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:background="@drawable/bg_badge_editorial"
+                            android:letterSpacing="0.05"
+                            android:paddingHorizontal="6dp"
+                            android:paddingVertical="1dp"
+                            android:text="TÁC GIẢ"
+                            android:textAllCaps="true"
+                            android:textColor="@color/app_primary"
+                            android:textSize="9.5sp"
+                            android:textStyle="bold" />
                     </LinearLayout>
 
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:background="#E0E0E0" />
+                    <TextView
+                        android:id="@+id/settings_user_email_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:textColor="#64748B"
+                        android:textSize="12sp"
+                        tools:text="user@press.vn" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- SECTION 1: THÔNG TIN TÁC GIẢ -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:letterSpacing="0.06"
+                android:text="THÔNG TIN TÁC GIẢ"
+                android:textAllCaps="true"
+                android:textColor="@color/app_primary"
+                android:textSize="11.5sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_input_editorial"
+                android:orientation="vertical">
+
+                <!-- Edit Name -->
+                <LinearLayout
+                    android:id="@+id/item_edit_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?attr/selectableItemBackground"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="14dp"
+                    android:paddingVertical="12dp">
 
                     <LinearLayout
-                        android:id="@+id/item_edit_avatar"
-                        android:layout_width="match_parent"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:background="?attr/selectableItemBackground"
-                        android:orientation="vertical"
-                        android:padding="16dp">
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Tên hiển thị (Byline)"
+                            android:textColor="@color/app_text_primary"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="1dp"
+                            android:text="Chạm để đổi tên hiển thị trên bài viết"
+                            android:textColor="#64748B"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="›"
+                        android:textColor="#94A3B8"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginHorizontal="12dp"
+                    android:background="@color/app_border" />
+
+                <!-- Edit Avatar -->
+                <LinearLayout
+                    android:id="@+id/item_edit_avatar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?attr/selectableItemBackground"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="14dp"
+                    android:paddingVertical="12dp">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Đổi ảnh đại diện (Avatar)"
-                            android:textColor="@color/black"
-                            android:textSize="15sp" />
+                            android:textColor="@color/app_text_primary"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:text="Chọn ảnh từ thư viện (tối đa 5MB)"
-                            android:textColor="#757575"
-                            android:textSize="13sp" />
+                            android:layout_marginTop="1dp"
+                            android:text="Chọn ảnh từ thư viện thiết bị (tối đa 5MB)"
+                            android:textColor="#64748B"
+                            android:textSize="12sp" />
                     </LinearLayout>
 
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:background="#E0E0E0" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="›"
+                        android:textColor="#94A3B8"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginHorizontal="12dp"
+                    android:background="@color/app_border" />
+
+                <!-- Edit Cover -->
+                <LinearLayout
+                    android:id="@+id/item_edit_cover"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?attr/selectableItemBackground"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="14dp"
+                    android:paddingVertical="12dp">
 
                     <LinearLayout
-                        android:id="@+id/item_edit_cover"
-                        android:layout_width="match_parent"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:background="?attr/selectableItemBackground"
-                        android:orientation="vertical"
-                        android:padding="16dp">
+                        android:layout_weight="1"
+                        android:orientation="vertical">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Đổi ảnh bìa (Cover photo)"
-                            android:textColor="@color/black"
-                            android:textSize="15sp" />
+                            android:textColor="@color/app_text_primary"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:text="Chọn ảnh từ thư viện (tối đa 10MB)"
-                            android:textColor="#757575"
-                            android:textSize="13sp" />
+                            android:layout_marginTop="1dp"
+                            android:text="Chọn ảnh bìa cá nhân (tối đa 10MB)"
+                            android:textColor="#64748B"
+                            android:textSize="12sp" />
                     </LinearLayout>
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
 
-            <!-- Section 2: Security -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="›"
+                        android:textColor="#94A3B8"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- SECTION 2: BẢO MẬT -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
-                android:text="Bảo mật"
+                android:letterSpacing="0.06"
+                android:text="BẢO MẬT &amp; ĐĂNG NHẬP"
+                android:textAllCaps="true"
                 android:textColor="@color/app_primary"
-                android:textSize="14sp"
+                android:textSize="11.5sp"
                 android:textStyle="bold" />
 
-            <com.google.android.material.card.MaterialCardView
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="1dp">
+                android:background="@drawable/bg_input_editorial"
+                android:orientation="vertical">
 
+                <!-- Change Password -->
                 <LinearLayout
                     android:id="@+id/item_change_password"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="?attr/selectableItemBackground"
-                    android:orientation="vertical"
-                    android:padding="16dp">
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="14dp"
+                    android:paddingVertical="12dp">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Đổi mật khẩu"
+                            android:textColor="@color/app_text_primary"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="1dp"
+                            android:text="Cập nhật mật khẩu bảo vệ tài khoản"
+                            android:textColor="#64748B"
+                            android:textSize="12sp" />
+                    </LinearLayout>
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Đổi mật khẩu"
-                        android:textColor="@color/black"
-                        android:textSize="15sp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
-                        android:text="Cập nhật mật khẩu bảo vệ tài khoản"
-                        android:textColor="#757575"
-                        android:textSize="13sp" />
+                        android:text="›"
+                        android:textColor="#94A3B8"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
                 </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
 
-            <!-- Section 3: App & Theme -->
+            <!-- SECTION 3: ỨNG DỤNG & TÒA SOẠN -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
-                android:text="Ứng dụng"
+                android:letterSpacing="0.06"
+                android:text="ỨNG DỤNG &amp; TÒA SOẠN"
+                android:textAllCaps="true"
                 android:textColor="@color/app_primary"
-                android:textSize="14sp"
+                android:textSize="11.5sp"
                 android:textStyle="bold" />
 
-            <com.google.android.material.card.MaterialCardView
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="1dp">
+                android:background="@drawable/bg_input_editorial"
+                android:orientation="vertical">
 
+                <!-- About App -->
                 <LinearLayout
+                    android:id="@+id/item_about_app"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical">
+                    android:background="?attr/selectableItemBackground"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="14dp"
+                    android:paddingVertical="12dp">
 
                     <LinearLayout
-                        android:id="@+id/item_about_app"
-                        android:layout_width="match_parent"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:background="?attr/selectableItemBackground"
-                        android:orientation="vertical"
-                        android:padding="16dp">
+                        android:layout_weight="1"
+                        android:orientation="vertical">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Về ứng dụng"
-                            android:textColor="@color/black"
-                            android:textSize="15sp" />
+                            android:text="Về ứng dụng Tòa soạn"
+                            android:textColor="@color/app_text_primary"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:text="Thông tin phiên bản, bản quyền và liên hệ"
-                            android:textColor="#757575"
-                            android:textSize="13sp" />
+                            android:layout_marginTop="1dp"
+                            android:text="Phiên bản, điều khoản và bản quyền"
+                            android:textColor="#64748B"
+                            android:textSize="12sp" />
                     </LinearLayout>
 
-                    <View
-                        android:id="@+id/divider_admin"
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:background="#E0E0E0"
-                        android:visibility="gone" />
-
-                    <!-- Admin Placeholder (Hidden by default for M10) -->
-                    <LinearLayout
-                        android:id="@+id/item_admin_panel"
-                        android:layout_width="match_parent"
+                    <TextView
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:background="?attr/selectableItemBackground"
-                        android:orientation="vertical"
-                        android:padding="16dp"
-                        android:visibility="gone">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Quản trị ứng dụng"
-                            android:textColor="@color/black"
-                            android:textSize="15sp" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:text="Quản lý báo cáo, nội dung và người dùng"
-                            android:textColor="#757575"
-                            android:textSize="13sp" />
-                    </LinearLayout>
+                        android:text="›"
+                        android:textColor="#94A3B8"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
                 </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
 
-            <!-- Section 4: Account Actions -->
+                <View
+                    android:id="@+id/divider_admin"
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginHorizontal="12dp"
+                    android:background="@color/app_border"
+                    android:visibility="gone" />
+
+                <!-- Admin Panel (Conditional) -->
+                <LinearLayout
+                    android:id="@+id/item_admin_panel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?attr/selectableItemBackground"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="14dp"
+                    android:paddingVertical="12dp"
+                    android:visibility="gone">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Quản trị tòa soạn (Admin Panel)"
+                                android:textColor="@color/app_primary"
+                                android:textSize="14sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="6dp"
+                                android:background="@color/app_primary"
+                                android:paddingHorizontal="5dp"
+                                android:paddingVertical="1dp"
+                                android:text="ADMIN"
+                                android:textColor="@color/white"
+                                android:textSize="9sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="1dp"
+                            android:text="Quản lý duyệt bài, kiểm chứng và tài khoản"
+                            android:textColor="#64748B"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="›"
+                        android:textColor="#94A3B8"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- SECTION 4: THAO TÁC TÀI KHOẢN -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
-                android:text="Tài khoản"
+                android:letterSpacing="0.06"
+                android:text="QUẢN LÝ TÀI KHOẢN"
+                android:textAllCaps="true"
                 android:textColor="@color/app_primary"
-                android:textSize="14sp"
+                android:textSize="11.5sp"
                 android:textStyle="bold" />
 
-            <Button
+            <!-- Logout Button -->
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_settings_logout"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                style="?attr/materialButtonOutlinedStyle"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="44dp"
                 android:layout_marginTop="8dp"
-                android:text="Đăng xuất"
-                android:textColor="#1976D2" />
+                android:text="🚪  Đăng xuất tài khoản"
+                android:textAllCaps="true"
+                android:textColor="@color/app_text_primary"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                app:backgroundTint="@color/app_surface"
+                app:cornerRadius="4dp"
+                app:elevation="0dp"
+                app:strokeColor="@color/app_border"
+                app:strokeWidth="1dp" />
 
-            <Button
+            <!-- Delete Account Button -->
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_settings_delete_account"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:layout_marginTop="8dp"
+                android:text="🗑️  Xóa tài khoản vĩnh viễn"
+                android:textAllCaps="true"
+                android:textColor="@color/app_danger"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                app:backgroundTint="@color/app_surface"
+                app:cornerRadius="4dp"
+                app:elevation="0dp"
+                app:strokeColor="@color/app_danger"
+                app:strokeWidth="1dp" />
+
+            <!-- Footer Notice -->
+            <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="Xóa tài khoản"
-                android:textColor="#D32F2F"
-                app:strokeColor="#D32F2F" />
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="16dp"
+                android:gravity="center"
+                android:text="Ứng dụng Báo chí &amp; Kiểm chứng Tin giả • Phiên bản 1.0.0"
+                android:textColor="#94A3B8"
+                android:textSize="10.5sp" />
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

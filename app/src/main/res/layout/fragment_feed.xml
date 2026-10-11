@@ -1,38 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/app_surface"
+    android:fitsSystemWindows="true"
     android:orientation="vertical">
 
-    <!-- Email Verification Banner -->
-    <com.socialapp.feature.auth.EmailVerificationBannerView
-        android:id="@+id/feed_email_banner"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="12dp"
-        android:layout_marginTop="8dp" />
-
-    <!-- Categories Chip Bar -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/categories_recycler_view"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:clipToPadding="false"
-        android:orientation="horizontal"
-        android:paddingHorizontal="12dp"
-        android:paddingVertical="8dp"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
-
-    <!-- Tabs -->
+    <!-- Header Navigation Tabs: Mới nhất, Nổi bật, Đang theo dõi (NẰM TRÊN CÙNG) -->
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/feed_tab_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@color/app_surface"
+        android:paddingTop="4dp"
         app:tabIndicatorColor="@color/app_primary"
+        app:tabIndicatorHeight="2.5dp"
         app:tabMode="fixed"
         app:tabSelectedTextColor="@color/app_primary"
-        app:tabTextColor="#757575">
+        app:tabTextColor="#64748B">
 
         <com.google.android.material.tabs.TabItem
             android:layout_width="wrap_content"
@@ -49,6 +36,31 @@
             android:layout_height="wrap_content"
             android:text="Đang theo dõi" />
     </com.google.android.material.tabs.TabLayout>
+
+    <!-- Hairline divider mỏng dưới Tab -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/app_border" />
+
+    <!-- Categories Chip Bar (NẰM DƯỚI THANH ĐIỀU HƯỚNG TABS) -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/categories_recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clipToPadding="false"
+        android:orientation="horizontal"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="8dp"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+    <!-- Email Verification Banner -->
+    <com.socialapp.feature.auth.EmailVerificationBannerView
+        android:id="@+id/feed_email_banner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="12dp"
+        android:layout_marginBottom="4dp" />
 
     <FrameLayout
         android:layout_width="match_parent"

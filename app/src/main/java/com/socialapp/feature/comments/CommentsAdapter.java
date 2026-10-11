@@ -11,8 +11,10 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.socialapp.R;
+import com.socialapp.core.navigation.Navigator;
 import com.socialapp.core.network.dto.CommentResource;
 import com.socialapp.core.ui.UserAvatarView;
+import com.socialapp.core.util.DateTimeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -159,13 +161,23 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
         if (comment.author != null) {
             holder.authorNameText.setText(comment.author.name != null ? comment.author.name : "Thành viên");
             holder.avatarView.loadAvatar(comment.author.getAvatarUrl());
+
+            View.OnClickListener authorClickListener = v -> {
+                if (comment.author != null && comment.author.id > 0) {
+                    Navigator.navigateToUserProfile(v.getContext(), comment.author.id);
+                }
+            };
+            holder.avatarView.setOnClickListener(authorClickListener);
+            holder.authorNameText.setOnClickListener(authorClickListener);
         } else {
             holder.authorNameText.setText("Thành viên");
             holder.avatarView.loadAvatar(null);
+            holder.avatarView.setOnClickListener(null);
+            holder.authorNameText.setOnClickListener(null);
         }
 
         // Time & Edited status
-        holder.timeText.setText(comment.createdAt != null ? comment.createdAt : "");
+        holder.timeText.setText(DateTimeUtils.formatRelativeTime(comment.createdAt));
         if (comment.createdAt != null && comment.updatedAt != null && !comment.createdAt.equals(comment.updatedAt)) {
             holder.editedTag.setVisibility(View.VISIBLE);
         } else {

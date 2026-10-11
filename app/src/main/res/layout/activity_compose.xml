@@ -4,27 +4,40 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/app_surface"
     android:fitsSystemWindows="true"
     android:orientation="vertical">
 
-    <!-- Top Toolbar -->
+    <!-- Top Toolbar with hairline bottom border -->
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/compose_toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:background="@color/app_surface"
         app:navigationIcon="@drawable/ic_close_24"
-        app:title="Tạo bài viết">
+        app:title="Tạo bài viết mới"
+        app:titleTextAppearance="@style/TextAppearance.MaterialComponents.Headline6">
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_submit_post"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="38dp"
             android:layout_gravity="end"
             android:layout_marginEnd="12dp"
             android:text="Đăng bài"
-            android:textSize="13sp" />
+            android:textAllCaps="true"
+            android:textColor="@color/white"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            app:backgroundTint="@color/app_primary"
+            app:cornerRadius="4dp"
+            app:elevation="0dp" />
     </androidx.appcompat.widget.Toolbar>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/app_border" />
 
     <!-- Email Verification Banner -->
     <com.socialapp.feature.auth.EmailVerificationBannerView
@@ -45,13 +58,35 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Title Input -->
+            <!-- Category Section -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Tiêu đề bài viết *"
-                android:textColor="@color/black"
-                android:textSize="14sp"
+                android:letterSpacing="0.05"
+                android:text="CHUYÊN MỤC *"
+                android:textAllCaps="true"
+                android:textColor="@color/app_text_primary"
+                android:textSize="11.5sp"
+                android:textStyle="bold" />
+
+            <Spinner
+                android:id="@+id/compose_category_spinner"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:layout_marginTop="6dp"
+                android:background="@drawable/bg_input_editorial"
+                android:paddingHorizontal="10dp" />
+
+            <!-- Title Input Section (Editorial Serif Headline) -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:letterSpacing="0.05"
+                android:text="TIÊU ĐỀ BÀI VIẾT *"
+                android:textAllCaps="true"
+                android:textColor="@color/app_text_primary"
+                android:textSize="11.5sp"
                 android:textStyle="bold" />
 
             <EditText
@@ -59,107 +94,128 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
-                android:background="@drawable/bg_dialog_surface"
-                android:hint="Nhập tiêu đề (tối đa 255 ký tự)..."
+                android:background="@drawable/bg_input_editorial"
+                android:fontFamily="serif"
+                android:hint="Nhập tiêu đề bài viết (tối đa 255 ký tự)..."
                 android:inputType="textMultiLine"
                 android:maxLength="255"
                 android:maxLines="3"
                 android:padding="12dp"
-                android:textColor="@color/black"
-                android:textSize="15sp" />
+                android:textColor="@color/app_text_primary"
+                android:textSize="16sp"
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/compose_title_counter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="end"
-                android:layout_marginTop="2dp"
-                android:textColor="#757575"
-                android:textSize="12sp"
-                tools:text="0/255" />
-
-            <!-- Category Spinner -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:text="Chuyên mục *"
-                android:textColor="@color/black"
-                android:textSize="14sp"
-                android:textStyle="bold" />
-
-            <Spinner
-                android:id="@+id/compose_category_spinner"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginTop="6dp"
-                android:background="@drawable/bg_dialog_surface" />
+                android:layout_marginTop="4dp"
+                android:textColor="#64748B"
+                android:textSize="11sp"
+                tools:text="0/255 ký tự" />
 
             <!-- Cover Thumbnail Section -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="Ảnh bìa bài viết (Tùy chọn)"
-                android:textColor="@color/black"
-                android:textSize="14sp"
+                android:letterSpacing="0.05"
+                android:text="ẢNH BÌA BÀI VIẾT (THUMBNAIL)"
+                android:textAllCaps="true"
+                android:textColor="@color/app_text_primary"
+                android:textSize="11.5sp"
                 android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="Ảnh đại diện chính hiển thị trên bản tin (Tùy chọn)"
+                android:textColor="#64748B"
+                android:textSize="11sp" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_thumbnail_box"
                 android:gravity="center_vertical"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:padding="10dp">
 
                 <ImageView
                     android:id="@+id/compose_thumbnail_preview"
-                    android:layout_width="100dp"
-                    android:layout_height="70dp"
-                    android:background="#E0E0E0"
+                    android:layout_width="90dp"
+                    android:layout_height="60dp"
+                    android:background="@color/app_surface_variant"
                     android:contentDescription="Xem trước ảnh bìa"
                     android:scaleType="centerCrop"
                     android:visibility="gone"
                     tools:visibility="visible" />
 
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_select_thumbnail"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    style="?attr/materialButtonOutlinedStyle"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="12dp"
+                    android:layout_height="38dp"
+                    android:layout_marginStart="8dp"
                     android:text="📷 Chọn ảnh bìa"
-                    android:textSize="12sp" />
+                    android:textAllCaps="false"
+                    android:textColor="@color/app_primary"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    app:backgroundTint="@color/app_surface_variant"
+                    app:cornerRadius="4dp"
+                    app:elevation="0dp"
+                    app:strokeColor="@color/app_border"
+                    app:strokeWidth="1dp" />
             </LinearLayout>
 
-            <!-- Editor WebView -->
+            <!-- Editor WebView Section -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="Nội dung bài viết *"
-                android:textColor="@color/black"
-                android:textSize="14sp"
+                android:layout_marginTop="20dp"
+                android:letterSpacing="0.05"
+                android:text="NỘI DUNG BÀI VIẾT *"
+                android:textAllCaps="true"
+                android:textColor="@color/app_primary"
+                android:textSize="11.5sp"
                 android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="Sử dụng thanh công cụ bên trong để định dạng và chèn ảnh minh họa vào thân bài:"
+                android:textColor="#64748B"
+                android:textSize="11sp" />
 
             <WebView
                 android:id="@+id/compose_editor_web_view"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:background="@drawable/bg_dialog_surface" />
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_input_editorial"
+                android:minHeight="280dp" />
 
             <!-- Delete Post Button (Edit Mode Only) -->
-            <Button
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_delete_post"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                style="?attr/materialButtonOutlinedStyle"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="44dp"
                 android:layout_marginTop="28dp"
                 android:text="🗑️ Xóa bài viết này"
-                android:textColor="#D32F2F"
+                android:textColor="@color/app_danger"
+                android:textSize="12sp"
+                android:textStyle="bold"
                 android:visibility="gone"
-                app:strokeColor="#D32F2F"
+                app:cornerRadius="4dp"
+                app:elevation="0dp"
+                app:strokeColor="@color/app_danger"
+                app:strokeWidth="1dp"
                 tools:visibility="visible" />
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

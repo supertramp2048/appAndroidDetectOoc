@@ -4,17 +4,19 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/app_surface"
     android:fitsSystemWindows="true"
     android:orientation="vertical">
 
-    <!-- Top Toolbar -->
+    <!-- Top Toolbar with hairline bottom border -->
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/profile_toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:background="@color/app_surface"
         app:navigationIcon="@drawable/ic_close_24"
-        app:title="Trang cá nhân">
+        app:title="Hồ sơ tác giả"
+        app:titleTextAppearance="@style/TextAppearance.MaterialComponents.Headline6">
 
         <ImageButton
             android:id="@+id/btn_profile_overflow_menu"
@@ -26,6 +28,11 @@
             android:contentDescription="Tùy chọn"
             android:src="@drawable/ic_retake_24" />
     </androidx.appcompat.widget.Toolbar>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/app_border" />
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/profile_swipe_refresh"
@@ -43,25 +50,31 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <!-- Header: Cover photo & Avatar overlay -->
+                <!-- Header: Minimal Editorial Avatar Header -->
                 <FrameLayout
                     android:layout_width="match_parent"
-                    android:layout_height="180dp">
+                    android:layout_height="140dp">
 
                     <ImageView
                         android:id="@+id/profile_cover_image"
                         android:layout_width="match_parent"
-                        android:layout_height="140dp"
-                        android:background="#E0E0E0"
+                        android:layout_height="100dp"
+                        android:background="@color/app_surface_variant"
                         android:contentDescription="Ảnh bìa"
                         android:scaleType="centerCrop" />
 
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_gravity="top"
+                        android:background="@color/app_border" />
+
                     <com.socialapp.core.ui.UserAvatarView
                         android:id="@+id/profile_avatar"
-                        android:layout_width="80dp"
-                        android:layout_height="80dp"
+                        android:layout_width="76dp"
+                        android:layout_height="76dp"
                         android:layout_gravity="bottom|center_horizontal"
-                        app:strokeColor="@color/white"
+                        app:strokeColor="@color/app_surface"
                         app:strokeWidth="3dp" />
                 </FrameLayout>
 
@@ -72,21 +85,24 @@
                     android:gravity="center_horizontal"
                     android:orientation="vertical"
                     android:paddingHorizontal="16dp"
-                    android:paddingTop="8dp">
+                    android:paddingTop="10dp">
 
+                    <!-- Author Name: Serif Bold -->
                     <TextView
                         android:id="@+id/profile_name_text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="@color/black"
-                        android:textSize="20sp"
+                        android:fontFamily="serif"
+                        android:textColor="@color/app_text_primary"
+                        android:textSize="22sp"
                         android:textStyle="bold"
-                        tools:text="Tên Người Dùng" />
+                        tools:text="Tên Tác Giả" />
 
+                    <!-- Role Badge & Follow Action -->
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
+                        android:layout_marginTop="8dp"
                         android:gravity="center_vertical"
                         android:orientation="horizontal">
 
@@ -94,35 +110,49 @@
                             android:id="@+id/profile_role_chip"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:background="@drawable/bg_chip_neutral"
+                            android:background="@drawable/bg_badge_editorial"
+                            android:letterSpacing="0.06"
                             android:paddingHorizontal="10dp"
                             android:paddingVertical="3dp"
-                            android:textColor="#1976D2"
-                            android:textSize="12sp"
+                            android:textAllCaps="true"
+                            android:textColor="@color/app_primary"
+                            android:textSize="11sp"
                             android:textStyle="bold"
-                            tools:text="USER" />
-
-                        <Button
-                            android:id="@+id/btn_follow_user"
-                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="12dp"
-                            android:text="Theo dõi"
-                            android:textSize="12sp" />
+                            tools:text="TÁC GIẢ" />
                     </LinearLayout>
+
+                    <!-- Follow Button: Modern Editorial 4dp -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_follow_user"
+                        android:layout_width="150dp"
+                        android:layout_height="40dp"
+                        android:layout_marginTop="12dp"
+                        android:text="Theo dõi"
+                        android:textAllCaps="true"
+                        android:textColor="@color/white"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        app:backgroundTint="@color/app_primary"
+                        app:cornerRadius="4dp"
+                        app:elevation="0dp" />
                 </LinearLayout>
 
-                <!-- Stats Bar -->
+                <!-- Hairline Divider Above Stats -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="16dp"
+                    android:background="@color/app_border" />
+
+                <!-- Minimalist Flat Stats Bar (3 Columns separated by 1px hairlines) -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="16dp"
-                    android:layout_marginTop="16dp"
-                    android:background="@drawable/bg_dialog_surface"
+                    android:background="@color/app_surface"
                     android:orientation="horizontal"
-                    android:padding="12dp">
+                    android:paddingVertical="10dp">
 
+                    <!-- Stat 1: Posts -->
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -134,7 +164,8 @@
                             android:id="@+id/profile_posts_count_text"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textColor="@color/black"
+                            android:fontFamily="serif"
+                            android:textColor="@color/app_text_primary"
                             android:textSize="18sp"
                             android:textStyle="bold"
                             tools:text="0" />
@@ -142,16 +173,19 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Bài viết"
-                            android:textColor="#757575"
-                            android:textSize="12sp" />
+                            android:letterSpacing="0.05"
+                            android:text="BÀI VIẾT"
+                            android:textColor="#64748B"
+                            android:textSize="10.5sp"
+                            android:textStyle="bold" />
                     </LinearLayout>
 
                     <View
                         android:layout_width="1dp"
                         android:layout_height="match_parent"
-                        android:background="#E0E0E0" />
+                        android:background="@color/app_border" />
 
+                    <!-- Stat 2: Followers -->
                     <LinearLayout
                         android:id="@+id/btn_open_followers"
                         android:layout_width="0dp"
@@ -165,7 +199,8 @@
                             android:id="@+id/profile_followers_count_text"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textColor="@color/black"
+                            android:fontFamily="serif"
+                            android:textColor="@color/app_text_primary"
                             android:textSize="18sp"
                             android:textStyle="bold"
                             tools:text="0" />
@@ -173,16 +208,19 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Người theo dõi"
-                            android:textColor="#757575"
-                            android:textSize="12sp" />
+                            android:letterSpacing="0.05"
+                            android:text="THEO DÕI"
+                            android:textColor="#64748B"
+                            android:textSize="10.5sp"
+                            android:textStyle="bold" />
                     </LinearLayout>
 
                     <View
                         android:layout_width="1dp"
                         android:layout_height="match_parent"
-                        android:background="#E0E0E0" />
+                        android:background="@color/app_border" />
 
+                    <!-- Stat 3: Following -->
                     <LinearLayout
                         android:id="@+id/btn_open_following"
                         android:layout_width="0dp"
@@ -196,7 +234,8 @@
                             android:id="@+id/profile_following_count_text"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textColor="@color/black"
+                            android:fontFamily="serif"
+                            android:textColor="@color/app_text_primary"
                             android:textSize="18sp"
                             android:textStyle="bold"
                             tools:text="0" />
@@ -204,27 +243,46 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Đang theo dõi"
-                            android:textColor="#757575"
-                            android:textSize="12sp" />
+                            android:letterSpacing="0.05"
+                            android:text="ĐANG THEO"
+                            android:textColor="#64748B"
+                            android:textSize="10.5sp"
+                            android:textStyle="bold" />
                     </LinearLayout>
                 </LinearLayout>
 
-                <TextView
+                <!-- Hairline Divider Below Stats -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/app_border" />
+
+                <!-- Section Header: Published Articles -->
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginHorizontal="16dp"
-                    android:layout_marginTop="20dp"
-                    android:text="Bài viết"
-                    android:textColor="@color/black"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
+                    android:layout_marginTop="18dp"
+                    android:layout_marginBottom="8dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:letterSpacing="0.06"
+                        android:text="BÀI VIẾT ĐÃ XUẤT BẢN"
+                        android:textAllCaps="true"
+                        android:textColor="@color/app_primary"
+                        android:textSize="11.5sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
 
                 <!-- User Posts List -->
                 <FrameLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp">
+                    android:layout_height="wrap_content">
 
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/profile_posts_recycler_view"

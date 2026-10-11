@@ -15,15 +15,21 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.browser.customtabs.CustomTabsIntent;
+import androidx.core.content.ContextCompat;
+import androidx.core.widget.NestedScrollView;
 import androidx.lifecycle.ViewModelProvider;
+
+import android.content.res.ColorStateList;
 
 import com.bumptech.glide.Glide;
 import com.socialapp.MyApplication;
+import com.socialapp.R;
 import com.socialapp.core.navigation.Navigator;
 import com.socialapp.core.network.dto.PostResource;
 import com.socialapp.core.network.dto.UserResource;
 import com.socialapp.core.session.SessionManager;
 import com.socialapp.core.ui.ReportSheetBottomSheet;
+import com.socialapp.core.util.DateTimeUtils;
 import com.socialapp.databinding.ActivityPostDetailBinding;
 
 public class PostDetailActivity extends AppCompatActivity {
@@ -77,6 +83,7 @@ public class PostDetailActivity extends AppCompatActivity {
         binding.postDetailToolbar.setNavigationOnClickListener(v -> finish());
 
         setupWebView();
+        setupReadingProgressBar();
 
         binding.btnSharePost.setOnClickListener(v -> sharePost());
         binding.btnOverflowMenu.setOnClickListener(this::showOverflowMenu);
@@ -133,8 +140,24 @@ public class PostDetailActivity extends AppCompatActivity {
         binding.postDetailErrorState.setOnRetryClickListener(v -> viewModel.loadPostDetail(postId));
     }
 
+    private void setupReadingProgressBar() {
+        binding.postDetailContentContainer.setOnScrollChangeListener((NestedScrollView.OnScrollChangeListener) (v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
+            if (v.getChildCount() > 0) {
+                int totalScrollableDistance = v.getChildAt(0).getMeasuredHeight() - v.getMeasuredHeight();
+                if (totalScrollableDistance > 0) {
+                    int progress = (int) (((float) scrollY / totalScrollableDistance) * 100);
+                    binding.readingProgressBar.setProgress(Math.min(100, Math.max(0, progress)));
+                } else {
+                    binding.readingProgressBar.setProgress(0);
+                }
+            }
+        });
+    }
+
     private void setupWebView() {
+        binding.postDetailWebView.setBackgroundColor(0); // Transparent background
         binding.postDetailWebView.getSettings().setJavaScriptEnabled(false);
+        binding.postDetailWebView.getSettings().setDefaultTextEncodingName("UTF-8");
         binding.postDetailWebView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
@@ -200,7 +223,7 @@ public class PostDetailActivity extends AppCompatActivity {
 
     private void bindPostData(@NonNull PostResource post) {
         binding.postDetailTitle.setText(post.title != null ? post.title : "");
-        binding.postDetailTime.setText(post.createdAt != null ? post.createdAt : "");
+        binding.postDetailTime.setText(DateTimeUtils.formatFullDateTime(post.createdAt));
 
         if (post.category != null && post.category.name != null) {
             binding.postDetailCategory.setText(post.category.name);
@@ -210,8 +233,16 @@ public class PostDetailActivity extends AppCompatActivity {
         }
 
         if (post.author != null) {
-            binding.postDetailAuthorName.setText(post.author.name != null ? post.author.name : "Nặc danh");
+            binding.postDetailAuthorName.setText(post.author.name != null ? "Bởi " + post.author.name : "Nặc danh");
             binding.postDetailAuthorAvatar.loadAvatar(post.author.getAvatarUrl());
+
+            View.OnClickListener authorClickListener = v -> {
+                if (post.author != null && post.author.id > 0) {
+                    Navigator.navigateToUserProfile(PostDetailActivity.this, post.author.id);
+                }
+            };
+            binding.postDetailAuthorAvatar.setOnClickListener(authorClickListener);
+            binding.postDetailAuthorName.setOnClickListener(authorClickListener);
 
             UserResource currentUser = sessionManager.getCurrentUser();
             if (currentUser != null && currentUser.id == post.author.id) {
@@ -222,24 +253,24 @@ public class PostDetailActivity extends AppCompatActivity {
         }
 
         if (post.thumbnailUrl != null && !post.thumbnailUrl.trim().isEmpty()) {
+            binding.postDetailThumbnailCard.setVisibility(View.VISIBLE);
             binding.postDetailThumbnail.setVisibility(View.VISIBLE);
             Glide.with(this).load(post.thumbnailUrl).centerCrop().into(binding.postDetailThumbnail);
 
             binding.btnFactcheck.setVisibility(View.VISIBLE);
         } else {
+            binding.postDetailThumbnailCard.setVisibility(View.GONE);
             binding.postDetailThumbnail.setVisibility(View.GONE);
             binding.btnFactcheck.setVisibility(View.GONE);
         }
 
-        // HTML WebView
-        if (post.contentHtml != null) {
-            String htmlData = "<html><head><style>" +
-                    "body { font-family: sans-serif; margin: 0; padding: 0; color: #333; line-height: 1.6; }" +
-                    "img { max-width: 100% !important; height: auto !important; border-radius: 8px; }" +
-                    "table { width: 100% !important; border-collapse: collapse; }" +
-                    "pre, code { background: #f5f5f5; padding: 8px; overflow-x: auto; }" +
-                    "</style></head><body>" + post.contentHtml + "</body></html>";
+        // HTML WebView with editorial typography styling
+        if (post.contentHtml != null && !post.contentHtml.trim().isEmpty()) {
+            String htmlData = buildEditorialHtml(post.contentHtml);
+            binding.postDetailWebView.setVisibility(View.VISIBLE);
             binding.postDetailWebView.loadDataWithBaseURL(null, htmlData, "text/html", "UTF-8", null);
+        } else {
+            binding.postDetailWebView.setVisibility(View.GONE);
         }
 
         // Source URL
@@ -255,24 +286,44 @@ public class PostDetailActivity extends AppCompatActivity {
 
         // Vote score
         binding.postDetailVoteScore.setText(String.valueOf(post.voteScore));
+        int primaryColor = ContextCompat.getColor(this, R.color.app_primary);
+        int dangerColor = ContextCompat.getColor(this, R.color.app_danger);
+        int secondaryTextColor = ContextCompat.getColor(this, R.color.app_text_secondary);
+        int primaryTextColor = ContextCompat.getColor(this, R.color.app_text_primary);
+
         if (post.userVote == 1) {
             binding.btnUpvote.setAlpha(1.0f);
-            binding.btnUpvote.setText("▲ Upvoted");
-            binding.btnDownvote.setAlpha(0.5f);
-            binding.btnDownvote.setText("▼ Downvote");
+            binding.btnUpvote.setText("▲");
+            binding.btnUpvote.setTextColor(primaryColor);
+
+            binding.btnDownvote.setAlpha(0.6f);
+            binding.btnDownvote.setText("▼");
+            binding.btnDownvote.setTextColor(secondaryTextColor);
+
+            binding.postDetailVoteScore.setTextColor(primaryColor);
         } else if (post.userVote == -1) {
-            binding.btnUpvote.setAlpha(0.5f);
-            binding.btnUpvote.setText("▲ Upvote");
+            binding.btnUpvote.setAlpha(0.6f);
+            binding.btnUpvote.setText("▲");
+            binding.btnUpvote.setTextColor(secondaryTextColor);
+
             binding.btnDownvote.setAlpha(1.0f);
-            binding.btnDownvote.setText("▼ Downvoted");
+            binding.btnDownvote.setText("▼");
+            binding.btnDownvote.setTextColor(dangerColor);
+
+            binding.postDetailVoteScore.setTextColor(dangerColor);
         } else {
-            binding.btnUpvote.setAlpha(0.9f);
-            binding.btnUpvote.setText("▲ Upvote");
-            binding.btnDownvote.setAlpha(0.9f);
-            binding.btnDownvote.setText("▼ Downvote");
+            binding.btnUpvote.setAlpha(1.0f);
+            binding.btnUpvote.setText("▲");
+            binding.btnUpvote.setTextColor(secondaryTextColor);
+
+            binding.btnDownvote.setAlpha(1.0f);
+            binding.btnDownvote.setText("▼");
+            binding.btnDownvote.setTextColor(secondaryTextColor);
+
+            binding.postDetailVoteScore.setTextColor(primaryTextColor);
         }
 
-        binding.btnComments.setText("💬 Bình luận (" + post.commentsCount + ")");
+        binding.btnComments.setText("💬 " + post.commentsCount + " bình luận");
     }
 
     private void showOverflowMenu(View anchor) {
@@ -328,5 +379,105 @@ public class PostDetailActivity extends AppCompatActivity {
         intent.putExtra(Intent.EXTRA_SUBJECT, post.title);
         intent.putExtra(Intent.EXTRA_TEXT, shareContent);
         startActivity(Intent.createChooser(intent, "Chia sẻ bài viết qua"));
+    }
+
+    @NonNull
+    private String buildEditorialHtml(@NonNull String contentHtml) {
+        return "<!DOCTYPE html><html><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no\"><style>"
+                + "* { box-sizing: border-box; }"
+                + "body {"
+                + "  font-family: Georgia, 'Times New Roman', Cambria, serif;"
+                + "  font-size: 18px;"
+                + "  line-height: 1.85;"
+                + "  color: #17212B;"
+                + "  background-color: transparent;"
+                + "  margin: 0;"
+                + "  padding: 4px 0 24px 0;"
+                + "  word-wrap: break-word;"
+                + "  letter-spacing: 0.01em;"
+                + "}"
+                + "p {"
+                + "  margin: 0 0 18px 0;"
+                + "  text-align: left;"
+                + "}"
+                + "p:first-of-type, .lead {"
+                + "  font-size: 19px;"
+                + "  font-weight: normal;"
+                + "  color: #17212B;"
+                + "  line-height: 1.8;"
+                + "  margin-bottom: 22px;"
+                + "}"
+                + "img {"
+                + "  max-width: 100% !important;"
+                + "  height: auto !important;"
+                + "  display: block;"
+                + "  margin: 20px auto 8px auto;"
+                + "  border-radius: 4px;"
+                + "  border: 1px solid #D8E0EA;"
+                + "}"
+                + "figcaption, .caption, em {"
+                + "  display: block;"
+                + "  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;"
+                + "  font-size: 13px;"
+                + "  font-style: italic;"
+                + "  color: #64748B;"
+                + "  text-align: left;"
+                + "  margin: 6px auto 18px auto;"
+                + "  line-height: 1.5;"
+                + "}"
+                + "h1, h2, h3, h4 {"
+                + "  font-family: Georgia, 'Times New Roman', serif;"
+                + "  color: #17212B;"
+                + "  font-weight: 700;"
+                + "  margin: 28px 0 12px 0;"
+                + "  line-height: 1.35;"
+                + "}"
+                + "h2 { font-size: 21px; }"
+                + "h3 { font-size: 19px; }"
+                + "blockquote {"
+                + "  margin: 22px 0;"
+                + "  padding: 14px 20px;"
+                + "  background-color: #F8FAFC;"
+                + "  border-left: 3px solid #1E5AA8;"
+                + "  border-radius: 0 4px 4px 0;"
+                + "  font-family: Georgia, serif;"
+                + "  font-style: italic;"
+                + "  font-size: 18px;"
+                + "  line-height: 1.7;"
+                + "  color: #334155;"
+                + "}"
+                + "table {"
+                + "  width: 100% !important;"
+                + "  border-collapse: collapse;"
+                + "  margin: 20px 0;"
+                + "  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;"
+                + "  font-size: 14px;"
+                + "}"
+                + "th, td {"
+                + "  border: 1px solid #D8E0EA;"
+                + "  padding: 10px 12px;"
+                + "  text-align: left;"
+                + "}"
+                + "th {"
+                + "  background-color: #EEF2F6;"
+                + "  font-weight: 600;"
+                + "  color: #17212B;"
+                + "}"
+                + "pre, code {"
+                + "  background: #EEF2F6;"
+                + "  padding: 4px 8px;"
+                + "  border-radius: 4px;"
+                + "  font-size: 14px;"
+                + "  color: #17212B;"
+                + "  overflow-x: auto;"
+                + "}"
+                + "a {"
+                + "  color: #1E5AA8;"
+                + "  text-decoration: underline;"
+                + "  font-weight: 500;"
+                + "}"
+                + "</style></head><body>"
+                + contentHtml
+                + "</body></html>";
     }
 }
