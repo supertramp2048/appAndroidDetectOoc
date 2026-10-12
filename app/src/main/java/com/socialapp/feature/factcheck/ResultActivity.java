@@ -86,15 +86,6 @@ public class ResultActivity extends AppCompatActivity {
             verdictTv.setBackgroundResource(R.drawable.bg_chip_neutral);
         }
 
-        TextView confidenceChip = findViewById(R.id.confidence_percent_chip);
-        if (prediction.confidence > 0) {
-            int percent = (int) Math.round(prediction.confidence * 100);
-            confidenceChip.setText("Độ tin cậy: " + percent + "%");
-            confidenceChip.setVisibility(View.VISIBLE);
-        } else {
-            confidenceChip.setVisibility(View.GONE);
-        }
-
         TextView confidenceTv = findViewById(R.id.confidence_text);
         if (prediction.captionUsed != null && !prediction.captionUsed.trim().isEmpty()) {
             confidenceTv.setText("Caption đã dùng: " + prediction.captionUsed);
@@ -228,7 +219,6 @@ public class ResultActivity extends AppCompatActivity {
 
         String suggestedTitle = "Thảo luận kết quả kiểm chứng: " + (prediction.captionUsed != null ? prediction.captionUsed : "Nội dung tin tức");
         String body = "Kết luận kiểm chứng: " + formatVerdict(prediction.verdict)
-                + "\nĐộ tin cậy: " + ((int) Math.round(prediction.confidence * 100)) + "%"
                 + "\nLập luận: " + (prediction.reasoning != null ? prediction.reasoning : "");
 
         if (imageReference.startsWith("http://") || imageReference.startsWith("https://")) {

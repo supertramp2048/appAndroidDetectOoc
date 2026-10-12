@@ -75,19 +75,6 @@
                     android:textSize="18sp"
                     android:textStyle="bold"
                     tools:text="Có dấu hiệu tin giả" />
-
-                <TextView
-                    android:id="@+id/confidence_percent_chip"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="12dp"
-                    android:background="@drawable/bg_chip_neutral"
-                    android:paddingHorizontal="10dp"
-                    android:paddingVertical="4dp"
-                    android:textColor="@color/app_primary"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    tools:text="Độ tin cậy: 85%" />
             </LinearLayout>
 
             <TextView
