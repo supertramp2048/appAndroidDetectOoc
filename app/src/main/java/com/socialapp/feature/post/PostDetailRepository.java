@@ -14,6 +14,10 @@ import com.socialapp.core.network.dto.ProfileResource;
 import com.socialapp.core.network.dto.ReportRequest;
 import com.socialapp.core.network.dto.VoteResponse;
 
+import com.socialapp.core.network.sim.ScreenPayloadConfig;
+import com.socialapp.core.prefetch.PrefetchManager;
+import com.socialapp.core.prefetch.PrefetchResult;
+
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -30,23 +34,53 @@ public class PostDetailRepository {
     public LiveData<ApiResult<PostResource>> getPostDetail(int postId) {
         MutableLiveData<ApiResult<PostResource>> resultLiveData = new MutableLiveData<>(ApiResult.loading());
 
+        String cacheKey = "post_" + postId;
+        PrefetchManager prefetchManager = PrefetchManager.getInstance();
+
+        // 1. Try acquire from Prefetch Engine (FULL_HIT, LATE_HIT, or MISS)
+        prefetchManager.acquire(
+                ScreenPayloadConfig.SCREEN_POST_DETAIL,
+                cacheKey,
+                () -> {
+                    try {
+                        Response<PostDetailResponse> resp = apiService.getPostDetail(postId).execute();
+                        if (resp.isSuccessful() && resp.body() != null && resp.body().data != null) {
+                            return resp.body().data;
+                        }
+                    } catch (Throwable ignored) {}
+                    return null;
+                }
+        ).thenAccept(result -> {
+            PostResource post = result.getData();
+            if (post != null) {
+                resultLiveData.postValue(ApiResult.success(post));
+            } else {
+                fetchViaRetrofit(postId, resultLiveData);
+            }
+        }).exceptionally(ex -> {
+            fetchViaRetrofit(postId, resultLiveData);
+            return null;
+        });
+
+        return resultLiveData;
+    }
+
+    private void fetchViaRetrofit(int postId, MutableLiveData<ApiResult<PostResource>> resultLiveData) {
         apiService.getPostDetail(postId).enqueue(new Callback<PostDetailResponse>() {
             @Override
             public void onResponse(@NonNull Call<PostDetailResponse> call, @NonNull Response<PostDetailResponse> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().data != null) {
-                    resultLiveData.setValue(ApiResult.success(response.body().data));
+                    resultLiveData.postValue(ApiResult.success(response.body().data));
                 } else {
-                    resultLiveData.setValue(ApiResult.error(ApiErrorParser.parse(response)));
+                    resultLiveData.postValue(ApiResult.error(ApiErrorParser.parse(response)));
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<PostDetailResponse> call, @NonNull Throwable t) {
-                resultLiveData.setValue(ApiResult.error(ApiErrorParser.parseThrowable(t)));
+                resultLiveData.postValue(ApiResult.error(ApiErrorParser.parseThrowable(t)));
             }
         });
-
-        return resultLiveData;
     }
 
     public LiveData<ApiResult<VoteResponse>> upvotePost(int postId) {
