@@ -1,5 +1,7 @@
 package com.socialapp.feature.comments;
 
+import android.os.Bundle;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
@@ -13,6 +15,10 @@ import com.socialapp.core.network.dto.CommentResource;
 import com.socialapp.core.network.dto.CommentSingleResponse;
 import com.socialapp.core.network.dto.ReportRequest;
 import com.socialapp.core.pagination.PageLoader;
+import com.socialapp.core.prefetch.HitType;
+import com.socialapp.core.prefetch.Repository;
+import com.socialapp.core.prefetch.ScreenId;
+import com.socialapp.core.prefetch.ScreenLoadCallback;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -33,25 +39,65 @@ public class CommentsRepository {
     }
 
     public PageLoader.PageFetcher<CommentResource> createRootCommentsPageFetcher(int postId) {
-        return (page, callback) -> apiService.getComments(postId, page, 10).enqueue(new Callback<CommentListResponse>() {
-            @Override
-            public void onResponse(@NonNull Call<CommentListResponse> call, @NonNull Response<CommentListResponse> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    CommentListResponse body = response.body();
-                    List<CommentResource> items = body.data != null ? body.data : Collections.emptyList();
-                    boolean hasNext = body.links != null && body.links.hasNext();
-                    int currentPage = (body.meta != null && body.meta.currentPage > 0) ? body.meta.currentPage : page;
-                    callback.onSuccess(new PageLoader.PageResult<>(items, currentPage, hasNext));
-                } else {
-                    callback.onError(ApiErrorParser.parse(response));
-                }
-            }
+        return (page, callback) -> {
+            if (page == 1) {
+                Bundle params = new Bundle();
+                params.putInt("postId", postId);
 
-            @Override
-            public void onFailure(@NonNull Call<CommentListResponse> call, @NonNull Throwable t) {
-                callback.onError(ApiErrorParser.parseThrowable(t));
+                Repository.load(ScreenId.COMMENTS, params, new Repository.RealDataLoader<List<CommentResource>>() {
+                    @Override
+                    public void execute(@NonNull ScreenLoadCallback<List<CommentResource>> screenCallback) {
+                        apiService.getComments(postId, page, 10).enqueue(new Callback<CommentListResponse>() {
+                            @Override
+                            public void onResponse(@NonNull Call<CommentListResponse> call, @NonNull Response<CommentListResponse> response) {
+                                if (response.isSuccessful() && response.body() != null) {
+                                    List<CommentResource> items = response.body().data != null ? response.body().data : Collections.emptyList();
+                                    screenCallback.onLoaded(HitType.MISS, 0, items);
+                                } else {
+                                    screenCallback.onError(new Exception(ApiErrorParser.parse(response).getMessage()));
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(@NonNull Call<CommentListResponse> call, @NonNull Throwable t) {
+                                screenCallback.onError(t);
+                            }
+                        });
+                    }
+                }, new ScreenLoadCallback<List<CommentResource>>() {
+                    @Override
+                    public void onLoaded(@NonNull HitType hitType, long latencyMs, @Nullable List<CommentResource> data) {
+                        List<CommentResource> items = data != null ? data : Collections.emptyList();
+                        callback.onSuccess(new PageLoader.PageResult<>(items, 1, items.size() >= 10));
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable error) {
+                        callback.onError(ApiErrorParser.parseThrowable(error));
+                    }
+                });
+            } else {
+                apiService.getComments(postId, page, 10).enqueue(new Callback<CommentListResponse>() {
+                    @Override
+                    public void onResponse(@NonNull Call<CommentListResponse> call, @NonNull Response<CommentListResponse> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            CommentListResponse body = response.body();
+                            List<CommentResource> items = body.data != null ? body.data : Collections.emptyList();
+                            boolean hasNext = body.links != null && body.links.hasNext();
+                            int currentPage = (body.meta != null && body.meta.currentPage > 0) ? body.meta.currentPage : page;
+                            callback.onSuccess(new PageLoader.PageResult<>(items, currentPage, hasNext));
+                        } else {
+                            callback.onError(ApiErrorParser.parse(response));
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull Call<CommentListResponse> call, @NonNull Throwable t) {
+                        callback.onError(ApiErrorParser.parseThrowable(t));
+                    }
+                });
             }
-        });
+        };
     }
 
     public PageLoader.PageFetcher<CommentResource> createRepliesPageFetcher(int commentId) {

@@ -1,22 +1,13 @@
-# Task List - True Single Permission Grant Zero-Popup Overlay Architecture
+# Task List - ResultActivity White Screen Layout Fix
 
 - [/] Phase 1: Planning Fix
   - [x] Analyze issue:
-    - User expects granting permission ONCE when starting the floating widget.
-    - All subsequent taps on the floating camera icon (whether inside `com.socialapp` or on external apps like Google Chrome) MUST capture instantly with **ZERO PERMISSION POPUPS**.
-  - [/] Formulate 100% zero-popup architecture:
-    - `MediaProjectionActivity`: Asks system permission ONCE when starting floating widget in `FactCheckTabFragment`. Forwards `resultCode` and `projectionData` to `ScreenCaptureService` and finishes immediately.
-    - `ScreenCaptureService`:
-      - Starts as Foreground Service (`FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION`).
-      - Obtains `mediaProjection = manager.getMediaProjection(resultCode, projectionData)` and calls `mediaProjection.registerCallback(mediaProjectionCallback, handler)` ONCE.
-      - Retains `mediaProjection` alive in memory.
-      - When user taps floating widget and confirms crop region, captures screen DIRECTLY inside `ScreenCaptureService` with **ZERO permission popups**.
-      - Releases `virtualDisplay` (`DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR`) after frame capture while keeping `mediaProjection` alive for future captures.
-      - Launches `ScreenshotCropActivity` and `ResultActivity` using `PendingIntent.send()`.
+    - `dialog_prediction_result.xml` had `android:orientation="horizontal"` with `android:layout_height="0dp"` and `android:layout_weight`, causing child views (`top_image_container` and `NestedScrollView`) to collapse to 0dp height, rendering a blank white screen.
+  - [/] Formulate implementation plan:
+    - Update `dialog_prediction_result.xml`: Change root orientation to `vertical`, set `top_image_container` height to `220dp`, and set `NestedScrollView` height to `0dp` with `layout_weight="1"`.
   - [ ] Submit `implementation_plan.artifact.md` and notify user for approval
 - [ ] Phase 2: Implementation
-  - [ ] Update `MediaProjectionActivity.java`: Request permission ONCE, forward intent to `ScreenCaptureService`, and finish
-  - [ ] Update `ScreenCaptureService.java`: Retain `mediaProjection` in foreground service, perform captures directly upon floating icon selection with 0 popups, and launch UI via `PendingIntent.send()`
+  - [ ] Update `dialog_prediction_result.xml`: Fix layout orientation and height specifications
 - [ ] Phase 3: Verification & Testing
   - [ ] Run build & unit tests using `gradle_build`
   - [ ] Deploy updated app to emulator

@@ -1,0 +1,3076 @@
+﻿{
+    "version":  1,
+    "total_sessions":  100,
+    "sessions":  [
+                     {
+                         "session_id":  1,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  1781
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  1751
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "FACT_CHECK",
+                                           "dwell_ms":  2545
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  1836
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "SETTINGS",
+                                           "dwell_ms":  2025
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  2,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2525
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  1847
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "FACT_CHECK",
+                                           "dwell_ms":  3022
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  1969
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "SETTINGS",
+                                           "dwell_ms":  2014
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  3,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2140
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "FEED_FOLLOWING",
+                                           "dwell_ms":  2261
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "PROFILE",
+                                           "dwell_ms":  2020
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2534
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  1570
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  4,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_HOT",
+                                           "dwell_ms":  2654
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2294
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "PROFILE",
+                                           "dwell_ms":  1804
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  1680
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "FEED_HOT",
+                                           "dwell_ms":  2910
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  5,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_HOT",
+                                           "dwell_ms":  2579
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  1588
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "PROFILE",
+                                           "dwell_ms":  2922
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  1795
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "FEED_HOT",
+                                           "dwell_ms":  3312
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  6,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2532
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  1872
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "FACT_CHECK",
+                                           "dwell_ms":  1583
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2116
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "SETTINGS",
+                                           "dwell_ms":  2666
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  7,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_HOT",
+                                           "dwell_ms":  1507
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2571
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "PROFILE",
+                                           "dwell_ms":  3110
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  2996
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "FEED_HOT",
+                                           "dwell_ms":  2269
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  8,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  1552
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "FEED_HOT",
+                                           "dwell_ms":  1602
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  3063
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "PROFILE",
+                                           "dwell_ms":  2752
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  1730
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  9,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  3044
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "FEED_HOT",
+                                           "dwell_ms":  2079
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2796
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "PROFILE",
+                                           "dwell_ms":  1787
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  1588
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  10,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2531
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "FEED_FOLLOWING",
+                                           "dwell_ms":  1601
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "PROFILE",
+                                           "dwell_ms":  2340
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2913
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  2756
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  11,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  1526
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "FEED_HOT",
+                                           "dwell_ms":  2230
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2034
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "PROFILE",
+                                           "dwell_ms":  1637
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2936
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  12,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2428
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  1524
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  3095
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2378
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2526
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  13,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_HOT",
+                                           "dwell_ms":  1517
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  3157
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  1525
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  1506
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  1627
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  14,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  1569
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  3327
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "FACT_CHECK",
+                                           "dwell_ms":  3357
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2422
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "SETTINGS",
+                                           "dwell_ms":  2250
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  15,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  1588
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "FEED_FOLLOWING",
+                                           "dwell_ms":  2245
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "PROFILE",
+                                           "dwell_ms":  1783
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2373
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  3084
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  16,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2301
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "FEED_FOLLOWING",
+                                           "dwell_ms":  2094
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "PROFILE",
+                                           "dwell_ms":  3314
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2673
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  2970
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  17,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  3263
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  3415
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  2165
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2921
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  1824
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  18,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2404
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2166
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  3052
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  1797
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  1769
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  19,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2683
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "FEED_HOT",
+                                           "dwell_ms":  2525
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  3474
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "PROFILE",
+                                           "dwell_ms":  3032
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2844
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  20,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2078
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2604
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "FACT_CHECK",
+                                           "dwell_ms":  3479
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2801
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "SETTINGS",
+                                           "dwell_ms":  1548
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  21,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  3358
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "SEARCH",
+                                           "dwell_ms":  1554
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  1939
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  2030
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "FACT_CHECK",
+                                           "dwell_ms":  1576
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  22,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2684
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "FEED_HOT",
+                                           "dwell_ms":  2344
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  1687
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "PROFILE",
+                                           "dwell_ms":  3486
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  1742
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  23,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2142
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2147
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  3002
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  3151
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  1518
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  24,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  3180
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  3291
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  1976
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  3352
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  3190
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  25,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2590
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "SEARCH",
+                                           "dwell_ms":  2768
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2750
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  1884
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "FACT_CHECK",
+                                           "dwell_ms":  2094
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  26,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  1559
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "FEED_HOT",
+                                           "dwell_ms":  1961
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  3366
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "PROFILE",
+                                           "dwell_ms":  3474
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  3063
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  27,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  3266
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "FEED_HOT",
+                                           "dwell_ms":  1873
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2089
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "PROFILE",
+                                           "dwell_ms":  2619
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2612
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  28,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  1743
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2696
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "FACT_CHECK",
+                                           "dwell_ms":  2282
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  3261
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "SETTINGS",
+                                           "dwell_ms":  2389
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  29,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  3427
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "SEARCH",
+                                           "dwell_ms":  2427
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2586
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  3395
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "FACT_CHECK",
+                                           "dwell_ms":  3120
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  30,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  1714
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "FEED_HOT",
+                                           "dwell_ms":  1505
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  1863
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "PROFILE",
+                                           "dwell_ms":  3380
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2940
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  31,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_HOT",
+                                           "dwell_ms":  2681
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2300
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  1749
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  3321
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  3427
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  32,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  1845
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "SEARCH",
+                                           "dwell_ms":  2167
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "PROFILE",
+                                           "dwell_ms":  2584
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2731
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  3384
+                                       },
+                                       {
+                                           "step":  6,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  3144
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  33,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2061
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2179
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "FACT_CHECK",
+                                           "dwell_ms":  2551
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  3108
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "SETTINGS",
+                                           "dwell_ms":  1994
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  34,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2828
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "SEARCH",
+                                           "dwell_ms":  1879
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "PROFILE",
+                                           "dwell_ms":  2054
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  1957
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  3167
+                                       },
+                                       {
+                                           "step":  6,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  2780
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  35,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2341
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  3110
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  3260
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  3057
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  3406
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  36,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2433
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "SEARCH",
+                                           "dwell_ms":  3281
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "PROFILE",
+                                           "dwell_ms":  3438
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  1812
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2675
+                                       },
+                                       {
+                                           "step":  6,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  1922
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  37,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2501
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2916
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "FACT_CHECK",
+                                           "dwell_ms":  1722
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  3112
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "SETTINGS",
+                                           "dwell_ms":  2195
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  38,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2941
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "FEED_FOLLOWING",
+                                           "dwell_ms":  1900
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "PROFILE",
+                                           "dwell_ms":  2559
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  3077
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  2663
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  39,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  3369
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "FEED_HOT",
+                                           "dwell_ms":  1604
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  1611
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "PROFILE",
+                                           "dwell_ms":  1928
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2127
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  40,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2082
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "FEED_HOT",
+                                           "dwell_ms":  2041
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  3264
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "PROFILE",
+                                           "dwell_ms":  2440
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2234
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  41,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_HOT",
+                                           "dwell_ms":  3026
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2825
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  3498
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2211
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  3213
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  42,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  1867
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "SEARCH",
+                                           "dwell_ms":  3376
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2686
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  2725
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "FACT_CHECK",
+                                           "dwell_ms":  2274
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  43,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  1657
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "SEARCH",
+                                           "dwell_ms":  2442
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "PROFILE",
+                                           "dwell_ms":  3261
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2124
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  3338
+                                       },
+                                       {
+                                           "step":  6,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  3262
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  44,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  1533
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "SEARCH",
+                                           "dwell_ms":  2096
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "PROFILE",
+                                           "dwell_ms":  2660
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  1537
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  3281
+                                       },
+                                       {
+                                           "step":  6,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  2321
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  45,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2811
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  3469
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "FACT_CHECK",
+                                           "dwell_ms":  2092
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  3381
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "SETTINGS",
+                                           "dwell_ms":  3004
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  46,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2181
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2814
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  1585
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2870
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2543
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  47,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2187
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "SEARCH",
+                                           "dwell_ms":  1937
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2710
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  2787
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "FACT_CHECK",
+                                           "dwell_ms":  2710
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  48,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2830
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "SEARCH",
+                                           "dwell_ms":  1699
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  1771
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  3185
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "FACT_CHECK",
+                                           "dwell_ms":  2081
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  49,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2202
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "SEARCH",
+                                           "dwell_ms":  1501
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "PROFILE",
+                                           "dwell_ms":  2658
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2201
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  1810
+                                       },
+                                       {
+                                           "step":  6,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  1866
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  50,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  1717
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  3389
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "FACT_CHECK",
+                                           "dwell_ms":  1860
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2811
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "SETTINGS",
+                                           "dwell_ms":  1897
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  51,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2804
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  3221
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "FACT_CHECK",
+                                           "dwell_ms":  2212
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2730
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "SETTINGS",
+                                           "dwell_ms":  2342
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  52,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_HOT",
+                                           "dwell_ms":  1890
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  3081
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  2608
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2575
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2844
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  53,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_HOT",
+                                           "dwell_ms":  2809
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  3449
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  2893
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  1951
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2122
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  54,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  3125
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "FEED_FOLLOWING",
+                                           "dwell_ms":  2887
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "PROFILE",
+                                           "dwell_ms":  2134
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2678
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  3003
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  55,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_HOT",
+                                           "dwell_ms":  3479
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2503
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  3218
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  1582
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2326
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  56,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_HOT",
+                                           "dwell_ms":  1827
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2625
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  2312
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  1503
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  3406
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  57,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_HOT",
+                                           "dwell_ms":  2117
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2468
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  2929
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2328
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  1691
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  58,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  3093
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "FEED_HOT",
+                                           "dwell_ms":  2426
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  3314
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "PROFILE",
+                                           "dwell_ms":  3379
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2501
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  59,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  3394
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "FEED_HOT",
+                                           "dwell_ms":  3265
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2766
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "PROFILE",
+                                           "dwell_ms":  2779
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  3185
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  60,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2149
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "FEED_FOLLOWING",
+                                           "dwell_ms":  1626
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "PROFILE",
+                                           "dwell_ms":  1718
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  3309
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  2751
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  61,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2638
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "SEARCH",
+                                           "dwell_ms":  1807
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "PROFILE",
+                                           "dwell_ms":  2254
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  1768
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2247
+                                       },
+                                       {
+                                           "step":  6,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  1718
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  62,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2805
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  1543
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  1970
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  3333
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  3154
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  63,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_HOT",
+                                           "dwell_ms":  2297
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2696
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "PROFILE",
+                                           "dwell_ms":  1757
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  3084
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "FEED_HOT",
+                                           "dwell_ms":  2076
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  64,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  1600
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "FEED_FOLLOWING",
+                                           "dwell_ms":  1502
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "PROFILE",
+                                           "dwell_ms":  2802
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  1688
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  2560
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  65,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_HOT",
+                                           "dwell_ms":  2547
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2939
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "PROFILE",
+                                           "dwell_ms":  3302
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  2854
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "FEED_HOT",
+                                           "dwell_ms":  3279
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  66,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2308
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "SEARCH",
+                                           "dwell_ms":  3217
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  3090
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  3189
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "FACT_CHECK",
+                                           "dwell_ms":  3383
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  67,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_HOT",
+                                           "dwell_ms":  2825
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  1678
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "PROFILE",
+                                           "dwell_ms":  3095
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  3369
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "FEED_HOT",
+                                           "dwell_ms":  3195
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  68,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2923
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "FEED_HOT",
+                                           "dwell_ms":  3432
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  3112
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "PROFILE",
+                                           "dwell_ms":  3128
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2387
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  69,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  1891
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "SEARCH",
+                                           "dwell_ms":  2041
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "PROFILE",
+                                           "dwell_ms":  3141
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2220
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2650
+                                       },
+                                       {
+                                           "step":  6,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  3336
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  70,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  1619
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "SEARCH",
+                                           "dwell_ms":  3193
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "PROFILE",
+                                           "dwell_ms":  2195
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  3200
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2279
+                                       },
+                                       {
+                                           "step":  6,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  1707
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  71,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  1763
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "SEARCH",
+                                           "dwell_ms":  3266
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "PROFILE",
+                                           "dwell_ms":  2524
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  3436
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  1561
+                                       },
+                                       {
+                                           "step":  6,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  2608
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  72,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2135
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  1759
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "FACT_CHECK",
+                                           "dwell_ms":  1898
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2993
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "SETTINGS",
+                                           "dwell_ms":  1731
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  73,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2428
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "FEED_HOT",
+                                           "dwell_ms":  2264
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2628
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "PROFILE",
+                                           "dwell_ms":  3460
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2919
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  74,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  3488
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "SEARCH",
+                                           "dwell_ms":  2462
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2737
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  2563
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "FACT_CHECK",
+                                           "dwell_ms":  1587
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  75,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  3253
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "SEARCH",
+                                           "dwell_ms":  3353
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  3263
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  3428
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "FACT_CHECK",
+                                           "dwell_ms":  2130
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  76,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2316
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "FEED_HOT",
+                                           "dwell_ms":  3161
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  3244
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "PROFILE",
+                                           "dwell_ms":  1609
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  3157
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  77,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_HOT",
+                                           "dwell_ms":  3175
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  3066
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  3279
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2000
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  3256
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  78,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2742
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "FEED_HOT",
+                                           "dwell_ms":  2727
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2419
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "PROFILE",
+                                           "dwell_ms":  3030
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2407
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  79,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2065
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2234
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "FACT_CHECK",
+                                           "dwell_ms":  1780
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  1727
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "SETTINGS",
+                                           "dwell_ms":  1718
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  80,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_HOT",
+                                           "dwell_ms":  2525
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2203
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  2436
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2870
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  1807
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  81,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  3050
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2206
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "FACT_CHECK",
+                                           "dwell_ms":  3128
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  3420
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "SETTINGS",
+                                           "dwell_ms":  2176
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  82,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2061
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "SEARCH",
+                                           "dwell_ms":  2318
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2607
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  1720
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "FACT_CHECK",
+                                           "dwell_ms":  1784
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  83,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2272
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "SEARCH",
+                                           "dwell_ms":  2988
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "PROFILE",
+                                           "dwell_ms":  2706
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2455
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  3320
+                                       },
+                                       {
+                                           "step":  6,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  2360
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  84,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_HOT",
+                                           "dwell_ms":  1722
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2446
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "PROFILE",
+                                           "dwell_ms":  1908
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  2863
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "FEED_HOT",
+                                           "dwell_ms":  3396
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  85,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2089
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2942
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  2256
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2583
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2454
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  86,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  1805
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "SEARCH",
+                                           "dwell_ms":  2758
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "PROFILE",
+                                           "dwell_ms":  2025
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2450
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2549
+                                       },
+                                       {
+                                           "step":  6,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  2153
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  87,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2050
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  1849
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "FACT_CHECK",
+                                           "dwell_ms":  2468
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  1588
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "SETTINGS",
+                                           "dwell_ms":  1747
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  88,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  1949
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "FEED_HOT",
+                                           "dwell_ms":  1927
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2954
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "PROFILE",
+                                           "dwell_ms":  2230
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  3281
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  89,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2382
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  1576
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  3222
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  1584
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  1808
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  90,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2843
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "FEED_FOLLOWING",
+                                           "dwell_ms":  3232
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "PROFILE",
+                                           "dwell_ms":  3222
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  1587
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  2627
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  91,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  3235
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "SEARCH",
+                                           "dwell_ms":  1653
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "PROFILE",
+                                           "dwell_ms":  1749
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  3479
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2093
+                                       },
+                                       {
+                                           "step":  6,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  1747
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  92,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  1657
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "SEARCH",
+                                           "dwell_ms":  1801
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  1997
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  1809
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "FACT_CHECK",
+                                           "dwell_ms":  2797
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  93,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2357
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  1660
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "FACT_CHECK",
+                                           "dwell_ms":  2518
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2946
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "SETTINGS",
+                                           "dwell_ms":  3269
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  94,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2212
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "FEED_FOLLOWING",
+                                           "dwell_ms":  2474
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "PROFILE",
+                                           "dwell_ms":  2513
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  1571
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  3394
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  95,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2674
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "SEARCH",
+                                           "dwell_ms":  1716
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  3308
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  3206
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "FACT_CHECK",
+                                           "dwell_ms":  2420
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  96,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_HOT",
+                                           "dwell_ms":  1962
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2722
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "PROFILE",
+                                           "dwell_ms":  2662
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  1853
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "FEED_HOT",
+                                           "dwell_ms":  1594
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  97,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  1970
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  3334
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  2707
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  1691
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  3124
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  98,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  1884
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "SEARCH",
+                                           "dwell_ms":  3267
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "PROFILE",
+                                           "dwell_ms":  1924
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2330
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2950
+                                       },
+                                       {
+                                           "step":  6,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  2481
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  99,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  1785
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "FEED_HOT",
+                                           "dwell_ms":  3452
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2452
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "PROFILE",
+                                           "dwell_ms":  1914
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  2331
+                                       }
+                                   ]
+                     },
+                     {
+                         "session_id":  100,
+                         "steps":  [
+                                       {
+                                           "step":  1,
+                                           "screen":  "FEED_NEWEST",
+                                           "dwell_ms":  1581
+                                       },
+                                       {
+                                           "step":  2,
+                                           "screen":  "SEARCH",
+                                           "dwell_ms":  1855
+                                       },
+                                       {
+                                           "step":  3,
+                                           "screen":  "POST_DETAIL",
+                                           "dwell_ms":  2895
+                                       },
+                                       {
+                                           "step":  4,
+                                           "screen":  "COMMENTS",
+                                           "dwell_ms":  2919
+                                       },
+                                       {
+                                           "step":  5,
+                                           "screen":  "FACT_CHECK",
+                                           "dwell_ms":  1530
+                                       }
+                                   ]
+                     }
+                 ]
+}

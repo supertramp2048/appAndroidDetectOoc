@@ -1,5 +1,6 @@
 package com.socialapp.feature.home;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -16,6 +17,8 @@ import com.socialapp.databinding.ActivityHomeBinding;
 import com.socialapp.feature.factcheck.AiChatBottomSheet;
 
 public class HomeActivity extends AppCompatActivity {
+
+    public static final String EXTRA_NAV_DESTINATION = "EXTRA_NAV_DESTINATION";
 
     private ActivityHomeBinding binding;
     private NavController navController;
@@ -36,6 +39,8 @@ public class HomeActivity extends AppCompatActivity {
             NavigationUI.setupWithNavController(binding.bottomNavigation, navController);
         }
 
+        handleNavigationIntent(getIntent());
+
         binding.fabCreatePost.setOnClickListener(v -> {
             if (sessionManager.isLoggedIn()) {
                 Navigator.navigateToCreatePost(this, null, null, null);
@@ -50,5 +55,24 @@ public class HomeActivity extends AppCompatActivity {
             AiChatBottomSheet bottomSheet = AiChatBottomSheet.newInstanceForSearch();
             bottomSheet.show(getSupportFragmentManager(), "AiChatBottomSheet");
         });
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        handleNavigationIntent(intent);
+    }
+
+    private void handleNavigationIntent(Intent intent) {
+        if (intent != null && intent.hasExtra(EXTRA_NAV_DESTINATION) && navController != null) {
+            int destId = intent.getIntExtra(EXTRA_NAV_DESTINATION, -1);
+            if (destId != -1) {
+                try {
+                    navController.navigate(destId);
+                } catch (Exception ignored) {
+                }
+            }
+        }
     }
 }

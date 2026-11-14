@@ -9,10 +9,14 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.socialapp.R;
+import com.socialapp.core.prefetch.Repository;
+import com.socialapp.core.prefetch.ScreenId;
 import com.socialapp.feature.auth.AuthActivity;
 import com.socialapp.feature.comments.CommentsActivity;
 import com.socialapp.feature.compose.ComposeActivity;
 import com.socialapp.feature.factcheck.FactCheckHelperActivity;
+import com.socialapp.feature.home.HomeActivity;
 import com.socialapp.feature.post.PostDetailActivity;
 import com.socialapp.feature.profile.ProfileActivity;
 import com.socialapp.feature.profile.UserListActivity;
@@ -33,6 +37,8 @@ public class Navigator {
     public static final String ROUTE_ADMIN = "admin";
 
     public static void navigateTo(@NonNull Context context, @NonNull String route) {
+        Repository.markNavigationStart();
+
         if (route.startsWith("http://") || route.startsWith("https://")) {
             try {
                 Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(route));
@@ -43,6 +49,50 @@ public class Navigator {
             } catch (Exception e) {
                 Toast.makeText(context, "Không thể mở liên kết", Toast.LENGTH_SHORT).show();
             }
+            return;
+        }
+
+        if (route.startsWith(ROUTE_HOME)) {
+            Intent intent = new Intent(context, HomeActivity.class);
+            intent.putExtra(HomeActivity.EXTRA_NAV_DESTINATION, R.id.nav_home);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            if (!(context instanceof Activity)) {
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            }
+            context.startActivity(intent);
+            return;
+        }
+
+        if (ROUTE_SEARCH.equalsIgnoreCase(route)) {
+            Intent intent = new Intent(context, HomeActivity.class);
+            intent.putExtra(HomeActivity.EXTRA_NAV_DESTINATION, R.id.nav_search);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            if (!(context instanceof Activity)) {
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            }
+            context.startActivity(intent);
+            return;
+        }
+
+        if (ROUTE_PROFILE.equalsIgnoreCase(route)) {
+            Intent intent = new Intent(context, HomeActivity.class);
+            intent.putExtra(HomeActivity.EXTRA_NAV_DESTINATION, R.id.nav_profile);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            if (!(context instanceof Activity)) {
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            }
+            context.startActivity(intent);
+            return;
+        }
+
+        if (ROUTE_FACTCHECK.equalsIgnoreCase(route) || (route.startsWith("factcheck") && !route.contains("imageUrl="))) {
+            Intent intent = new Intent(context, HomeActivity.class);
+            intent.putExtra(HomeActivity.EXTRA_NAV_DESTINATION, R.id.nav_factcheck);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            if (!(context instanceof Activity)) {
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            }
+            context.startActivity(intent);
             return;
         }
 
@@ -158,6 +208,7 @@ public class Navigator {
             try {
                 int userId = Integer.parseInt(pathPart);
                 Intent intent = new Intent(context, ProfileActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 if (!(context instanceof Activity)) {
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 }
@@ -175,6 +226,7 @@ public class Navigator {
                     String idStr = pathPart.substring(0, pathPart.indexOf("/comments"));
                     int postId = Integer.parseInt(idStr);
                     Intent intent = new Intent(context, CommentsActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                     if (!(context instanceof Activity)) {
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     }
@@ -218,6 +270,7 @@ public class Navigator {
             try {
                 int postId = Integer.parseInt(pathPart);
                 Intent intent = new Intent(context, PostDetailActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 if (!(context instanceof Activity)) {
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 }
@@ -231,6 +284,10 @@ public class Navigator {
         }
 
         Toast.makeText(context, "Đang mở: " + route, Toast.LENGTH_SHORT).show();
+    }
+
+    public static void navigateToScreen(@NonNull Context context, @NonNull ScreenId screenId) {
+        navigateTo(context, screenId.getDefaultRoute());
     }
 
     public static void navigateToPostDetail(@NonNull Context context, int postId) {

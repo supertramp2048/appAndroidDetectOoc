@@ -1,6 +1,9 @@
 package com.socialapp.feature.post;
 
+import android.os.Bundle;
+
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
@@ -13,6 +16,10 @@ import com.socialapp.core.network.dto.ProfileDetailResponse;
 import com.socialapp.core.network.dto.ProfileResource;
 import com.socialapp.core.network.dto.ReportRequest;
 import com.socialapp.core.network.dto.VoteResponse;
+import com.socialapp.core.prefetch.HitType;
+import com.socialapp.core.prefetch.Repository;
+import com.socialapp.core.prefetch.ScreenId;
+import com.socialapp.core.prefetch.ScreenLoadCallback;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -30,19 +37,41 @@ public class PostDetailRepository {
     public LiveData<ApiResult<PostResource>> getPostDetail(int postId) {
         MutableLiveData<ApiResult<PostResource>> resultLiveData = new MutableLiveData<>(ApiResult.loading());
 
-        apiService.getPostDetail(postId).enqueue(new Callback<PostDetailResponse>() {
+        Bundle params = new Bundle();
+        params.putInt("postId", postId);
+
+        Repository.load(ScreenId.POST_DETAIL, params, new Repository.RealDataLoader<PostResource>() {
             @Override
-            public void onResponse(@NonNull Call<PostDetailResponse> call, @NonNull Response<PostDetailResponse> response) {
-                if (response.isSuccessful() && response.body() != null && response.body().data != null) {
-                    resultLiveData.setValue(ApiResult.success(response.body().data));
+            public void execute(@NonNull ScreenLoadCallback<PostResource> callback) {
+                apiService.getPostDetail(postId).enqueue(new Callback<PostDetailResponse>() {
+                    @Override
+                    public void onResponse(@NonNull Call<PostDetailResponse> call, @NonNull Response<PostDetailResponse> response) {
+                        if (response.isSuccessful() && response.body() != null && response.body().data != null) {
+                            callback.onLoaded(HitType.MISS, 0, response.body().data);
+                        } else {
+                            callback.onError(new Exception(ApiErrorParser.parse(response).getMessage()));
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull Call<PostDetailResponse> call, @NonNull Throwable t) {
+                        callback.onError(t);
+                    }
+                });
+            }
+        }, new ScreenLoadCallback<PostResource>() {
+            @Override
+            public void onLoaded(@NonNull HitType hitType, long latencyMs, @Nullable PostResource data) {
+                if (data != null) {
+                    resultLiveData.setValue(ApiResult.success(data));
                 } else {
-                    resultLiveData.setValue(ApiResult.error(ApiErrorParser.parse(response)));
+                    resultLiveData.setValue(ApiResult.error(com.socialapp.core.network.AppError.unknown(0, "Không có dữ liệu bài viết")));
                 }
             }
 
             @Override
-            public void onFailure(@NonNull Call<PostDetailResponse> call, @NonNull Throwable t) {
-                resultLiveData.setValue(ApiResult.error(ApiErrorParser.parseThrowable(t)));
+            public void onError(@NonNull Throwable error) {
+                resultLiveData.setValue(ApiResult.error(ApiErrorParser.parseThrowable(error)));
             }
         });
 

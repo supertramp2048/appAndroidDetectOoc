@@ -1,0 +1,2469 @@
+{
+  "id": "d0cc6a58-4624-4559-8197-70e127d71774",
+  "code": "quan-li-nguoi-dung",
+  "ten": null,
+  "title": "Quản lý người dùng ",
+  "subTitle": null,
+  "component": "FormRenderDataManagement",
+  "help": "<p>Đang soạn thảo hướng dãn sử dụng</p>",
+  "intro": "[{\"location\":\"/tong-quan/dashboard\",\"steps\":[{\"title\":\"LUỒNG SỬ DỤNG CHUNG\",\"description\":\"Bước 1: Khởi tạo danh mục<br/>Bước 2: Khởi tạo và phân công biên soạn Mục từ/Bách khoa thư<br/>Bước 3: Biên soạn nội dung<br/>Bước 4: Góp ý và phê duyệt<br/>Bước 5: Biên tập và hiệu đính<br/>Bước 6: Tổng hợp và xuất bản<br/>Bước 7: Tra cứu và khai thác<br/>Bước 8: Hỏi đáp và khai thác thông tin bằng AI\",\"class_selector\":\"\"},{\"title\":\"II. MỤC TỪ ĐIỂN / BÁCH KHOA THƯ\",\"description\":\"Chức năng cho phép quản lý, biên soạn và khai thác nội dung Mục từ và Bách khoa thư.<br/>- Bảng Mục từ/Bách khoa thư: Quản lý bảng mục từ/bách khoa thư để phục vụ cho việc khởi tạo mục từ/bách khoa thư<br/>- Quản lý nội dung: Khởi tạo biên soạn, cập nhật và quản lý nội dung Mục từ/Bách khoa thư<br/>- Kho Media/Tài liệu tham khảo: Quản lý hình ảnh, video và tài liệu tham khảo phục vụ nội dung<br/>- Quản lý phụ lục: Quản lý các phụ lục được sử dụng trong nội dung và quá trình tổng hợp\",\"class_selector\":\".ant-menu-submenu, .ant-menu-item\",\"valid_content\":\"MỤC TỪ ĐIỂN\"},{\"title\":\"III. QUẢN LÝ CÔNG VIỆC\",\"description\":\"Chức năng cho phép người dùng theo dõi và xử lý các công việc được phân công theo quy trình.<br/>- Chờ phân công: Theo dõi các nội dung đang chờ được phân công xử lý<br/>- Theo dõi xử lý: Theo dõi các công việc đang được giao<br/>- Chờ phê duyệt: Theo dõi các nội dung đã hoàn thành và đang chờ phê duyệt<br/>- Đã phê duyệt: Theo dõi các nội dung đã được phê duyệt<br/>- Biên tập tổng hợp: Thực hiện tổng hợp, biên tập và hoàn thiện nội dung, xuất bản<br/>- Chờ góp ý: Theo dõi các nội dung đang chờ chuyên gia thực hiện góp ý<br/>- Đã góp ý: Theo dõi và xử lý các nội dung đã có ý kiến góp ý\",\"class_selector\":\".ant-menu-submenu, .ant-menu-item\",\"valid_content\":\"QUẢN LÝ CÔNG VIỆC\"},{\"title\":\"IV. QUẢN TRỊ HỆ THỐNG\",\"description\":\"Chức năng cho phép quản trị người dùng, phân quyền và cấu hình các thông tin quản trị của hệ thống.<br/>- Quản lý người dùng: Quản lý thông tin và trạng thái người dùng<br/>- Quản lý phân quyền: Quản lý nhóm người dùng, vai trò và quyền truy cập chức năng<br/>- Quản lý logs: Theo dõi lịch sử thao tác và hoạt động của người dùng trên hệ thống<br/>- Quản lý workflow: Khai báo và cấu hình các luồng xử lý công việc\",\"class_selector\":\".ant-menu-submenu, .ant-menu-item\",\"valid_content\":\"QUẢN TRỊ HỆ THỐNG\"},{\"title\":\"V. QUẢN TRỊ DANH MỤC\",\"description\":\"Chức năng cho phép quản lý các danh mục phục vụ quá trình biên soạn và quản lý nội dung.<br/>- Quản lý chức vụ: Quản lý danh sách chức vụ được sử dụng trong hệ thống<br/>- Quản lý đơn vị công tác: Quản lý các đơn vị công tác và thông tin liên quan<br/>- Quản lý Tag: Quản lý các Tag dùng để phân loại và hỗ trợ tra cứu nội dung<br/>- Danh mục chủ đề, lĩnh vực: Quản lý hệ thống lĩnh vực và nội dung chủ đề<br/>- Phân loại khoa học tri thức: Quản lý các nhóm phân loại khoa học tri thức phục vụ phân loại nội dung\",\"class_selector\":\".ant-menu-submenu, .ant-menu-item\",\"valid_content\":\"QUẢN TRỊ DANH MỤC\"},{\"title\":\"VI. QUẢN TRỊ MÔ HÌNH AI\",\"description\":\"Chức năng cho phép quản lý, cấu hình và khai thác các thành phần AI phục vụ hệ thống.<br/>- Mô hình AI: Quản lý và cấu hình các mô hình AI được sử dụng trong hệ thống<br/>- Skill AI: Quản lý và bật/tắt các kỹ năng AI<br/>- Workflow AI: Quản lý và cấu hình luồng xử lý của chatbot AI<br/>- AI Profile: Quản lý cấu hình hồ sơ AI, mô hình và các tham số phục vụ khai thác AI<br/>- Nhật ký AI: Theo dõi lịch sử hoạt động và tương tác của các chức năng AI\",\"class_selector\":\".ant-menu-submenu, .ant-menu-item\",\"valid_content\":\"QUẢN TRỊ MÔ HÌNH AI\"},{\"title\":\"VII. BÁO CÁO THỐNG KÊ\",\"description\":\"Chức năng cho phép theo dõi tiến độ công việc, tình hình nội dung và hoạt động khai thác trên hệ thống.<br/>- Báo cáo tiến độ công việc: Theo dõi tình hình và tiến độ xử lý công việc<br/>- Thống kê nội dung: Thống kê số lượng và tình trạng Mục từ/Bách khoa thư<br/>- Thống kê tình hình khai thác: Theo dõi số liệu tra cứu và khai thác nội dung trên hệ thống\",\"class_selector\":\".ant-menu-submenu, .ant-menu-item\",\"valid_content\":\"BÁO CÁO THỐNG KÊ\"}]}]",
+  "tabs": [
+    {
+      "title": "RD",
+      "title_detail": "Thông tin hồ sơ cá nhân",
+      "title_add": "Thêm mới thông tin người dùng",
+      "title_edit": "Chỉnh sửa thông tin người dùng",
+      "sub_edit_title": "<div style='font-size: 16px; font-weight: 500; color: #262626; margin-bottom: 16px;'>Thông tin người dùng</div>",
+      "sub_detail_title": "<div style='font-size: 16px; font-weight: 500; color: #262626; margin-bottom: 16px;'>Thông tin hồ sơ cá nhân</div>",
+      "api_get_list": "SELECT",
+      "api_get_list_order": "ngay_tao desc, tai_khoan asc, ten asc",
+      "props": {},
+      "api_long_time": false,
+      "api_get_id": "DETAIL",
+      "create": {
+        "url": "INSERT",
+        "method": "post"
+      },
+      "edit": {
+        "url": "UPDATE",
+        "method": "put"
+      },
+      "delete": {
+        "url": "DELETE",
+        "method": "delete"
+      },
+      "fn_process_data": {
+        "pre_list_data": null,
+        "pre_detail_data": "{(data) => { if (!data) return data; const res = {...data, gioiTinh: data.gioiTinh == 0 ? 'Nữ' : 'Nam', ngaySinh: data.ngaySinh ? data.ngaySinh.substring(0, 10).split('-').reverse().join('/') : '-'}; Object.keys(res).forEach(k => { if (k !== 'id' && (res[k] === null || res[k] === undefined || res[k] === '')) res[k] = '-'; }); return res; }}",
+        "post_validate_detail_data": null,
+        "post_detail_data": null,
+        "post_export_list_data": null,
+        "post_process_api": null,
+        "fn_disabled_row_selection": null,
+        "fn_expanded": null,
+        "fn_footer": null
+      },
+      "fields": [
+        {
+          "title": "Mã người dùng/ tên đăng nhập",
+          "name": "taiKhoan",
+          "data_type": "string",
+          "sorted": true,
+          "is_key": true,
+          "width": "150px",
+          "fn_format": "(v,e)=>v",
+          "component": {
+            "name": "",
+            "showInLeftPane": false,
+            "widthInLeftPane": "300px",
+            "fn_AfterElement": null,
+            "fn_BeforeElement": null,
+            "props": {},
+            "_key": "721141e5-9883-4611-ac02-0e7fa2cff49a"
+          },
+          "align": "left",
+          "show_list": true,
+          "show_edit": false,
+          "show_detail": false,
+          "width_edit": 12,
+          "stt_edit": 0,
+          "component_edit": {
+            "name": "",
+            "props": {}
+          },
+          "validate": {
+            "required": true,
+            "message": null,
+            "is_number": false,
+            "number_message": null,
+            "is_date": false,
+            "date_message": null,
+            "min": null,
+            "min_message": null,
+            "max": null,
+            "max_message": null,
+            "expression": {
+              "format": "",
+              "dependencies": "",
+              "condition1": "!value || getFieldValue('?') === value",
+              "message": null
+            },
+            "fn_validate1": "{async (me) => {\n   \tvar data = await me.callGetFromURL('/api/quan-tri/nguoi-dung?filter=%7B%22tai_khoan%22%3A%'+me.record.taiKhoan+'%7D&search=&page=1&page_size=100000&sort=%22%22').then(res => {\n\t\treturn res.data.data;\n    })\n\t.catch(err => {\n\t\treturn [];\n\t});\n    if(data.filter(x=>x.id!==me.record.id && x.tai_khoan===me.record.tai_khoan).length > 0) return 'Tài khoản người dùng đã tồn tại';\n\telse return '';\n}}"
+          },
+          "numericalOrder": 1,
+          "_key": "f1a1c3b7-948c-461a-9090-ac2ca435c5ad",
+          "widthInLeftPane": ""
+        },
+        {
+          "title": "Email",
+          "name": "email",
+          "data_type": "string",
+          "sorted": true,
+          "is_key": true,
+          "width": "150px",
+          "fn_format": "(v,e)=>v",
+          "component": {
+            "0": {
+              "name": "",
+              "showInLeftPane": false,
+              "widthInLeftPane": "300px",
+              "fn_AfterElement": null,
+              "fn_BeforeElement": null,
+              "props": {},
+              "_key": "721141e5-9883-4611-ac02-0e7fa2cff49a"
+            },
+            "name": "",
+            "props": {},
+            "_key": "721141e5-9883-4611-ac02-0e7fa2cff49a"
+          },
+          "align": "left",
+          "show_list": false,
+          "show_edit": true,
+          "show_detail": true,
+          "width_edit": 12,
+          "stt_edit": 8,
+          "component_edit": {
+            "name": "",
+            "props": {}
+          },
+          "validate": {
+            "required": true,
+            "message": null,
+            "is_number": false,
+            "number_message": null,
+            "is_date": false,
+            "date_message": null,
+            "min": null,
+            "min_message": null,
+            "max": null,
+            "max_message": null,
+            "expression": {
+              "format": "",
+              "dependencies": "",
+              "condition1": "!value || getFieldValue('?') === value",
+              "message": null
+            },
+            "fn_validate1": "{async (me) => {\n   \tvar data = await me.callGetFromURL('/api/quan-tri/nguoi-dung?filter=%7B%22tai_khoan%22%3A%'+me.record.taiKhoan+'%7D&search=&page=1&page_size=100000&sort=%22%22').then(res => {\n\t\treturn res.data.data;\n    })\n\t.catch(err => {\n\t\treturn [];\n\t});\n    if(data.filter(x=>x.id!==me.record.id && x.tai_khoan===me.record.tai_khoan).length > 0) return 'Tài khoản người dùng đã tồn tại';\n\telse return '';\n}}"
+          },
+          "numericalOrder": 1,
+          "_key": "f913bb1a-a2e0-47e2-bbaa-7c2d4164b0be",
+          "widthInLeftPane": ""
+        },
+        {
+          "title": "Họ và tên",
+          "name": "ten",
+          "sorted": true,
+          "data_type": "string",
+          "is_key": true,
+          "width": "300px",
+          "fn_format": "(v,e)=>v",
+          "component": {
+            "name": "",
+            "showInLeftPane": false,
+            "widthInLeftPane": "300px",
+            "fn_AfterElement": null,
+            "fn_BeforeElement": null,
+            "props": {},
+            "_key": "9bb2c9ed-c93a-4c73-984d-5077f5173b2e"
+          },
+          "align": "left",
+          "show_list": true,
+          "show_edit": true,
+          "show_detail": true,
+          "width_edit": 12,
+          "stt_edit": 0,
+          "component_edit": {
+            "name": "",
+            "props": {}
+          },
+          "validate": {
+            "required": true,
+            "message": null,
+            "is_number": false,
+            "number_message": null,
+            "is_date": false,
+            "date_message": null,
+            "min": null,
+            "min_message": null,
+            "max": null,
+            "max_message": null,
+            "expression": {
+              "format": "",
+              "dependencies": "",
+              "condition": "!value || getFieldValue('?') === value",
+              "message": null
+            }
+          },
+          "numericalOrder": 2,
+          "_key": "6fa41981-cd75-477c-865f-3d83e4b06242",
+          "widthInLeftPane": ""
+        },
+        {
+          "title": "Số hiệu CAND",
+          "component_title": null,
+          "title_edit_above": null,
+          "title_edit_below": null,
+          "name": "soHieuCand",
+          "data_type": "string",
+          "fn_ClassName": "",
+          "onClick": "{(event)=>{/*click cell*/}}",
+          "sorted": false,
+          "fn_format": "(v,e)=>v",
+          "component": {
+            "name": "",
+            "showInLeftPane": false,
+            "widthInLeftPane": "300px",
+            "fn_AfterElement": null,
+            "fn_BeforeElement": null,
+            "props": {},
+            "_key": "77793459-919d-4f7a-bbba-15fa3aee75db"
+          },
+          "align": "left",
+          "show_list": true,
+          "show_edit": true,
+          "show_detail": true,
+          "width_edit": 12,
+          "stt_edit": 5,
+          "component_edit": null,
+          "validate": {
+            "required": false,
+            "message": null,
+            "is_number": false,
+            "number_message": null,
+            "is_date": false,
+            "date_message": null,
+            "min": null,
+            "min_message": null,
+            "max": null,
+            "max_message": null,
+            "expression": {
+              "format": "",
+              "dependencies": "",
+              "fn_Visiable": "!value || getFieldValue('?') === value",
+              "message": null
+            }
+          },
+          "numericalOrder": 1,
+          "_key": "ac0c9d3b-d642-490a-a793-275adade06d8"
+        },
+        {
+          "title": "Số CCCD",
+          "name": "soCccd",
+          "sorted": true,
+          "data_type": "string",
+          "is_key": true,
+          "width": "300px",
+          "fn_format": "(v,e)=>formatHTML(v)",
+          "component": {
+            "name": "",
+            "props": {},
+            "_key": "9bb2c9ed-c93a-4c73-984d-5077f5173b2e"
+          },
+          "align": "left",
+          "show_list": false,
+          "show_edit": true,
+          "show_detail": true,
+          "width_edit": 12,
+          "stt_edit": 4,
+          "component_edit": {
+            "name": "",
+            "props": {}
+          },
+          "validate": {
+            "required": true,
+            "message": null,
+            "is_number": false,
+            "number_message": null,
+            "is_date": false,
+            "date_message": null,
+            "min": null,
+            "min_message": null,
+            "max": null,
+            "max_message": null,
+            "expression": {
+              "format": "",
+              "dependencies": "",
+              "condition": "!value || getFieldValue('?') === value",
+              "message": null
+            }
+          },
+          "numericalOrder": 2,
+          "_key": "ee8a4238-c1e2-42c1-af1d-e237c8a38f7b",
+          "widthInLeftPane": ""
+        },
+        {
+          "title": "Ngày sinh",
+          "name": "ngaySinh",
+          "sorted": true,
+          "data_type": "string",
+          "is_key": true,
+          "width": "300px",
+          "fn_format": "(v,e)=>formatHTML(v)",
+          "component": {
+            "name": "",
+            "props": {},
+            "_key": "9bb2c9ed-c93a-4c73-984d-5077f5173b2e"
+          },
+          "align": "left",
+          "show_list": false,
+          "show_edit": true,
+          "show_detail": true,
+          "width_edit": 12,
+          "stt_edit": 1,
+          "component_edit": {
+            "name": "",
+            "props": {}
+          },
+          "validate": {
+            "required": true,
+            "message": null,
+            "is_number": false,
+            "number_message": null,
+            "is_date": false,
+            "date_message": null,
+            "min": null,
+            "min_message": null,
+            "max": null,
+            "max_message": null,
+            "expression": {
+              "format": "",
+              "dependencies": "",
+              "condition": "!value || getFieldValue('?') === value",
+              "message": null
+            }
+          },
+          "numericalOrder": 2,
+          "_key": "9dbf4e6d-c6f1-4d6d-a99f-55295dc8eecf",
+          "widthInLeftPane": ""
+        },
+        {
+          "title": "Số điện thoại",
+          "name": "soDienThoai",
+          "sorted": true,
+          "data_type": "string",
+          "is_key": true,
+          "width": "300px",
+          "fn_format": "(v,e)=>formatHTML(v)",
+          "component": {
+            "name": "",
+            "props": {},
+            "_key": "9bb2c9ed-c93a-4c73-984d-5077f5173b2e"
+          },
+          "align": "left",
+          "show_list": false,
+          "show_edit": true,
+          "show_detail": true,
+          "width_edit": 12,
+          "stt_edit": 2,
+          "component_edit": {
+            "name": "",
+            "props": {}
+          },
+          "validate": {
+            "required": true,
+            "message": null,
+            "is_number": false,
+            "number_message": null,
+            "is_date": false,
+            "date_message": null,
+            "min": null,
+            "min_message": null,
+            "max": null,
+            "max_message": null,
+            "expression": {
+              "format": "",
+              "dependencies": "",
+              "condition": "!value || getFieldValue('?') === value",
+              "message": null
+            }
+          },
+          "numericalOrder": 2,
+          "_key": "b6a833e2-e58c-4286-829c-a18265d7cb54",
+          "widthInLeftPane": ""
+        },
+        {
+          "title": "Giới tính",
+          "name": "gioiTinh",
+          "sorted": true,
+          "data_type": "string",
+          "is_key": true,
+          "width": "300px",
+          "fn_format": "(v,e)=>formatHTML(v)",
+          "component": {
+            "name": "",
+            "props": {},
+            "_key": "9bb2c9ed-c93a-4c73-984d-5077f5173b2e"
+          },
+          "align": "left",
+          "show_list": false,
+          "show_edit": true,
+          "show_detail": true,
+          "width_edit": 12,
+          "stt_edit": 3,
+          "component_edit": {
+            "name": "",
+            "props": {}
+          },
+          "validate": {
+            "required": true,
+            "message": null,
+            "is_number": false,
+            "number_message": null,
+            "is_date": false,
+            "date_message": null,
+            "min": null,
+            "min_message": null,
+            "max": null,
+            "max_message": null,
+            "expression": {
+              "format": "",
+              "dependencies": "",
+              "condition": "!value || getFieldValue('?') === value",
+              "message": null
+            }
+          },
+          "numericalOrder": 2,
+          "_key": "1dedc53e-5884-4ac8-b2aa-eb92dc851f40",
+          "widthInLeftPane": ""
+        },
+        {
+          "title": "Danh sách nhóm phân quyền",
+          "component_title": null,
+          "title_edit_above": null,
+          "title_edit_below": null,
+          "name": "tenNhomNguoiDung",
+          "data_type": "string",
+          "fn_ClassName": "",
+          "onClick": "{(event)=>{/*click cell*/}}",
+          "sorted": false,
+          "fn_format": "(v,e)=>v",
+          "component": {
+            "name": "",
+            "showInLeftPane": false,
+            "widthInLeftPane": "300px",
+            "fn_AfterElement": null,
+            "fn_BeforeElement": null,
+            "props": {},
+            "_key": "57e21b99-aabc-4114-8406-f2980cdc58bd"
+          },
+          "align": "left",
+          "show_list": false,
+          "show_edit": false,
+          "show_detail": true,
+          "width_edit": 12,
+          "stt_edit": 10,
+          "component_edit": null,
+          "validate": {
+            "required": false,
+            "message": null,
+            "is_number": false,
+            "number_message": null,
+            "is_date": false,
+            "date_message": null,
+            "min": null,
+            "min_message": null,
+            "max": null,
+            "max_message": null,
+            "expression": {
+              "format": "",
+              "dependencies": "",
+              "fn_Visiable": "!value || getFieldValue('?') === value",
+              "message": null
+            }
+          },
+          "numericalOrder": 1,
+          "_key": "4e2783c6-782a-491f-8964-e23c4131cdc4",
+          "widthInLeftPane": ""
+        },
+        {
+          "title": "Nhóm người dùng",
+          "component_title": null,
+          "title_edit_above": null,
+          "title_edit_below": null,
+          "name": "tenNhomNguoiDung",
+          "data_type": "string",
+          "fn_ClassName": "",
+          "onClick": "{(event)=>{/*click cell*/}}",
+          "sorted": false,
+          "fn_format": "(v,e)=>v",
+          "component": {
+            "name": "",
+            "showInLeftPane": false,
+            "widthInLeftPane": "300px",
+            "fn_AfterElement": null,
+            "fn_BeforeElement": null,
+            "props": {},
+            "_key": "57e21b99-aabc-4114-8406-f2980cdc58bd"
+          },
+          "align": "left",
+          "show_list": true,
+          "show_edit": false,
+          "show_detail": false,
+          "width_edit": 12,
+          "stt_edit": 0,
+          "component_edit": null,
+          "validate": {
+            "required": false,
+            "message": null,
+            "is_number": false,
+            "number_message": null,
+            "is_date": false,
+            "date_message": null,
+            "min": null,
+            "min_message": null,
+            "max": null,
+            "max_message": null,
+            "expression": {
+              "format": "",
+              "dependencies": "",
+              "fn_Visiable": "!value || getFieldValue('?') === value",
+              "message": null
+            }
+          },
+          "numericalOrder": 1,
+          "_key": "81832264-49bf-48b9-a290-d4c9c792a782",
+          "widthInLeftPane": ""
+        },
+        {
+          "title": "Chức vụ",
+          "name": "tenChucVu",
+          "data_type": "string",
+          "sorted": false,
+          "fn_format": "(v,e)=>formatHTML(v)",
+          "component": {
+            "name": "",
+            "props": {},
+            "_key": "345f1e56-fb2a-468c-a32b-52250d37baae"
+          },
+          "align": "left",
+          "show_list": true,
+          "show_edit": true,
+          "show_detail": true,
+          "width_edit": 12,
+          "stt_edit": 6,
+          "component_edit": {
+            "name": "",
+            "props": {}
+          },
+          "validate": {
+            "required": false,
+            "message": null,
+            "is_number": false,
+            "number_message": null,
+            "is_date": false,
+            "date_message": null,
+            "min": null,
+            "min_message": null,
+            "max": null,
+            "max_message": null,
+            "expression": {
+              "format": "",
+              "dependencies": "",
+              "condition": "!value || getFieldValue('?') === value",
+              "message": null
+            }
+          },
+          "numericalOrder": 7,
+          "_key": "93cd8603-2ba0-421d-acc1-fa0980feff3c",
+          "widthInLeftPane": ""
+        },
+        {
+          "title": "Đơn vị công tác",
+          "component_title": null,
+          "title_edit_above": null,
+          "title_edit_below": null,
+          "name": "tenDonVi",
+          "data_type": "string",
+          "fn_ClassName": "",
+          "onClick": "{(event)=>{/*click cell*/}}",
+          "sorted": false,
+          "fn_format": "(v,e)=>formatHTML(v)",
+          "component": {
+            "name": "",
+            "showInLeftPane": false,
+            "widthInLeftPane": "300px",
+            "fn_AfterElement": null,
+            "fn_BeforeElement": null,
+            "props": {},
+            "_key": "57e21b99-aabc-4114-8406-f2980cdc58bd"
+          },
+          "align": "left",
+          "show_list": true,
+          "show_edit": false,
+          "show_detail": true,
+          "width_edit": 12,
+          "stt_edit": 7,
+          "component_edit": null,
+          "validate": {
+            "required": false,
+            "message": null,
+            "is_number": false,
+            "number_message": null,
+            "is_date": false,
+            "date_message": null,
+            "min": null,
+            "min_message": null,
+            "max": null,
+            "max_message": null,
+            "expression": {
+              "format": "",
+              "dependencies": "",
+              "fn_Visiable": "!value || getFieldValue('?') === value",
+              "message": null
+            }
+          },
+          "numericalOrder": 1,
+          "_key": "3912d044-11c6-4c53-bcf9-7370450e0297",
+          "widthInLeftPane": ""
+        },
+        {
+          "title": "Trạng thái",
+          "name": "trangThai",
+          "data_type": "number",
+          "sorted": true,
+          "width": "180px",
+          "align": "center",
+          "show_list": true,
+          "show_edit": false,
+          "show_detail": false,
+          "width_edit": 8,
+          "stt_edit": 11,
+          "fn_format": "(v)=>v==1?'Chờ duyệt':v==2?'Đang hoạt động':(v==3||v==4)?'Bị khóa':''",
+          "component": {
+            "name": "",
+            "props": {},
+            "_key": "09e61a68-2d60-412e-87c8-05ba06a89b14"
+          },
+          "component_edit": {
+            "name": "FormSelect",
+            "container_key": "trang_thai_bo_sung",
+            "props": {
+              "options": [
+                {
+                  "label": "Chờ duyệt",
+                  "value": 1
+                },
+                {
+                  "label": "Đang hoạt động",
+                  "value": 2
+                },
+                {
+                  "label": "Bị khóa",
+                  "value": 3
+                }
+              ]
+            }
+          },
+          "status_alias": {
+            "1": "pending",
+            "2": "active",
+            "3": "inactive",
+            "4": "inactive"
+          },
+          "status_class": "gc-status",
+          "_key": "dea987a1-719c-4c00-adc9-8b15a6b1e27b"
+        },
+        {
+          "title": "Cấp bậc",
+          "component_title": null,
+          "title_edit_above": null,
+          "title_edit_below": null,
+          "name": "tenCapBac",
+          "data_type": "string",
+          "fn_ClassName": "",
+          "onClick": "{(event)=>{/*click cell*/}}",
+          "sorted": false,
+          "fn_format": "(v,e)=>v",
+          "component": {
+            "name": "",
+            "showInLeftPane": false,
+            "widthInLeftPane": "300px",
+            "fn_AfterElement": null,
+            "fn_BeforeElement": null,
+            "props": {},
+            "_key": "37dece8f-189e-4356-8f56-15b00d178867"
+          },
+          "align": "left",
+          "show_list": false,
+          "show_edit": false,
+          "show_detail": true,
+          "width_edit": 12,
+          "stt_edit": 9,
+          "component_edit": null,
+          "validate": {
+            "required": false,
+            "message": null,
+            "is_number": false,
+            "number_message": null,
+            "is_date": false,
+            "date_message": null,
+            "min": null,
+            "min_message": null,
+            "max": null,
+            "max_message": null,
+            "expression": {
+              "format": "",
+              "dependencies": "",
+              "fn_Visiable": "!value || getFieldValue('?') === value",
+              "message": null
+            }
+          },
+          "numericalOrder": 1,
+          "_key": "c9ad82fe-c1e6-426a-9ea3-840997db8020"
+        }
+      ],
+      "hide_check": false,
+      "advance_filters": [
+        {
+          "title": "Mã người dùng/ tên đăng nhập",
+          "name": "taiKhoan",
+          "icon": "",
+          "place_holder": "Nhập",
+          "width": 8,
+          "component": {
+            "name": "FormInput",
+            "props": {
+              "maxLength": 255,
+              "rules": [
+                {
+                  "max": 255,
+                  "message": "Không được vượt quá 255 ký tự"
+                }
+              ]
+            }
+          },
+          "default": null,
+          "numericalOrder": 1,
+          "_key": "d3c40108-7618-43c9-9cc2-267bfb9e4b28",
+          "showInLeftPane": false,
+          "showInTopPane": false,
+          "changeImmediate": false,
+          "applyMode": "submit",
+          "rememberValue": false,
+          "dependencies": []
+        },
+        {
+          "title": "Họ và tên, số hiệu CAND",
+          "name": "ten",
+          "icon": "",
+          "place_holder": "Nhập",
+          "width": 8,
+          "component": {
+            "name": "FormInput",
+            "props": {
+              "maxLength": 255,
+              "rules": [
+                {
+                  "max": 255,
+                  "message": "Không được vượt quá 255 ký tự"
+                }
+              ]
+            }
+          },
+          "default": null,
+          "numericalOrder": 2,
+          "_key": "02227078-22ce-46f2-b261-d19cb58a7281",
+          "showInLeftPane": false,
+          "showInTopPane": false,
+          "changeImmediate": false,
+          "applyMode": "submit",
+          "rememberValue": false,
+          "dependencies": []
+        },
+        {
+          "title": "Nhóm người dùng",
+          "name": "nhom",
+          "icon": "",
+          "place_holder": "Tất cả",
+          "width": 8,
+          "component": {
+            "name": "FormSelect",
+            "props": {
+              "allOptionLabel": "Tất cả",
+              "ma_dinh_danh": "",
+              "selectType": "selectApi",
+              "labelField": "ten",
+              "valueField": "id",
+              "src": "/api/quan-tri/nhom-nguoi-dung",
+              "sort": "{ JSON.stringify({'ngay_chinh_sua??ngay_tao': 0, 'ngay_tao': 0}) }"
+            }
+          },
+          "default": null,
+          "allOptionLabel": "",
+          "numericalOrder": 3,
+          "_key": "2df2c0dc-945b-45f7-9e09-24beb83a44a6",
+          "showInLeftPane": false,
+          "showInTopPane": false,
+          "changeImmediate": false,
+          "applyMode": "submit",
+          "rememberValue": false,
+          "dependencies": []
+        },
+        {
+          "title": "Đơn vị công tác",
+          "name": "donViId",
+          "icon": "",
+          "place_holder": "",
+          "width": 8,
+          "component": {
+            "name": "FormSelect",
+            "props": {
+              "allOptionLabel": "Tất cả",
+              "ma_dinh_danh": "",
+              "selectType": "selectApi",
+              "labelField": "ten",
+              "valueField": "id",
+              "src": "/api/danh-muc?filter=%7B%22maDinhDanh%22%3A%22danh-muc-don-vi%22%2C%22trangThai%22%3A1%7D",
+              "sort": "{ JSON.stringify({'ngay_chinh_sua??ngay_tao': 0, 'ngay_tao': 0}) }"
+            }
+          },
+          "default": null,
+          "_key": "5fab47c6-5056-4d9d-8f63-52387c8ca60d",
+          "showInLeftPane": false,
+          "showInTopPane": false,
+          "changeImmediate": false,
+          "applyMode": "submit",
+          "rememberValue": false,
+          "dependencies": []
+        },
+        {
+          "title": "Chức vụ",
+          "name": "chucVuId",
+          "icon": "",
+          "place_holder": "",
+          "width": 8,
+          "component": {
+            "name": "FormSelect",
+            "props": {
+              "allOptionLabel": "Tất cả",
+              "ma_dinh_danh": "",
+              "selectType": "selectApi",
+              "labelField": "ten",
+              "valueField": "id",
+              "src": "/api/danh-muc?filter=%7B%22maDinhDanh%22%3A%22danh-muc-chuc-vu%22%7D",
+              "sort": "{ JSON.stringify({'ngay_chinh_sua??ngay_tao': 0, 'ngay_tao': 0}) }"
+            }
+          },
+          "default": null,
+          "_key": "508d3c46-217b-48e6-a492-6b5e35e54cac",
+          "showInLeftPane": false,
+          "showInTopPane": false,
+          "changeImmediate": false,
+          "applyMode": "submit",
+          "rememberValue": false,
+          "dependencies": []
+        },
+        {
+          "title": "Trạng thái",
+          "name": "trangThai",
+          "icon": "",
+          "place_holder": "Tất cả",
+          "width": 8,
+          "component": {
+            "name": "FormSelect",
+            "props": {
+              "selectType": "normal",
+              "labelField": "label",
+              "valueField": "value",
+              "options": [
+                {
+                  "value": 1,
+                  "label": "Chờ phê duyệt"
+                },
+                {
+                  "value": 2,
+                  "label": "Đang hoạt động"
+                },
+                {
+                  "value": 3,
+                  "label": "Khóa"
+                }
+              ]
+            }
+          },
+          "default": null,
+          "_key": "6c19486c-d712-4367-9313-db9c8f0a3661",
+          "showInLeftPane": false,
+          "showInTopPane": false,
+          "changeImmediate": false,
+          "applyMode": "submit",
+          "rememberValue": false,
+          "dependencies": []
+        }
+      ],
+      "quick_filter": [
+        {
+          "title": "Them moi",
+          "component": {
+            "name": "PrimaryButton",
+            "onClick": "{handleOpen}",
+            "props": {
+              "url": "api/db-bao/demo-du-lieu-quan-trac",
+              "method": "post"
+            }
+          }
+        },
+        {
+          "title": "Export",
+          "name": "tab",
+          "icon": "",
+          "place_holder": "",
+          "component": {
+            "name": "ButtonCustom",
+            "onClick": "{handleExportExcel}",
+            "props": {
+              "fn_format_row": "(data)=>{return data.map(x=>{x.xxx=x.ten;return x;})}",
+              "template_file": "xxx",
+              "mapper_columns": [
+                {
+                  "from": "ma",
+                  "to": "ma",
+                  "format": "",
+                  "title": "ma so nv"
+                },
+                {
+                  "from": "ten",
+                  "to": "ten",
+                  "format": "",
+                  "title": "Ten ho dem"
+                },
+                {
+                  "from": "f1",
+                  "to": "f1",
+                  "format": "",
+                  "title": "Gia tri 1"
+                }
+              ],
+              "summary_data": {
+                "title_bao_cao": "Quản lý Dữ liệu form component, Dữ liệu DEMO"
+              }
+            }
+          },
+          "default": null
+        },
+        {
+          "title": "",
+          "icon": "DownOutlined",
+          "width": 8,
+          "component": {
+            "name": "FormSpace",
+            "onClick": "{handleOpenCreate}",
+            "data_source": "api/db-bao/demo-du-lieu-quan-trac",
+            "method": "post",
+            "props": {
+              "template_url": "api/db-bao/demo-du-lieu-quan-trac"
+            }
+          },
+          "default": null
+        }
+      ],
+      "action_title": "Thao tác",
+      "actions": [
+        {
+          "component": {
+            "name": "ActionDetail",
+            "props": {
+              "tooltip": "Xem"
+            },
+            "onClick": "{(me)=>{handleDetailOne(me.record,true);}}"
+          },
+          "_key": "366ba110-ac34-410d-8c89-67046ad14b2d",
+          "permission": "PERM_VIEW",
+          "url": "DETAIL"
+        },
+        {
+          "component": {
+            "name": "ActionEdit",
+            "props": {
+              "tooltip": "Sửa"
+            },
+            "onClick": "{(me)=>handleOpenModal('Quan Ly Nhom Nguoi Dung', 'ModalFormRDNhomNDCustom', { ...me?.component?.props, setRefreshData, setClearRowSelectedInTable, isConfirm: false }, null, me?.record)}"
+          },
+          "_key": "1a239087-5686-42b8-82cb-35aaac6fb981",
+          "permission": "PERM_EDIT",
+          "url": "UPDATE"
+        },
+        {
+          "component": {
+            "name": "ActionMenu",
+            "props": {
+              "tooltip": ""
+            }
+          },
+          "onClick": "{(me)=>handleActionMore(me.record)}",
+          "dropdown": [
+            {
+              "title": "Đặt mật khẩu mặc định",
+              "icon": "EllipsisOutlined",
+              "className": "dropdown-default-pwd",
+              "permission": "PERM_EDIT",
+              "onClick": "{(me)=>confirmModal('Xác nhận đặt mật khẩu', `Bạn có chắc chắn đặt mật khẩu mặc định: 12345678aA@ cho tài khoản \"${me.record?.taiKhoan}\" ?`, (rec)=>{handleResetPassword(rec.id)}, me.record)}",
+              "component": {
+                "props": {
+                  "message": "Bạn có chắc chắn đặt mật khẩu mặc định: {0} cho tài khoản {1} ",
+                  "codeOkFunction": "{(rec)=>{handleResetPassword(rec.id)}}",
+                  "style": "border-bottom: 2px solid var(--color-btn-primary-bg-normal)"
+                }
+              },
+              "name": "pwd"
+            },
+            {
+              "title": "Thiết lập mật khẩu",
+              "icon": "EllipsisOutlined",
+              "className": "dropdown-default-pwd",
+              "permission": "PERM_EDIT",
+              "onClick": "{(me) => { handleOpenModal('Thiết lập mật khẩu', 'ModalAdminSetNewPassword', me?.component?.props, null, me.record); }}",
+              "component": {
+                "props": {
+                  "style": "border-bottom: 2px solid var(--color-btn-primary-bg-normal)"
+                }
+              },
+              "name": "pwd"
+            },
+            {
+              "title": "Duyệt tài khoản",
+              "icon": "UserOutlined",
+              "className": "dropdown-default-pwd",
+              "permission": "PERM_EDIT",
+              "onClick": "{(me) => { const status = me?.record?.trang_thai ?? me?.record?.trangThai; if (status != 1) { ShowToast('warning', 'Thông báo', 'Tài khoản không ở trạng thái chờ duyệt!', 3); return; } handleOpenModal('Duyệt tài khoản', 'ModalDuyetNguoiDung', { ...me?.component?.props, setRefreshData, setClearRowSelectedInTable }, null, me?.record); }}",
+              "component": {
+                "props": {
+                  "style": "border-bottom: 2px solid var(--color-btn-primary-bg-normal)"
+                }
+              },
+              "name": "cfr"
+            },
+            {
+              "title": "Khóa / Mở khóa",
+              "icon": "FormSwitch",
+              "className": "dropdown-delete",
+              "permission": "PERM_LOCK_UNLOCK",
+              "onClick": "{(me)=>{ const isOn = (me.record?.trangThai === 1 || me.record?.trangThai === 2); confirmModal(isOn ? 'Xác nhận khóa' : 'Xác nhận mở khóa', `Bạn có chắc chắn muốn ${isOn ? 'khóa' : 'mở khóa'} tài khoản \"${me.record?.taiKhoan}\" ?`, (rec) => { handlelockNguoiDung(rec.id, isOn ? 3 : 2); }, me.record, isOn ? 'Khóa' : 'Mở Khóa'); }}",
+              "component": {
+                "props": {
+                  "style": "width: 28px;margin-right:20px",
+                  "checked": "{(rec) => { return (rec.record?.trangThai === 1 || rec.record?.trangThai === 2); }}"
+                }
+              },
+              "name": "khoa-mo-khoa"
+            },
+            {
+              "title": "Xóa tài khoản",
+              "icon": "DeleteOutlined",
+              "className": "dropdown-delete",
+              "permission": "PERM_DELETE",
+              "onClick": "{(me)=>handleDeleteOne(me?.record, {component: {props:{deleteMessage: 'Bạn có chắc chắn xóa bản ghi có <span>tên tài khoản</span> \"<span class=span-value-delete>'+me.record?.taiKhoan+'</span>\"'}}})}",
+              "danger": true,
+              "component": {
+                "props": {}
+              },
+              "props": {},
+              "name": "xoa-tai-khoan"
+            }
+          ],
+          "_key": "fee27111-08bf-4e24-8747-218bed9d6ac0"
+        }
+      ],
+      "quick_filters": [
+        {
+          "title": "Duyệt",
+          "permission": "PERM_EDIT",
+          "component": {
+            "name": "PrimaryButton",
+            "onClick": "{(me)=>handleOpenModal('Duyệt Người Dùng', 'ModalConfirmDuyet', { ...me?.component?.props, setRefreshData, setClearRowSelectedInTable},null,selectedRowData)}",
+            "props": {
+              "disabled": "{!selectedRowData || selectedRowData.length === 0 }"
+            }
+          },
+          "numericalOrder": 3,
+          "_key": "1c6ac63c-d9cd-4dbc-8f4a-2b24965bd9ce",
+          "kind": "action",
+          "applyMode": "submit"
+        },
+        {
+          "title": "Thêm mới",
+          "permission": "PERM_ADD",
+          "component": {
+            "name": "PrimaryButton",
+            "onClick": "{(me)=>handleOpenModal('Quan Ly Nguoi Dung', 'ModalFormRDNhomNDCustom', { ...me?.component?.props, setRefreshData, setClearRowSelectedInTable, isConfirm: false   },null,me?.record)}",
+            "props": {}
+          },
+          "numericalOrder": 3,
+          "_key": "64887366-8129-401b-9538-3c07745e49d4",
+          "kind": "action",
+          "applyMode": "submit"
+        },
+        {
+          "title": "Xóa",
+          "permission": "PERM_DELETE",
+          "enable_selected": true,
+          "enable_tooltip": "Không có dữ liệu được chọn. Chọn bằng cách click checkbox dòng dữ liệu trước cột STT",
+          "icon": "ant-design:stop-outlined",
+          "component": {
+            "name": "DeleteMoreButton",
+            "onClick": "{handleDeleteMany}",
+            "props": {}
+          },
+          "numericalOrder": 1,
+          "_key": "dff2176a-cfc8-44a6-8744-96ae32dd0f2d",
+          "kind": "action",
+          "applyMode": "submit"
+        }
+      ],
+      "group_fields": [],
+      "width_form": "1200px",
+      "width_form_detail": "722px",
+      "check_one_row": false,
+      "hide_stt": false,
+      "no_pager": false,
+      "expanded": false,
+      "editable_inline": false,
+      "save_group_editable_inline": false,
+      "tab_component_render": false,
+      "toggle_on_filter": false,
+      "entities": [
+        [
+          {
+            "name": "id",
+            "column": "ID",
+            "dbType": "VARCHAR2",
+            "type": "STRING",
+            "length": 36,
+            "precision": null,
+            "scale": null,
+            "nullable": 0,
+            "required": 1,
+            "primaryKey": 1,
+            "foreignKey": 0,
+            "referenceTable": null,
+            "referenceColumn": null,
+            "defaultValue": null,
+            "comment": null,
+            "order": 1
+          },
+          {
+            "name": "tenant_id",
+            "column": "TENANT_ID",
+            "dbType": "VARCHAR2",
+            "type": "STRING",
+            "length": 36,
+            "precision": null,
+            "scale": null,
+            "nullable": 1,
+            "required": 0,
+            "primaryKey": 0,
+            "foreignKey": 1,
+            "referenceTable": "SYS_TENANT",
+            "referenceColumn": "ID",
+            "defaultValue": null,
+            "comment": null,
+            "order": 2
+          },
+          {
+            "name": "tai_khoan",
+            "column": "TAI_KHOAN",
+            "dbType": "VARCHAR2",
+            "type": "STRING",
+            "length": 255,
+            "precision": null,
+            "scale": null,
+            "nullable": 0,
+            "required": 1,
+            "primaryKey": 0,
+            "foreignKey": 0,
+            "referenceTable": null,
+            "referenceColumn": null,
+            "defaultValue": null,
+            "comment": null,
+            "order": 3
+          },
+          {
+            "name": "mat_khau",
+            "column": "MAT_KHAU",
+            "dbType": "VARCHAR2",
+            "type": "STRING",
+            "length": 255,
+            "precision": null,
+            "scale": null,
+            "nullable": 1,
+            "required": 0,
+            "primaryKey": 0,
+            "foreignKey": 0,
+            "referenceTable": null,
+            "referenceColumn": null,
+            "defaultValue": null,
+            "comment": null,
+            "order": 4
+          },
+          {
+            "name": "salt_code",
+            "column": "SALT_CODE",
+            "dbType": "CLOB",
+            "type": "TEXT",
+            "length": null,
+            "precision": null,
+            "scale": null,
+            "nullable": 1,
+            "required": 0,
+            "primaryKey": 0,
+            "foreignKey": 0,
+            "referenceTable": null,
+            "referenceColumn": null,
+            "defaultValue": null,
+            "comment": null,
+            "order": 5
+          },
+          {
+            "name": "ten",
+            "column": "TEN",
+            "dbType": "VARCHAR2",
+            "type": "STRING",
+            "length": 255,
+            "precision": null,
+            "scale": null,
+            "nullable": 0,
+            "required": 1,
+            "primaryKey": 0,
+            "foreignKey": 0,
+            "referenceTable": null,
+            "referenceColumn": null,
+            "defaultValue": null,
+            "comment": null,
+            "order": 6
+          },
+          {
+            "name": "email",
+            "column": "EMAIL",
+            "dbType": "VARCHAR2",
+            "type": "STRING",
+            "length": 255,
+            "precision": null,
+            "scale": null,
+            "nullable": 1,
+            "required": 0,
+            "primaryKey": 0,
+            "foreignKey": 0,
+            "referenceTable": null,
+            "referenceColumn": null,
+            "defaultValue": null,
+            "comment": null,
+            "order": 7
+          },
+          {
+            "name": "is_xac_thuc_email",
+            "column": "IS_XAC_THUC_EMAIL",
+            "dbType": "NUMBER",
+            "type": "NUMBER",
+            "length": null,
+            "precision": 1,
+            "scale": 0,
+            "nullable": 1,
+            "required": 0,
+            "primaryKey": 0,
+            "foreignKey": 0,
+            "referenceTable": null,
+            "referenceColumn": null,
+            "defaultValue": null,
+            "comment": null,
+            "order": 8
+          },
+          {
+            "name": "so_dien_thoai",
+            "column": "SO_DIEN_THOAI",
+            "dbType": "VARCHAR2",
+            "type": "STRING",
+            "length": 32,
+            "precision": null,
+            "scale": null,
+            "nullable": 1,
+            "required": 0,
+            "primaryKey": 0,
+            "foreignKey": 0,
+            "referenceTable": null,
+            "referenceColumn": null,
+            "defaultValue": null,
+            "comment": null,
+            "order": 9
+          },
+          {
+            "name": "is_super_admin",
+            "column": "IS_SUPER_ADMIN",
+            "dbType": "NUMBER",
+            "type": "NUMBER",
+            "length": null,
+            "precision": 1,
+            "scale": 0,
+            "nullable": 0,
+            "required": 1,
+            "primaryKey": 0,
+            "foreignKey": 0,
+            "referenceTable": null,
+            "referenceColumn": null,
+            "defaultValue": null,
+            "comment": null,
+            "order": 10
+          },
+          {
+            "name": "gioi_tinh",
+            "column": "GIOI_TINH",
+            "dbType": "NUMBER",
+            "type": "NUMBER",
+            "length": null,
+            "precision": 1,
+            "scale": 0,
+            "nullable": 1,
+            "required": 0,
+            "primaryKey": 0,
+            "foreignKey": 0,
+            "referenceTable": null,
+            "referenceColumn": null,
+            "defaultValue": null,
+            "comment": null,
+            "order": 11
+          },
+          {
+            "name": "don_vi_id",
+            "column": "DON_VI_ID",
+            "dbType": "VARCHAR2",
+            "type": "STRING",
+            "length": 36,
+            "precision": null,
+            "scale": null,
+            "nullable": 1,
+            "required": 0,
+            "primaryKey": 0,
+            "foreignKey": 1,
+            "referenceTable": "SYS_DANH_MUC",
+            "referenceColumn": "ID",
+            "defaultValue": null,
+            "comment": null,
+            "order": 12
+          },
+          {
+            "name": "trang_thai",
+            "column": "TRANG_THAI",
+            "dbType": "NUMBER",
+            "type": "NUMBER",
+            "length": null,
+            "precision": 10,
+            "scale": 0,
+            "nullable": 1,
+            "required": 0,
+            "primaryKey": 0,
+            "foreignKey": 0,
+            "referenceTable": null,
+            "referenceColumn": null,
+            "defaultValue": null,
+            "comment": null,
+            "order": 13
+          },
+          {
+            "name": "is_doi_mk",
+            "column": "IS_DOI_MK",
+            "dbType": "NUMBER",
+            "type": "NUMBER",
+            "length": null,
+            "precision": 1,
+            "scale": 0,
+            "nullable": 1,
+            "required": 0,
+            "primaryKey": 0,
+            "foreignKey": 0,
+            "referenceTable": null,
+            "referenceColumn": null,
+            "defaultValue": null,
+            "comment": null,
+            "order": 14
+          },
+          {
+            "name": "ngay_doi_mk_gan_nhat",
+            "column": "NGAY_DOI_MK_GAN_NHAT",
+            "dbType": "TIMESTAMP(6)",
+            "type": "TIMESTAMP",
+            "length": null,
+            "precision": null,
+            "scale": 6,
+            "nullable": 1,
+            "required": 0,
+            "primaryKey": 0,
+            "foreignKey": 0,
+            "referenceTable": null,
+            "referenceColumn": null,
+            "defaultValue": null,
+            "comment": null,
+            "order": 15
+          },
+          {
+            "name": "chuc_vu_id",
+            "column": "CHUC_VU_ID",
+            "dbType": "VARCHAR2",
+            "type": "STRING",
+            "length": 36,
+            "precision": null,
+            "scale": null,
+            "nullable": 1,
+            "required": 0,
+            "primaryKey": 0,
+            "foreignKey": 1,
+            "referenceTable": "SYS_DANH_MUC",
+            "referenceColumn": "ID",
+            "defaultValue": null,
+            "comment": null,
+            "order": 16
+          },
+          {
+            "name": "ngay_tao",
+            "column": "NGAY_TAO",
+            "dbType": "TIMESTAMP(6)",
+            "type": "TIMESTAMP",
+            "length": null,
+            "precision": null,
+            "scale": 6,
+            "nullable": 1,
+            "required": 0,
+            "primaryKey": 0,
+            "foreignKey": 0,
+            "referenceTable": null,
+            "referenceColumn": null,
+            "defaultValue": null,
+            "comment": null,
+            "order": 17
+          },
+          {
+            "name": "nguoi_tao",
+            "column": "NGUOI_TAO",
+            "dbType": "VARCHAR2",
+            "type": "STRING",
+            "length": 255,
+            "precision": null,
+            "scale": null,
+            "nullable": 1,
+            "required": 0,
+            "primaryKey": 0,
+            "foreignKey": 0,
+            "referenceTable": null,
+            "referenceColumn": null,
+            "defaultValue": null,
+            "comment": null,
+            "order": 18
+          },
+          {
+            "name": "ngay_chinh_sua",
+            "column": "NGAY_CHINH_SUA",
+            "dbType": "TIMESTAMP(6)",
+            "type": "TIMESTAMP",
+            "length": null,
+            "precision": null,
+            "scale": 6,
+            "nullable": 1,
+            "required": 0,
+            "primaryKey": 0,
+            "foreignKey": 0,
+            "referenceTable": null,
+            "referenceColumn": null,
+            "defaultValue": null,
+            "comment": null,
+            "order": 19
+          },
+          {
+            "name": "nguoi_chinh_sua",
+            "column": "NGUOI_CHINH_SUA",
+            "dbType": "VARCHAR2",
+            "type": "STRING",
+            "length": 255,
+            "precision": null,
+            "scale": null,
+            "nullable": 1,
+            "required": 0,
+            "primaryKey": 0,
+            "foreignKey": 0,
+            "referenceTable": null,
+            "referenceColumn": null,
+            "defaultValue": null,
+            "comment": null,
+            "order": 20
+          },
+          {
+            "name": "nguoi_deleted",
+            "column": "NGUOI_DELETED",
+            "dbType": "VARCHAR2",
+            "type": "STRING",
+            "length": 255,
+            "precision": null,
+            "scale": null,
+            "nullable": 1,
+            "required": 0,
+            "primaryKey": 0,
+            "foreignKey": 0,
+            "referenceTable": null,
+            "referenceColumn": null,
+            "defaultValue": null,
+            "comment": null,
+            "order": 21
+          },
+          {
+            "name": "deleted_at",
+            "column": "DELETED_AT",
+            "dbType": "TIMESTAMP(6)",
+            "type": "TIMESTAMP",
+            "length": null,
+            "precision": null,
+            "scale": 6,
+            "nullable": 1,
+            "required": 0,
+            "primaryKey": 0,
+            "foreignKey": 0,
+            "referenceTable": null,
+            "referenceColumn": null,
+            "defaultValue": null,
+            "comment": null,
+            "order": 22
+          },
+          {
+            "name": "cap_bac_id",
+            "column": "CAP_BAC_ID",
+            "dbType": "VARCHAR2",
+            "type": "STRING",
+            "length": 36,
+            "precision": null,
+            "scale": null,
+            "nullable": 1,
+            "required": 0,
+            "primaryKey": 0,
+            "foreignKey": 1,
+            "referenceTable": "SYS_DANH_MUC",
+            "referenceColumn": "ID",
+            "defaultValue": null,
+            "comment": null,
+            "order": 23
+          },
+          {
+            "name": "so_cccd",
+            "column": "SO_CCCD",
+            "dbType": "VARCHAR2",
+            "type": "STRING",
+            "length": 50,
+            "precision": null,
+            "scale": null,
+            "nullable": 1,
+            "required": 0,
+            "primaryKey": 0,
+            "foreignKey": 0,
+            "referenceTable": null,
+            "referenceColumn": null,
+            "defaultValue": null,
+            "comment": null,
+            "order": 24
+          },
+          {
+            "name": "so_hieu_cand",
+            "column": "SO_HIEU_CAND",
+            "dbType": "VARCHAR2",
+            "type": "STRING",
+            "length": 50,
+            "precision": null,
+            "scale": null,
+            "nullable": 1,
+            "required": 0,
+            "primaryKey": 0,
+            "foreignKey": 0,
+            "referenceTable": null,
+            "referenceColumn": null,
+            "defaultValue": null,
+            "comment": null,
+            "order": 25
+          },
+          {
+            "name": "ngay_sinh",
+            "column": "NGAY_SINH",
+            "dbType": "TIMESTAMP(6)",
+            "type": "TIMESTAMP",
+            "length": null,
+            "precision": null,
+            "scale": 6,
+            "nullable": 1,
+            "required": 0,
+            "primaryKey": 0,
+            "foreignKey": 0,
+            "referenceTable": null,
+            "referenceColumn": null,
+            "defaultValue": null,
+            "comment": null,
+            "order": 26
+          }
+        ]
+      ],
+      "apis": [
+        {
+          "name": "quan-tri.nguoi-dung.get",
+          "operation": "SELECT",
+          "entity": "sys_nguoi_dung",
+          "module": "quan-tri/nguoi-dung",
+          "method": "GET",
+          "handler": "UserAdminListActionHandler",
+          "permission": "PERM_VIEW",
+          "response": {
+            "type": "LIST"
+          },
+          "outputDTO": {
+            "fields": [
+              {
+                "name": [
+                  "id",
+                  "taiKhoan",
+                  "ten",
+                  "trangThai"
+                ],
+                "source": "",
+                "expression": null
+              },
+              {
+                "name": "soHieuCand",
+                "source": "SO_HIEU_CAND",
+                "expression": ""
+              },
+              {
+                "name": "tenChucVu",
+                "source": "TEN_CHUC_VU",
+                "expression": ""
+              },
+              {
+                "name": "tenDonVi",
+                "source": "TEN_DON_VI",
+                "expression": null
+              },
+              {
+                "name": "tenNhomNguoiDung",
+                "source": "TEN_NHOM_NGUOI_DUNG",
+                "expression": null
+              }
+            ]
+          },
+          "inputDTO": {
+            "fields": []
+          },
+          "plan": {
+            "nativeSql": "SELECT\n    n.ID AS \"id\",\n    n.TAI_KHOAN AS \"taiKhoan\",\n    n.TEN AS \"ten\",\n    n.SO_HIEU_CAND AS \"soHieuCand\",\n    n.TRANG_THAI AS \"trangThai\",\n    n.CHUC_VU_ID AS \"chucVuId\",\n\n    cv.TEN AS \"tenChucVu\",\n    cb.TEN AS \"tenCapBac\",\n    dv.TEN AS \"tenDonVi\",\n\n    LISTAGG(nh.TEN, ', ')\n        WITHIN GROUP (ORDER BY nh.TEN)\n        AS \"tenNhomNguoiDung\"\n\nFROM SYS_NGUOI_DUNG n\n\nLEFT JOIN SYS_NGUOI_DUNG_2_NHOM_NGUOI_DUNG n2nh\n    ON n2nh.NGUOI_DUNG_ID = n.ID\n\nLEFT JOIN SYS_NHOM_NGUOI_DUNG nh\n    ON nh.ID = n2nh.NHOM_NGUOI_DUNG_ID\n\nLEFT JOIN (\n    SELECT *\n    FROM SYS_DANH_MUC\n    WHERE MA_DINH_DANH = 'danh-muc-chuc-vu'\n) cv\n    ON n.CHUC_VU_ID = cv.ID\n\nLEFT JOIN (\n    SELECT *\n    FROM SYS_DANH_MUC\n    WHERE MA_DINH_DANH = 'danh-muc-cap-bac'\n) cb\n    ON n.CAP_BAC_ID = cb.ID\n\nLEFT JOIN (\n    SELECT *\n    FROM SYS_DANH_MUC\n    WHERE MA_DINH_DANH = 'danh-muc-don-vi'\n) dv\n    ON n.DON_VI_ID = dv.ID\nWHERE (n.TENANT_ID IS NULL OR n.TENANT_ID = :tenantId)\n  AND n.DELETED_AT IS NULL\n  AND (:taiKhoan IS NULL OR UPPER(n.TAI_KHOAN) LIKE '%' || UPPER(:taiKhoan) || '%')\n  AND (:ten IS NULL \n       OR UPPER(n.TEN) LIKE '%' || UPPER(:ten) || '%' \n       OR UPPER(n.SO_HIEU_CAND) LIKE '%' || UPPER(:ten) || '%')\n  AND (:donViId IS NULL OR n.DON_VI_ID = :donViId)\n  AND (:trangThai IS NULL OR n.TRANG_THAI = :trangThai)\n  AND (:chucVuId IS NULL OR n.chuc_vu_id = :chucVuId)\n  AND (:nhom IS NULL OR EXISTS (\n      SELECT 1 \n      FROM SYS_NGUOI_DUNG_2_NHOM_NGUOI_DUNG sub_n2nh\n      WHERE sub_n2nh.NGUOI_DUNG_ID = n.ID \n        AND sub_n2nh.NHOM_NGUOI_DUNG_ID = :nhom\n  ))\n\nGROUP BY\n    n.ID,\n    n.ngay_tao,\n    n.TAI_KHOAN,\n    n.TEN,\n    n.SO_HIEU_CAND,\n    n.TRANG_THAI,\n    n.CHUC_VU_ID,\n    cv.TEN,\n    cb.TEN,\n    dv.TEN\nORDER BY n.ngay_tao DESC"
+          }
+        },
+        {
+          "name": "quan-tri.nguoi-dung.post",
+          "operation": "INSERT",
+          "entity": "sys_nguoi_dung",
+          "module": "quan-tri/nguoi-dung",
+          "method": "POST",
+          "handler": "UserAdminWriteActionHandler",
+          "permission": "PERM_ADD",
+          "response": {
+            "type": "COMMAND"
+          },
+          "inputDTO": {
+            "fields": [
+              {
+                "name": [
+                  "ten",
+                  "capBacId",
+                  "chucVuId",
+                  "donViId",
+                  "email",
+                  "soCccd"
+                ],
+                "type": "",
+                "validate": []
+              },
+              {
+                "name": "ds_nhom_nguoi_dung",
+                "type": "STRING"
+              },
+              {
+                "name": "soHieuCAND",
+                "type": "STRING"
+              },
+              {
+                "name": "gioiTinh",
+                "type": "BOOLEAN"
+              },
+              {
+                "name": "ngaySinh",
+                "type": "TIMESTAMP"
+              },
+              {
+                "name": "soDienThoai",
+                "type": "STRING"
+              }
+            ]
+          },
+          "outputDTO": {
+            "fields": []
+          }
+        },
+        {
+          "name": "quan-tri.nguoi-dung.put",
+          "operation": "UPDATE",
+          "entity": "sys_nguoi_dung",
+          "module": "quan-tri/nguoi-dung",
+          "method": "PUT",
+          "handler": "UserAdminWriteActionHandler",
+          "permission": "PERM_EDIT",
+          "response": {
+            "type": "COMMAND"
+          },
+          "inputDTO": {
+            "fields": [
+              {
+                "type": "",
+                "validate": [],
+                "name": [
+                  "ten",
+                  "email",
+                  "id",
+                  "donViId",
+                  "chucVuId",
+                  "capBacId",
+                  "soCccd"
+                ]
+              },
+              {
+                "name": "ds_nhom_nguoi_dung",
+                "type": "STRING"
+              },
+              {
+                "name": "ngaySinh",
+                "type": "TIMESTAMP"
+              },
+              {
+                "name": "soHieuCAND",
+                "type": "STRING"
+              },
+              {
+                "name": "trangThai",
+                "type": "STRING"
+              },
+              {
+                "name": "soDienThoai",
+                "type": "STRING"
+              },
+              {
+                "name": "gioiTinh",
+                "type": "BOOLEAN"
+              }
+            ]
+          },
+          "outputDTO": {
+            "fields": [
+              {
+                "name": [
+                  "id",
+                  "tenantId",
+                  "taiKhoan",
+                  "matKhau",
+                  "saltCode",
+                  "ten",
+                  "email",
+                  "isXacThucEmail",
+                  "soDienThoai",
+                  "isSuperAdmin",
+                  "gioiTinh",
+                  "donViId",
+                  "isDoiMk",
+                  "ngayDoiMkGanNhat",
+                  "chucVu",
+                  "ngayTao",
+                  "nguoiTao",
+                  "ngayChinhSua",
+                  "nguoiChinhSua",
+                  "nguoiDeleted",
+                  "deletedAt",
+                  "ngaySinh"
+                ],
+                "source": "",
+                "expression": null
+              }
+            ]
+          }
+        },
+        {
+          "name": "quan-tri.nguoi-dung.delete",
+          "operation": "DELETE",
+          "entity": "sys_nguoi_dung",
+          "module": "quan-tri/nguoi-dung",
+          "method": "DELETE",
+          "handler": "UserAdminWriteActionHandler",
+          "permission": "PERM_DELETE",
+          "response": {
+            "type": "COMMAND"
+          },
+          "inputDTO": {
+            "fields": [
+              {
+                "name": [
+                  "id"
+                ],
+                "type": "",
+                "validate": []
+              },
+              {
+                "name": "ids",
+                "type": "STRING",
+                "qs": 1
+              }
+            ]
+          }
+        },
+        {
+          "name": "quan-tri.nguoi-dung.detail.get",
+          "operation": "DETAIL",
+          "entity": "sys_nguoi_dung",
+          "module": "quan-tri/nguoi-dung/detail",
+          "method": "GET",
+          "handler": "BaseActionHandler",
+          "permission": "PERM_VIEW",
+          "response": {
+            "type": "SINGLE"
+          },
+          "outputDTO": {
+            "fields": [
+              {
+                "source": "",
+                "expression": null,
+                "name": [
+                  "ten",
+                  "email",
+                  "gioiTinh"
+                ]
+              },
+              {
+                "name": "soHieuCand",
+                "source": "SO_HIEU_CAND",
+                "expression": null
+              },
+              {
+                "name": "tenCapBac",
+                "source": "TEN_CAP_BAC",
+                "expression": null
+              },
+              {
+                "name": "tenChucVu",
+                "source": "TEN_CHUC_VU",
+                "expression": null
+              },
+              {
+                "name": "tenDonVi",
+                "source": "TEN_DON_VI",
+                "expression": null
+              },
+              {
+                "name": "soDienThoai",
+                "source": "SO_DIEN_THOAI",
+                "expression": null
+              },
+              {
+                "name": "tenNhomNguoiDung",
+                "source": "TEN_NHOM_NGUOI_DUNG",
+                "expression": null
+              },
+              {
+                "name": "soCccd",
+                "source": "SO_CCCD",
+                "expression": null
+              },
+              {
+                "name": "ngaySinh",
+                "source": "NGAY_SINH",
+                "expression": null
+              }
+            ]
+          },
+          "plan": {
+            "nativeSql": "SELECT \n    nd.ten,\n    nd.email,\n    nd.gioi_tinh,\n    nd.so_cccd,\n    nd.trang_thai,\n    nd.ngay_sinh,\n    nd.so_hieu_cand,\n    cb.ten AS TEN_CAP_BAC,\n    cv.ten AS TEN_CHUC_VU,\n    dv.ten AS TEN_DON_VI,\n    nd.so_dien_thoai,\n    LISTAGG(nh.ten,', ') AS TEN_NHOM_NGUOI_DUNG\n    FROM sys_nguoi_dung nd \nLEFT JOIN sys_nguoi_dung_2_nhom_nguoi_dung nd2nh ON nd2nh.nguoi_dung_id = nd.id \nLEFT JOIN sys_nhom_nguoi_dung nh ON nh.id = nd2nh.nhom_nguoi_dung_id\nLEFT JOIN (SELECT * FROM sys_danh_muc dm WHERE dm.ma_dinh_danh = 'danh-muc-cap-bac') cb ON nd.cap_bac_id = cb.id\nLEFT JOIN (SELECT * FROM sys_danh_muc dm WHERE dm.ma_dinh_danh = 'danh-muc-chuc-vu') cv ON nd.chuc_vu_id = cv.id\nLEFT JOIN (SELECT * FROM sys_danh_muc dm WHERE dm.ma_dinh_danh = 'danh-muc-don-vi') dv ON nd.don_vi_id = dv.id\nWHERE nd.id = :id\nGROUP BY \n    nd.ten,\n    nd.email,\n    nd.gioi_tinh,\n    nd.ngay_sinh,\n    nd.so_cccd,\n    nd.so_hieu_cand,\n    cb.ten,\n    cv.ten,\n    nd.trang_thai,\n    nd.so_dien_thoai,\n    dv.ten"
+          }
+        },
+        {
+          "name": "quan-tri.nguoi-dung.lookup.get",
+          "operation": "LOOKUP",
+          "entity": "sys_nguoi_dung",
+          "module": "quan-tri/nguoi-dung",
+          "method": "GET",
+          "handler": "BaseActionHandler",
+          "permission": "PERM_VIEW",
+          "response": {
+            "type": "LIST"
+          },
+          "outputDTO": {
+            "fields": [
+              {
+                "name": [
+                  "id",
+                  "taiKhoan",
+                  "matKhau",
+                  "saltCode",
+                  "ten",
+                  "email",
+                  "isXacThucEmail",
+                  "soDienThoai",
+                  "isSuperAdmin",
+                  "gioiTinh",
+                  "donViId",
+                  "trangThai",
+                  "isDoiMk",
+                  "ngayDoiMkGanNhat",
+                  "chucVu",
+                  "ngayTao",
+                  "nguoiTao",
+                  "ngayChinhSua",
+                  "nguoiChinhSua",
+                  "nguoiDeleted",
+                  "deletedAt"
+                ],
+                "source": "",
+                "expression": null
+              }
+            ]
+          }
+        },
+        {
+          "name": "quan-tri.nguoi-dung.confirm.post",
+          "operation": [
+            "CONFIRM"
+          ],
+          "entity": "sys_nguoi_dung",
+          "module": "nguoi-dung",
+          "method": "POST",
+          "handler": "UserAdminWriteActionHandler",
+          "permission": "PERM_EDIT",
+          "response": {
+            "type": "COMMAND"
+          },
+          "inputDTO": {
+            "fields": [
+              {
+                "name": "ids",
+                "type": "STRING"
+              }
+            ]
+          },
+          "outputDTO": {
+            "fields": [
+              {
+                "name": [
+                  "id",
+                  "taiKhoan",
+                  "matKhau",
+                  "saltCode",
+                  "ten",
+                  "email",
+                  "isXacThucEmail",
+                  "soDienThoai",
+                  "isSuperAdmin",
+                  "gioiTinh",
+                  "donViId",
+                  "trangThai",
+                  "isDoiMk",
+                  "ngayDoiMkGanNhat",
+                  "chucVu",
+                  "ngayTao",
+                  "nguoiTao",
+                  "ngayChinhSua",
+                  "nguoiChinhSua",
+                  "nguoiDeleted",
+                  "deletedAt",
+                  "ngaySinh"
+                ],
+                "source": "",
+                "expression": null
+              }
+            ]
+          }
+        },
+        {
+          "name": "quan-tri.nguoi-dung.unlock.post",
+          "operation": [
+            "UNLOCK"
+          ],
+          "entity": "sys_nguoi_dung",
+          "module": "quan-tri/nguoi-dung",
+          "method": "POST",
+          "handler": "UserAdminSecurityActionHandler",
+          "permission": "PERM_LOCK_UNLOCK",
+          "response": {
+            "type": "COMMAND"
+          },
+          "inputDTO": {
+            "fields": []
+          },
+          "outputDTO": {
+            "fields": [
+              {
+                "name": [
+                  "id",
+                  "taiKhoan",
+                  "matKhau",
+                  "saltCode",
+                  "ten",
+                  "email",
+                  "isXacThucEmail",
+                  "soDienThoai",
+                  "isSuperAdmin",
+                  "gioiTinh",
+                  "donViId",
+                  "trangThai",
+                  "isDoiMk",
+                  "ngayDoiMkGanNhat",
+                  "chucVu",
+                  "ngayTao",
+                  "nguoiTao",
+                  "ngayChinhSua",
+                  "nguoiChinhSua",
+                  "nguoiDeleted",
+                  "deletedAt",
+                  "ngaySinh"
+                ],
+                "source": "",
+                "expression": null
+              }
+            ]
+          }
+        },
+        {
+          "name": "quan-tri.nguoi-dung.lock.post",
+          "operation": [
+            "LOCK"
+          ],
+          "entity": "sys_nguoi_dung",
+          "module": "nguoi-dung",
+          "method": "POST",
+          "handler": "UserAdminSecurityActionHandler",
+          "permission": "PERM_LOCK_UNLOCK",
+          "response": {
+            "type": "COMMAND"
+          },
+          "inputDTO": {
+            "fields": []
+          },
+          "outputDTO": {
+            "fields": [
+              {
+                "name": [
+                  "id",
+                  "taiKhoan",
+                  "matKhau",
+                  "saltCode",
+                  "ten",
+                  "email",
+                  "isXacThucEmail",
+                  "soDienThoai",
+                  "isSuperAdmin",
+                  "gioiTinh",
+                  "donViId",
+                  "trangThai",
+                  "isDoiMk",
+                  "ngayDoiMkGanNhat",
+                  "chucVu",
+                  "ngayTao",
+                  "nguoiTao",
+                  "ngayChinhSua",
+                  "nguoiChinhSua",
+                  "nguoiDeleted",
+                  "deletedAt",
+                  "ngaySinh"
+                ],
+                "source": "",
+                "expression": null
+              }
+            ]
+          }
+        },
+        {
+          "name": "quan-tri.nguoi-dung.reset-password.post",
+          "operation": [
+            "RESET-PASSWORD"
+          ],
+          "entity": "sys_nguoi_dung",
+          "module": "nguoi-dung",
+          "method": "POST",
+          "handler": "UserAdminSecurityActionHandler",
+          "permission": "PERM_EDIT",
+          "response": {
+            "type": "COMMAND"
+          },
+          "inputDTO": {
+            "fields": [
+              {
+                "name": [],
+                "type": "",
+                "validate": []
+              }
+            ]
+          },
+          "outputDTO": {
+            "fields": [
+              {
+                "name": [
+                  "id",
+                  "taiKhoan",
+                  "matKhau",
+                  "saltCode",
+                  "ten",
+                  "email",
+                  "isXacThucEmail",
+                  "soDienThoai",
+                  "isSuperAdmin",
+                  "gioiTinh",
+                  "donViId",
+                  "trangThai",
+                  "isDoiMk",
+                  "ngayDoiMkGanNhat",
+                  "chucVu",
+                  "ngayTao",
+                  "nguoiTao",
+                  "ngayChinhSua",
+                  "nguoiChinhSua",
+                  "nguoiDeleted",
+                  "deletedAt",
+                  "ngaySinh"
+                ],
+                "source": "",
+                "expression": null
+              }
+            ]
+          }
+        },
+        {
+          "name": "quan-tri.nguoi-dung.admin-set-pass.post",
+          "operation": [
+            "ADMIN-SET-PASS"
+          ],
+          "entity": "sys_nguoi_dung",
+          "module": "quan-tri/nguoi-dung",
+          "method": "POST",
+          "handler": "UserAdminSecurityActionHandler",
+          "permission": "PERM_EDIT",
+          "response": {
+            "type": "COMMAND"
+          },
+          "inputDTO": {
+            "fields": [
+              {
+                "name": "id",
+                "type": "STRING"
+              },
+              {
+                "name": "matKhau",
+                "type": "STRING"
+              }
+            ]
+          },
+          "outputDTO": {
+            "fields": [
+              {
+                "name": [
+                  "id",
+                  "taiKhoan",
+                  "matKhau",
+                  "saltCode",
+                  "ten",
+                  "email",
+                  "isXacThucEmail",
+                  "soDienThoai",
+                  "isSuperAdmin",
+                  "gioiTinh",
+                  "donViId",
+                  "trangThai",
+                  "isDoiMk",
+                  "ngayDoiMkGanNhat",
+                  "chucVu",
+                  "ngayTao",
+                  "nguoiTao",
+                  "ngayChinhSua",
+                  "nguoiChinhSua",
+                  "nguoiDeleted",
+                  "deletedAt",
+                  "ngaySinh"
+                ],
+                "source": "",
+                "expression": null
+              }
+            ]
+          }
+        },
+        {
+          "name": "quan-tri.nguoi-dung.detailForEdit.get",
+          "operation": "DETAIL",
+          "entity": "sys_nguoi_dung",
+          "module": "quan-tri/nguoi-dung/detailForEdit",
+          "method": "GET",
+          "handler": "BaseActionHandler",
+          "permission": "PERM_VIEW",
+          "response": {
+            "type": "SINGLE"
+          },
+          "outputDTO": {
+            "fields": [
+              {
+                "name": "taiKhoan",
+                "source": "TAI_KHOAN"
+              },
+              {
+                "name": "ten",
+                "source": "TEN"
+              },
+              {
+                "name": "soCCCD",
+                "source": "SO_CCCD"
+              },
+              {
+                "name": "soHieuCAND",
+                "source": "SO_HIEU_CAND"
+              },
+              {
+                "name": "gioiTinh",
+                "source": "GIOI_TINH"
+              },
+              {
+                "name": "chucVuId",
+                "source": "CHUC_VU_ID"
+              },
+              {
+                "name": "capBacId",
+                "source": "CAP_BAC_ID"
+              },
+              {
+                "name": "donViId",
+                "source": "DON_VI_ID"
+              },
+              {
+                "name": "email",
+                "source": "EMAIL"
+              },
+              {
+                "name": "soDienThoai",
+                "source": "SO_DIEN_THOAI"
+              },
+              {
+                "name": "ngaySinh",
+                "source": "NGAY_SINH"
+              },
+              {
+                "name": "ds_nhom_nguoi_dung",
+                "source": "DS_NHOM_NGUOI_DUNG"
+              }
+            ]
+          },
+          "plan": {
+            "nativeSql": "SELECT n.TAI_KHOAN, n.TEN, n.GIOI_TINH, n.CHUC_VU_ID, n.CAP_BAC_ID, n.EMAIL, n.DON_VI_ID, n.SO_DIEN_THOAI, n.NGAY_SINH, n.so_hieu_cand AS SO_HIEU_CAND, n.so_cccd AS SO_CCCD, (SELECT JSON_ARRAYAGG(JSON_OBJECT('id' VALUE nh.id, 'ma' VALUE nh.ma, 'ten' VALUE nh.ten, 'macDinh' VALUE CASE WHEN n2nh.mac_dinh = 1 THEN 'true' ELSE 'false' END FORMAT JSON, 'trangThai' VALUE CASE WHEN nh.trang_thai = 1 THEN 'true' ELSE 'false' END FORMAT JSON)) FROM sys_nguoi_dung_2_nhom_nguoi_dung n2nh JOIN sys_nhom_nguoi_dung nh ON nh.id = n2nh.nhom_nguoi_dung_id WHERE n2nh.nguoi_dung_id = n.id) AS DS_NHOM_NGUOI_DUNG FROM SYS_NGUOI_DUNG n WHERE n.id = :id"
+          },
+          "inputDTO": {
+            "fields": []
+          }
+        },
+        {
+          "name": "quan-tri.nguoi-dung.restore-acc.put",
+          "operation": "RESTORE",
+          "entity": "sys_nguoi_dung",
+          "module": "quan-tri/nguoi-dung/restore-acc",
+          "method": "PUT",
+          "handler": "UserAdminWriteActionHandler",
+          "permission": "PERM_EDIT",
+          "response": {
+            "type": "COMMAND"
+          },
+          "inputDTO": {
+            "fields": []
+          },
+          "outputDTO": {
+            "fields": []
+          }
+        },
+        {
+          "name": "quan-tri.nguoi-dung.create-user.post",
+          "operation": "CREATE-ACC",
+          "entity": "sys_nguoi_dung",
+          "module": "quan-tri/nguoi-dung/create-user",
+          "method": "POST",
+          "handler": "UserActionHandler",
+          "permission": "PERM_NA",
+          "response": {
+            "type": "COMMAND"
+          },
+          "inputDTO": {
+            "fields": [
+              {
+                "name": [
+                  "email",
+                  "ten",
+                  "soHieuCand",
+                  "soCccd",
+                  "ngaySinh",
+                  "soDienThoai",
+                  "gioiTinh"
+                ],
+                "type": "",
+                "validate": []
+              }
+            ]
+          },
+          "outputDTO": {
+            "fields": []
+          }
+        },
+        {
+          "name": "quan-tri.nguoi-dung.change-user-info.put",
+          "operation": "CHANGE-USER-INFO",
+          "entity": "sys_nguoi_dung",
+          "module": "quan-tri/nguoi-dung/change-user-info",
+          "method": "PUT",
+          "handler": "UserChangeInfoActionHandler",
+          "permission": "PERM_EDIT",
+          "response": {
+            "type": "COMMAND"
+          },
+          "inputDTO": {
+            "fields": [
+              {
+                "name": [
+                  "email",
+                  "ten",
+                  "capBacId",
+                  "chucVuId",
+                  "soCccd",
+                  "donViId"
+                ],
+                "type": "",
+                "validate": []
+              },
+              {
+                "name": "ngaySinh",
+                "type": "TIMESTAMP"
+              },
+              {
+                "name": "soDienThoai",
+                "type": "STRING"
+              },
+              {
+                "name": "gioiTinh",
+                "type": "BOOLEAN"
+              },
+              {
+                "name": "soHieuCand",
+                "type": "STRING"
+              }
+            ]
+          },
+          "outputDTO": {
+            "fields": []
+          }
+        },
+        {
+          "name": "quan-tri.nguoi-dung.get-user-info.get",
+          "operation": "GET-USER-INFO",
+          "entity": "sys_nguoi_dung",
+          "module": "quan-tri/nguoi-dung/get-user-info",
+          "method": "GET",
+          "handler": "BaseActionHandler",
+          "permission": "PERM_VIEW",
+          "response": {
+            "type": "SINGLE"
+          },
+          "inputDTO": {
+            "fields": []
+          },
+          "outputDTO": {
+            "fields": [
+              {
+                "name": "ten",
+                "source": "TEN",
+                "expression": ""
+              },
+              {
+                "name": "email",
+                "source": "EMAIL",
+                "expression": ""
+              },
+              {
+                "name": "soDienThoai",
+                "source": "SO_DIEN_THOAI",
+                "expression": ""
+              },
+              {
+                "name": "gioiTinh",
+                "source": "GIOI_TINH",
+                "expression": ""
+              },
+              {
+                "name": "donViId",
+                "source": "DON_VI_ID",
+                "expression": ""
+              },
+              {
+                "name": "chucVuId",
+                "source": "CHUC_VU_ID",
+                "expression": ""
+              },
+              {
+                "name": "capBacId",
+                "source": "CAP_BAC_ID",
+                "expression": ""
+              },
+              {
+                "name": "soCccd",
+                "source": "SO_CCCD",
+                "expression": ""
+              },
+              {
+                "name": "soHieuCand",
+                "source": "SO_HIEU_CAND",
+                "expression": ""
+              },
+              {
+                "name": "ngaySinh",
+                "source": "NGAY_SINH",
+                "expression": ""
+              },
+              {
+                "name": "tenDonVi",
+                "source": "TEN_DON_VI",
+                "expression": null
+              },
+              {
+                "name": "tenCapBac",
+                "source": "TEN_CAP_BAC",
+                "expression": null
+              },
+              {
+                "name": "tenChucVu",
+                "source": "TEN_CHUC_VU",
+                "expression": null
+              },
+              {
+                "name": "ngayDangNhap",
+                "source": "NGAY_DANG_NHAP",
+                "expression": null
+              }
+            ]
+          },
+          "plan": {
+            "nativeSql": "SELECT\n    n.TEN AS \"TEN\",\n    n.so_dien_thoai AS \"SO_DIEN_THOAI\",\n    n.SO_HIEU_CAND AS \"SO_HIEU_CAND\",\n    n.so_cccd AS \"SO_CCCD\",\n    n.gioi_tinh AS \"GIOI_TINH\",\n    n.ngay_sinh AS \"NGAY_SINH\",\n    n.email AS \"EMAIL\",\n    cb.TEN AS \"TEN_CAP_BAC\",\n    cv.TEN AS \"TEN_CHUC_VU\",\n    dv.TEN AS \"TEN_DON_VI\",\n    n.cap_bac_id AS \"CAP_BAC_ID\",\n    n.chuc_vu_id AS \"CHUC_VU_ID\",\n    n.don_vi_id AS \"DON_VI_ID\",\n \n    LISTAGG(nh.TEN, ', ')\n        WITHIN GROUP (ORDER BY nh.TEN)\n        AS \"TEN_NHOM_NGUOI_DUNG\",\n\n    (SELECT MAX(nk.ngay_tao) \n     FROM BIZ_NHAT_KY_KHAI_THAC nk \n     WHERE nk.NGUOI_DUNG_ID = n.ID AND nk.LOAI_KHAI_THAC = 'TRUY_CAP' AND nk.ngay_tao < (SELECT MAX(nk.ngay_tao) \n     FROM BIZ_NHAT_KY_KHAI_THAC nk \n     WHERE nk.NGUOI_DUNG_ID = n.ID AND nk.LOAI_KHAI_THAC = 'TRUY_CAP'\n    )\n    ) AS \"NGAY_DANG_NHAP\"\n    \n \nFROM SYS_NGUOI_DUNG n\n \nLEFT JOIN SYS_NGUOI_DUNG_2_NHOM_NGUOI_DUNG n2nh\n    ON n2nh.NGUOI_DUNG_ID = n.ID\n \nLEFT JOIN SYS_NHOM_NGUOI_DUNG nh\n    ON nh.ID = n2nh.NHOM_NGUOI_DUNG_ID\n \nLEFT JOIN (\n    SELECT *\n    FROM SYS_DANH_MUC\n    WHERE MA_DINH_DANH = 'danh-muc-chuc-vu'\n) cv\n    ON n.CHUC_VU_ID = cv.ID\n \nLEFT JOIN (\n    SELECT *\n    FROM SYS_DANH_MUC\n    WHERE MA_DINH_DANH = 'danh-muc-cap-bac'\n) cb\n    ON n.CAP_BAC_ID = cb.ID\n \nLEFT JOIN (\n    SELECT *\n    FROM SYS_DANH_MUC\n    WHERE MA_DINH_DANH = 'danh-muc-don-vi'\n) dv\n    ON n.DON_VI_ID = dv.ID\n \nWHERE n.id = :id\nand\n      n.tenant_id = :tenantId\n \nGROUP BY\n    n.ID,\n    n.TAI_KHOAN,\n    n.TEN,\n    n.so_dien_thoai,\n    n.so_cccd,\n    n.gioi_tinh,\n    n.email,\n    n.cap_bac_id,\n    n.chuc_vu_id,\n    n.don_vi_id,\n    n.ngay_sinh,\n    n.SO_HIEU_CAND,\n    cv.TEN,\n    cb.TEN,\n    dv.TEN"
+          }
+        }
+      ],
+      "scriptPolicy": "guarded",
+      "filterPolicy": {
+        "rememberBetweenTabs": false,
+        "resetOnTabEnter": true,
+        "collapseDefaultOpen": false,
+        "dependencyCycles": []
+      },
+      "columnGroups": [],
+      "summary_rows": [],
+      "inlineEdit": false,
+      "persistenceMode": "root-api"
+    }
+  ],
+  "ma": "quan-li-nguoi-dung",
+  "scriptPolicy": "guarded",
+  "rendererMode": "crud",
+  "quick_filters": [],
+  "advance_filters": [],
+  "fields": [],
+  "designing": true
+}

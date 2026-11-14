@@ -1,5 +1,7 @@
 package com.socialapp.feature.feed;
 
+import android.os.Bundle;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
@@ -13,6 +15,10 @@ import com.socialapp.core.network.dto.CategoryResource;
 import com.socialapp.core.network.dto.PostListResponse;
 import com.socialapp.core.network.dto.PostResource;
 import com.socialapp.core.pagination.PageLoader;
+import com.socialapp.core.prefetch.HitType;
+import com.socialapp.core.prefetch.Repository;
+import com.socialapp.core.prefetch.ScreenId;
+import com.socialapp.core.prefetch.ScreenLoadCallback;
 
 import java.util.Collections;
 import java.util.List;
@@ -60,26 +66,80 @@ public class FeedRepository {
             @Nullable Integer userId,
             @Nullable String feed) {
 
-        return (page, callback) -> apiService.getPosts(page, 10, sort, category, query, userId, feed)
-                .enqueue(new Callback<PostListResponse>() {
+        return (page, callback) -> {
+            ScreenId screenId = ScreenId.FEED_NEWEST;
+            if ("hot".equalsIgnoreCase(sort)) {
+                screenId = ScreenId.FEED_HOT;
+            } else if ("following".equalsIgnoreCase(feed)) {
+                screenId = ScreenId.FEED_FOLLOWING;
+            } else if (query != null && !query.trim().isEmpty()) {
+                screenId = ScreenId.SEARCH;
+            }
+
+            if (page == 1) {
+                Bundle params = new Bundle();
+                params.putString("sort", sort);
+                params.putString("category", category);
+                params.putString("query", query);
+                params.putString("feed", feed);
+
+                Repository.load(screenId, params, new Repository.RealDataLoader<List<PostResource>>() {
                     @Override
-                    public void onResponse(@NonNull Call<PostListResponse> call,
-                                           @NonNull Response<PostListResponse> response) {
-                        if (response.isSuccessful() && response.body() != null) {
-                            PostListResponse body = response.body();
-                            List<PostResource> items = body.data != null ? body.data : java.util.Collections.emptyList();
-                            boolean hasNext = body.links != null && body.links.hasNext();
-                            int currentPage = (body.meta != null && body.meta.currentPage > 0) ? body.meta.currentPage : page;
-                            callback.onSuccess(new PageLoader.PageResult<>(items, currentPage, hasNext));
-                        } else {
-                            callback.onError(ApiErrorParser.parse(response));
-                        }
+                    public void execute(@NonNull ScreenLoadCallback<List<PostResource>> screenCallback) {
+                        apiService.getPosts(page, 10, sort, category, query, userId, feed)
+                                .enqueue(new Callback<PostListResponse>() {
+                                    @Override
+                                    public void onResponse(@NonNull Call<PostListResponse> call,
+                                                           @NonNull Response<PostListResponse> response) {
+                                        if (response.isSuccessful() && response.body() != null) {
+                                            List<PostResource> items = response.body().data != null ? response.body().data : Collections.emptyList();
+                                            screenCallback.onLoaded(HitType.MISS, 0, items);
+                                        } else {
+                                            screenCallback.onError(new Exception(ApiErrorParser.parse(response).getMessage()));
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onFailure(@NonNull Call<PostListResponse> call, @NonNull Throwable t) {
+                                        screenCallback.onError(t);
+                                    }
+                                });
+                    }
+                }, new ScreenLoadCallback<List<PostResource>>() {
+                    @Override
+                    public void onLoaded(@NonNull HitType hitType, long latencyMs, @Nullable List<PostResource> data) {
+                        List<PostResource> items = data != null ? data : Collections.emptyList();
+                        callback.onSuccess(new PageLoader.PageResult<>(items, 1, items.size() >= 10));
                     }
 
                     @Override
-                    public void onFailure(@NonNull Call<PostListResponse> call, @NonNull Throwable t) {
-                        callback.onError(ApiErrorParser.parseThrowable(t));
+                    public void onError(@NonNull Throwable error) {
+                        callback.onError(ApiErrorParser.parseThrowable(error));
                     }
                 });
+            } else {
+                apiService.getPosts(page, 10, sort, category, query, userId, feed)
+                        .enqueue(new Callback<PostListResponse>() {
+                            @Override
+                            public void onResponse(@NonNull Call<PostListResponse> call,
+                                                   @NonNull Response<PostListResponse> response) {
+                                if (response.isSuccessful() && response.body() != null) {
+                                    PostListResponse body = response.body();
+                                    List<PostResource> items = body.data != null ? body.data : Collections.emptyList();
+                                    boolean hasNext = body.links != null && body.links.hasNext();
+                                    int currentPage = (body.meta != null && body.meta.currentPage > 0) ? body.meta.currentPage : page;
+                                    callback.onSuccess(new PageLoader.PageResult<>(items, currentPage, hasNext));
+                                } else {
+                                    callback.onError(ApiErrorParser.parse(response));
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(@NonNull Call<PostListResponse> call, @NonNull Throwable t) {
+                                callback.onError(ApiErrorParser.parseThrowable(t));
+                            }
+                        });
+            }
+        };
     }
 }

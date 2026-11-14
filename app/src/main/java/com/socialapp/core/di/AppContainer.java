@@ -8,6 +8,10 @@ import com.socialapp.BuildConfig;
 import com.socialapp.core.network.AuthInterceptor;
 import com.socialapp.core.network.FactCheckApiService;
 import com.socialapp.core.network.SocialAppApiService;
+import com.socialapp.core.prefetch.BatchExperimentRunner;
+import com.socialapp.core.prefetch.MetricsLogger;
+import com.socialapp.core.prefetch.PrefetchEngine;
+import com.socialapp.core.prefetch.ReplayEngine;
 import com.socialapp.core.security.KeystoreHelper;
 import com.socialapp.core.session.SessionManager;
 
@@ -23,6 +27,10 @@ public class AppContainer {
     private final Context applicationContext;
     private final KeystoreHelper keystoreHelper;
     private final SessionManager sessionManager;
+    private final PrefetchEngine prefetchEngine;
+    private final MetricsLogger metricsLogger;
+    private final ReplayEngine replayEngine;
+    private final BatchExperimentRunner batchRunner;
 
     private final OkHttpClient socialAppOkHttpClient;
     private final OkHttpClient factCheckOkHttpClient;
@@ -38,6 +46,10 @@ public class AppContainer {
 
         this.keystoreHelper = new KeystoreHelper(this.applicationContext);
         this.sessionManager = new SessionManager(this.applicationContext, this.keystoreHelper);
+        this.prefetchEngine = new PrefetchEngine();
+        this.metricsLogger = new MetricsLogger(this.applicationContext);
+        this.replayEngine = new ReplayEngine(this.applicationContext);
+        this.batchRunner = new BatchExperimentRunner(this.applicationContext);
 
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
         loggingInterceptor.setLevel(BuildConfig.DEBUG ? HttpLoggingInterceptor.Level.BODY : HttpLoggingInterceptor.Level.NONE);
@@ -91,5 +103,21 @@ public class AppContainer {
 
     public FactCheckApiService getFactCheckApiService() {
         return factCheckApiService;
+    }
+
+    public PrefetchEngine getPrefetchEngine() {
+        return prefetchEngine;
+    }
+
+    public MetricsLogger getMetricsLogger() {
+        return metricsLogger;
+    }
+
+    public ReplayEngine getReplayEngine() {
+        return replayEngine;
+    }
+
+    public BatchExperimentRunner getBatchRunner() {
+        return batchRunner;
     }
 }

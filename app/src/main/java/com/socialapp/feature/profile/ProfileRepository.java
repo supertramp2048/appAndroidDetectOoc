@@ -1,6 +1,9 @@
 package com.socialapp.feature.profile;
 
+import android.os.Bundle;
+
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
@@ -15,6 +18,10 @@ import com.socialapp.core.network.dto.ReportRequest;
 import com.socialapp.core.network.dto.UserResource;
 import com.socialapp.core.network.dto.UserSearchResponse;
 import com.socialapp.core.pagination.PageLoader;
+import com.socialapp.core.prefetch.HitType;
+import com.socialapp.core.prefetch.Repository;
+import com.socialapp.core.prefetch.ScreenId;
+import com.socialapp.core.prefetch.ScreenLoadCallback;
 
 import java.util.Collections;
 import java.util.List;
@@ -35,19 +42,41 @@ public class ProfileRepository {
     public LiveData<ApiResult<ProfileResource>> getProfile(int userId) {
         MutableLiveData<ApiResult<ProfileResource>> resultLiveData = new MutableLiveData<>(ApiResult.loading());
 
-        apiService.getProfile(userId).enqueue(new Callback<ProfileDetailResponse>() {
+        Bundle params = new Bundle();
+        params.putInt("userId", userId);
+
+        Repository.load(ScreenId.PROFILE, params, new Repository.RealDataLoader<ProfileResource>() {
             @Override
-            public void onResponse(@NonNull Call<ProfileDetailResponse> call, @NonNull Response<ProfileDetailResponse> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    resultLiveData.setValue(ApiResult.success(response.body().getProfile()));
+            public void execute(@NonNull ScreenLoadCallback<ProfileResource> callback) {
+                apiService.getProfile(userId).enqueue(new Callback<ProfileDetailResponse>() {
+                    @Override
+                    public void onResponse(@NonNull Call<ProfileDetailResponse> call, @NonNull Response<ProfileDetailResponse> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            callback.onLoaded(HitType.MISS, 0, response.body().getProfile());
+                        } else {
+                            callback.onError(new Exception(ApiErrorParser.parse(response).getMessage()));
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull Call<ProfileDetailResponse> call, @NonNull Throwable t) {
+                        callback.onError(t);
+                    }
+                });
+            }
+        }, new ScreenLoadCallback<ProfileResource>() {
+            @Override
+            public void onLoaded(@NonNull HitType hitType, long latencyMs, @Nullable ProfileResource data) {
+                if (data != null) {
+                    resultLiveData.setValue(ApiResult.success(data));
                 } else {
-                    resultLiveData.setValue(ApiResult.error(ApiErrorParser.parse(response)));
+                    resultLiveData.setValue(ApiResult.error(com.socialapp.core.network.AppError.unknown(0, "Không có dữ liệu người dùng")));
                 }
             }
 
             @Override
-            public void onFailure(@NonNull Call<ProfileDetailResponse> call, @NonNull Throwable t) {
-                resultLiveData.setValue(ApiResult.error(ApiErrorParser.parseThrowable(t)));
+            public void onError(@NonNull Throwable error) {
+                resultLiveData.setValue(ApiResult.error(ApiErrorParser.parseThrowable(error)));
             }
         });
 

@@ -8,11 +8,17 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 
 import com.socialapp.core.di.AppContainer;
+import com.socialapp.core.prefetch.ui.GlobalDemoOverlayManager;
 
 public class MyApplication extends Application {
 
+    private static MyApplication instance;
     private static int startedActivityCount = 0;
     private AppContainer appContainer;
+
+    public static MyApplication getInstance() {
+        return instance;
+    }
 
     public static boolean isAppInForeground() {
         return startedActivityCount > 0;
@@ -25,7 +31,9 @@ public class MyApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        instance = this;
         appContainer = new AppContainer(this);
+        GlobalDemoOverlayManager.init(this);
 
         registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks() {
             @Override
