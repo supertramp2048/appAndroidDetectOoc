@@ -68,6 +68,11 @@
             android:exported="false" />
 
         <activity
+            android:name="com.socialapp.core.network.sim.MockNetworkLabActivity"
+            android:theme="@style/Theme.SocialApp"
+            android:exported="true" />
+
+        <activity
             android:name="com.socialapp.feature.factcheck.FactCheckHelperActivity"
             android:theme="@style/Theme.SocialApp"
             android:exported="false" />

@@ -79,16 +79,20 @@ public class SettingsActivity extends AppCompatActivity {
 
         binding.itemChangePassword.setOnClickListener(v -> showChangePasswordDialog());
 
+        binding.itemMockNetworkLab.setOnClickListener(v -> {
+            startActivity(new android.content.Intent(this, com.socialapp.core.network.sim.MockNetworkLabActivity.class));
+        });
+
         binding.itemAboutApp.setOnClickListener(v -> Navigator.navigateTo(this, Navigator.ROUTE_ABOUT));
 
         binding.btnSettingsLogout.setOnClickListener(v -> {
             ConfirmDialog dialog = new ConfirmDialog(
                     this,
-                    "Đăng xuất",
-                    "Bạn có chắc chắn muốn đăng xuất khỏi tài khoản?",
+                    "ÄÄƒng xuáº¥t",
+                    "Báº¡n cÃ³ cháº¯c cháº¯n muá»‘n Ä‘Äƒng xuáº¥t khá»i tÃ i khoáº£n?",
                     () -> {
                         sessionManager.logout();
-                        Toast.makeText(this, "Đã đăng xuất", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "ÄÃ£ Ä‘Äƒng xuáº¥t", Toast.LENGTH_SHORT).show();
                         finish();
                     }
             );
@@ -102,7 +106,7 @@ public class SettingsActivity extends AppCompatActivity {
         sessionManager.getSessionLiveData().observe(this, state -> {
             if (state != null && state.isLoggedIn && state.user != null) {
                 UserResource user = state.user;
-                binding.settingsUserNameText.setText(user.name != null ? user.name : "Thành viên");
+                binding.settingsUserNameText.setText(user.name != null ? user.name : "ThÃ nh viÃªn");
 
                 if (binding.settingsUserAvatar != null && user.getAvatarUrl() != null) {
                     binding.settingsUserAvatar.loadAvatar(user.getAvatarUrl());
@@ -135,35 +139,35 @@ public class SettingsActivity extends AppCompatActivity {
         String currentName = user != null && user.name != null ? user.name : "";
 
         EditText input = new EditText(this);
-        input.setHint("Tên hiển thị (tối đa 50 ký tự)");
+        input.setHint("TÃªn hiá»ƒn thá»‹ (tá»‘i Ä‘a 50 kÃ½ tá»±)");
         input.setText(currentName);
         input.setSelection(currentName.length());
 
         new AlertDialog.Builder(this)
-                .setTitle("Đổi tên hiển thị")
+                .setTitle("Äá»•i tÃªn hiá»ƒn thá»‹")
                 .setView(input)
-                .setPositiveButton("Lưu", (dialog, which) -> {
+                .setPositiveButton("LÆ°u", (dialog, which) -> {
                     String newName = input.getText().toString().trim();
                     if (newName.isEmpty()) {
-                        Toast.makeText(this, "Tên không được để trống", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "TÃªn khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng", Toast.LENGTH_SHORT).show();
                         return;
                     }
                     if (newName.length() > 50) {
-                        Toast.makeText(this, "Tên không được vượt quá 50 ký tự", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "TÃªn khÃ´ng Ä‘Æ°á»£c vÆ°á»£t quÃ¡ 50 kÃ½ tá»±", Toast.LENGTH_SHORT).show();
                         return;
                     }
 
-                    Toast.makeText(this, "Đang cập nhật tên...", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Äang cáº­p nháº­t tÃªn...", Toast.LENGTH_SHORT).show();
 
                     viewModel.updateName(newName).observe(this, result -> {
                         if (result != null && result.isSuccess()) {
-                            Toast.makeText(this, "Đổi tên thành công", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this, "Äá»•i tÃªn thÃ nh cÃ´ng", Toast.LENGTH_SHORT).show();
                         } else if (result != null && result.isError()) {
-                            Toast.makeText(this, result.error != null ? result.error.getMessage() : "Đổi tên thất bại", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this, result.error != null ? result.error.getMessage() : "Äá»•i tÃªn tháº¥t báº¡i", Toast.LENGTH_SHORT).show();
                         }
                     });
                 })
-                .setNegativeButton("Hủy", null)
+                .setNegativeButton("Há»§y", null)
                 .show();
     }
 
@@ -173,15 +177,15 @@ public class SettingsActivity extends AppCompatActivity {
         layout.setPadding(40, 20, 40, 10);
 
         EditText inputCurrent = new EditText(this);
-        inputCurrent.setHint("Mật khẩu hiện tại");
+        inputCurrent.setHint("Máº­t kháº©u hiá»‡n táº¡i");
         inputCurrent.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
 
         EditText inputNew = new EditText(this);
-        inputNew.setHint("Mật khẩu mới (tối thiểu 8 ký tự)");
+        inputNew.setHint("Máº­t kháº©u má»›i (tá»‘i thiá»ƒu 8 kÃ½ tá»±)");
         inputNew.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
 
         EditText inputConfirm = new EditText(this);
-        inputConfirm.setHint("Xác nhận mật khẩu mới");
+        inputConfirm.setHint("XÃ¡c nháº­n máº­t kháº©u má»›i");
         inputConfirm.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
 
         layout.addView(inputCurrent);
@@ -189,43 +193,43 @@ public class SettingsActivity extends AppCompatActivity {
         layout.addView(inputConfirm);
 
         new AlertDialog.Builder(this)
-                .setTitle("Đổi mật khẩu")
+                .setTitle("Äá»•i máº­t kháº©u")
                 .setView(layout)
-                .setPositiveButton("Lưu", (dialog, which) -> {
+                .setPositiveButton("LÆ°u", (dialog, which) -> {
                     String currentPw = inputCurrent.getText().toString().trim();
                     String newPw = inputNew.getText().toString().trim();
                     String confirmPw = inputConfirm.getText().toString().trim();
 
                     if (currentPw.isEmpty()) {
-                        Toast.makeText(this, "Vui lòng nhập mật khẩu hiện tại", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Vui lÃ²ng nháº­p máº­t kháº©u hiá»‡n táº¡i", Toast.LENGTH_SHORT).show();
                         return;
                     }
                     if (newPw.length() < 8) {
-                        Toast.makeText(this, "Mật khẩu mới phải từ 8 ký tự trở lên", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Máº­t kháº©u má»›i pháº£i tá»« 8 kÃ½ tá»± trá»Ÿ lÃªn", Toast.LENGTH_SHORT).show();
                         return;
                     }
                     if (!newPw.equals(confirmPw)) {
-                        Toast.makeText(this, "Xác nhận mật khẩu mới không khớp", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "XÃ¡c nháº­n máº­t kháº©u má»›i khÃ´ng khá»›p", Toast.LENGTH_SHORT).show();
                         return;
                     }
 
-                    Toast.makeText(this, "Đang đổi mật khẩu...", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Äang Ä‘á»•i máº­t kháº©u...", Toast.LENGTH_SHORT).show();
 
                     viewModel.updatePassword(currentPw, newPw, confirmPw).observe(this, result -> {
                         if (result != null && result.isSuccess()) {
-                            Toast.makeText(this, result.data != null ? result.data : "Đổi mật khẩu thành công", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this, result.data != null ? result.data : "Äá»•i máº­t kháº©u thÃ nh cÃ´ng", Toast.LENGTH_SHORT).show();
                         } else if (result != null && result.isError()) {
                             AppError err = result.error;
                             String currentPwErr = err != null ? err.getFirstFieldError("current_password") : null;
                             if (currentPwErr != null) {
-                                Toast.makeText(this, "Mật khẩu hiện tại không đúng: " + currentPwErr, Toast.LENGTH_LONG).show();
+                                Toast.makeText(this, "Máº­t kháº©u hiá»‡n táº¡i khÃ´ng Ä‘Ãºng: " + currentPwErr, Toast.LENGTH_LONG).show();
                             } else {
-                                Toast.makeText(this, err != null ? err.getMessage() : "Đổi mật khẩu thất bại", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(this, err != null ? err.getMessage() : "Äá»•i máº­t kháº©u tháº¥t báº¡i", Toast.LENGTH_SHORT).show();
                             }
                         }
                     });
                 })
-                .setNegativeButton("Hủy", null)
+                .setNegativeButton("Há»§y", null)
                 .show();
     }
 
@@ -235,44 +239,44 @@ public class SettingsActivity extends AppCompatActivity {
         layout.setPadding(40, 20, 40, 10);
 
         EditText inputPassword = new EditText(this);
-        inputPassword.setHint("Nhập mật khẩu tài khoản");
+        inputPassword.setHint("Nháº­p máº­t kháº©u tÃ i khoáº£n");
         inputPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
 
         EditText inputConfirmText = new EditText(this);
-        inputConfirmText.setHint("Gõ lại chữ XOA để xác nhận");
+        inputConfirmText.setHint("GÃµ láº¡i chá»¯ XOA Ä‘á»ƒ xÃ¡c nháº­n");
 
         layout.addView(inputPassword);
         layout.addView(inputConfirmText);
 
         new AlertDialog.Builder(this)
-                .setTitle("Xóa tài khoản vĩnh viễn")
-                .setMessage("Hành động này sẽ xóa vĩnh viễn tài khoản và toàn bộ dữ liệu của bạn.")
+                .setTitle("XÃ³a tÃ i khoáº£n vÄ©nh viá»…n")
+                .setMessage("HÃ nh Ä‘á»™ng nÃ y sáº½ xÃ³a vÄ©nh viá»…n tÃ i khoáº£n vÃ  toÃ n bá»™ dá»¯ liá»‡u cá»§a báº¡n.")
                 .setView(layout)
-                .setPositiveButton("Xóa vĩnh viễn", (dialog, which) -> {
+                .setPositiveButton("XÃ³a vÄ©nh viá»…n", (dialog, which) -> {
                     String password = inputPassword.getText().toString().trim();
                     String confirmText = inputConfirmText.getText().toString().trim();
 
                     if (password.isEmpty()) {
-                        Toast.makeText(this, "Vui lòng nhập mật khẩu", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Vui lÃ²ng nháº­p máº­t kháº©u", Toast.LENGTH_SHORT).show();
                         return;
                     }
                     if (!"XOA".equalsIgnoreCase(confirmText)) {
-                        Toast.makeText(this, "Bạn cần gõ đúng chữ XOA để xác nhận xóa", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Báº¡n cáº§n gÃµ Ä‘Ãºng chá»¯ XOA Ä‘á»ƒ xÃ¡c nháº­n xÃ³a", Toast.LENGTH_SHORT).show();
                         return;
                     }
 
-                    Toast.makeText(this, "Đang thực thi xóa tài khoản...", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Äang thá»±c thi xÃ³a tÃ i khoáº£n...", Toast.LENGTH_SHORT).show();
 
                     viewModel.deleteAccount(password).observe(this, result -> {
                         if (result != null && result.isSuccess()) {
-                            Toast.makeText(this, "Tài khoản của bạn đã được xóa thành công", Toast.LENGTH_LONG).show();
+                            Toast.makeText(this, "TÃ i khoáº£n cá»§a báº¡n Ä‘Ã£ Ä‘Æ°á»£c xÃ³a thÃ nh cÃ´ng", Toast.LENGTH_LONG).show();
                             finish();
                         } else if (result != null && result.isError()) {
-                            Toast.makeText(this, result.error != null ? result.error.getMessage() : "Xóa tài khoản thất bại", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this, result.error != null ? result.error.getMessage() : "XÃ³a tÃ i khoáº£n tháº¥t báº¡i", Toast.LENGTH_SHORT).show();
                         }
                     });
                 })
-                .setNegativeButton("Hủy", null)
+                .setNegativeButton("Há»§y", null)
                 .show();
     }
 
@@ -290,27 +294,27 @@ public class SettingsActivity extends AppCompatActivity {
             outputStream.close();
             inputStream.close();
 
-            Toast.makeText(this, isAvatarPick ? "Đang tải avatar mới..." : "Đang tải ảnh bìa mới...", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, isAvatarPick ? "Äang táº£i avatar má»›i..." : "Äang táº£i áº£nh bÃ¬a má»›i...", Toast.LENGTH_SHORT).show();
 
             if (isAvatarPick) {
                 viewModel.updateAvatar(cacheFile).observe(this, result -> {
                     if (result != null && result.isSuccess()) {
-                        Toast.makeText(this, "Cập nhật Avatar thành công!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Cáº­p nháº­t Avatar thÃ nh cÃ´ng!", Toast.LENGTH_SHORT).show();
                     } else if (result != null && result.isError()) {
-                        Toast.makeText(this, result.error != null ? result.error.getMessage() : "Tải avatar thất bại", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, result.error != null ? result.error.getMessage() : "Táº£i avatar tháº¥t báº¡i", Toast.LENGTH_SHORT).show();
                     }
                 });
             } else {
                 viewModel.updateCoverPhoto(cacheFile).observe(this, result -> {
                     if (result != null && result.isSuccess()) {
-                        Toast.makeText(this, "Cập nhật Ảnh bìa thành công!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Cáº­p nháº­t áº¢nh bÃ¬a thÃ nh cÃ´ng!", Toast.LENGTH_SHORT).show();
                     } else if (result != null && result.isError()) {
-                        Toast.makeText(this, result.error != null ? result.error.getMessage() : "Tải ảnh bìa thất bại", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, result.error != null ? result.error.getMessage() : "Táº£i áº£nh bÃ¬a tháº¥t báº¡i", Toast.LENGTH_SHORT).show();
                     }
                 });
             }
         } catch (Exception e) {
-            Toast.makeText(this, "Lỗi đọc file ảnh: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Lá»—i Ä‘á»c file áº£nh: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
 }

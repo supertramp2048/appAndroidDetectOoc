@@ -21,6 +21,10 @@ import com.socialapp.core.prefetch.Repository;
 import com.socialapp.core.prefetch.ScreenId;
 import com.socialapp.core.prefetch.ScreenLoadCallback;
 
+import com.socialapp.core.network.sim.ScreenPayloadConfig;
+import com.socialapp.core.prefetch.PrefetchManager;
+import com.socialapp.core.prefetch.PrefetchResult;
+
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -43,39 +47,70 @@ public class PostDetailRepository {
         Repository.load(ScreenId.POST_DETAIL, params, new Repository.RealDataLoader<PostResource>() {
             @Override
             public void execute(@NonNull ScreenLoadCallback<PostResource> callback) {
-                apiService.getPostDetail(postId).enqueue(new Callback<PostDetailResponse>() {
-                    @Override
-                    public void onResponse(@NonNull Call<PostDetailResponse> call, @NonNull Response<PostDetailResponse> response) {
-                        if (response.isSuccessful() && response.body() != null && response.body().data != null) {
-                            callback.onLoaded(HitType.MISS, 0, response.body().data);
-                        } else {
-                            callback.onError(new Exception(ApiErrorParser.parse(response).getMessage()));
-                        }
-                    }
+                String cacheKey = "post_" + postId;
+                PrefetchManager prefetchManager = PrefetchManager.getInstance();
 
-                    @Override
-                    public void onFailure(@NonNull Call<PostDetailResponse> call, @NonNull Throwable t) {
-                        callback.onError(t);
+                // 1. Try acquire from Prefetch Engine (FULL_HIT, LATE_HIT, or MISS)
+                prefetchManager.acquire(
+                        ScreenPayloadConfig.SCREEN_POST_DETAIL,
+                        cacheKey,
+                        () -> {
+                            try {
+                                Response<PostDetailResponse> resp = apiService.getPostDetail(postId).execute();
+                                if (resp.isSuccessful() && resp.body() != null && resp.body().data != null) {
+                                    return resp.body().data;
+                                }
+                            } catch (Throwable ignored) {}
+                            return null;
+                        }
+                ).thenAccept(result -> {
+                    PostResource post = result.getData();
+                    if (post != null) {
+                        HitType hitType = HitType.valueOf(result.getHitType().name());
+                        callback.onLoaded(hitType, result.getWaitMs(), post);
+                    } else {
+                        fetchViaRetrofit(postId, callback);
                     }
+                }).exceptionally(ex -> {
+                    fetchViaRetrofit(postId, callback);
+                    return null;
                 });
             }
         }, new ScreenLoadCallback<PostResource>() {
             @Override
             public void onLoaded(@NonNull HitType hitType, long latencyMs, @Nullable PostResource data) {
                 if (data != null) {
-                    resultLiveData.setValue(ApiResult.success(data));
+                    resultLiveData.postValue(ApiResult.success(data));
                 } else {
-                    resultLiveData.setValue(ApiResult.error(com.socialapp.core.network.AppError.unknown(0, "Không có dữ liệu bài viết")));
+                    resultLiveData.postValue(ApiResult.error(com.socialapp.core.network.AppError.unknown(0, "Không có dữ liệu bài viết")));
                 }
             }
 
             @Override
             public void onError(@NonNull Throwable error) {
-                resultLiveData.setValue(ApiResult.error(ApiErrorParser.parseThrowable(error)));
+                resultLiveData.postValue(ApiResult.error(ApiErrorParser.parseThrowable(error)));
             }
         });
 
         return resultLiveData;
+    }
+
+    private void fetchViaRetrofit(int postId, @NonNull ScreenLoadCallback<PostResource> callback) {
+        apiService.getPostDetail(postId).enqueue(new Callback<PostDetailResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<PostDetailResponse> call, @NonNull Response<PostDetailResponse> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().data != null) {
+                    callback.onLoaded(HitType.MISS, 0, response.body().data);
+                } else {
+                    callback.onError(new Exception(ApiErrorParser.parse(response).getMessage()));
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<PostDetailResponse> call, @NonNull Throwable t) {
+                callback.onError(t);
+            }
+        });
     }
 
     public LiveData<ApiResult<VoteResponse>> upvotePost(int postId) {

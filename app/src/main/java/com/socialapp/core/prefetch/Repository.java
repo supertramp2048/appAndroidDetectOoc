@@ -106,7 +106,8 @@ public class Repository {
             long latencyMs = 0;
             long uiLatencyMs = transitionNavStartTimeMs > 0 ? (SystemClock.elapsedRealtime() - transitionNavStartTimeMs) : latencyMs;
 
-            T cachedData = (T) cache.get(screen).data;
+            PrefetchEntry<?> entry = cache.get(screen);
+            T cachedData = entry != null ? (T) entry.getData() : null;
             if (cachedData == null) {
                 cachedData = (T) FakeDataSource.getSampleDataForScreen(screen);
             }

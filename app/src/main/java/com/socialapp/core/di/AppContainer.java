@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 
 import com.socialapp.BuildConfig;
 import com.socialapp.core.network.AuthInterceptor;
+import com.socialapp.core.network.sim.MockNetworkInterceptor;
 import com.socialapp.core.network.FactCheckApiService;
 import com.socialapp.core.network.SocialAppApiService;
 import com.socialapp.core.prefetch.BatchExperimentRunner;
@@ -55,6 +56,7 @@ public class AppContainer {
         loggingInterceptor.setLevel(BuildConfig.DEBUG ? HttpLoggingInterceptor.Level.BODY : HttpLoggingInterceptor.Level.NONE);
 
         this.socialAppOkHttpClient = new OkHttpClient.Builder()
+                .addInterceptor(new MockNetworkInterceptor())
                 .addInterceptor(new AuthInterceptor(this.sessionManager))
                 .addInterceptor(loggingInterceptor)
                 .connectTimeout(60, TimeUnit.SECONDS)
