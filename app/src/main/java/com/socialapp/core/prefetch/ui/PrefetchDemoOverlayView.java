@@ -226,6 +226,9 @@ public class PrefetchDemoOverlayView extends FrameLayout {
                             break;
                         case 3:
                             engine.setSimulationMode(!engine.isSimulationMode());
+                            if (!engine.isSimulationMode()) {
+                                engine.getCache().clear();
+                            }
                             Toast.makeText(getContext(), "Chế độ mô phỏng mạng: " + (engine.isSimulationMode() ? "BẬT" : "TẮT"), Toast.LENGTH_SHORT).show();
                             refreshUI();
                             break;

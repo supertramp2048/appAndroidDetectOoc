@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 
 import com.socialapp.MyApplication;
 import com.socialapp.core.di.AppContainer;
+import com.socialapp.core.network.dto.PostResource;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -88,7 +89,7 @@ public class Repository {
 
         if (container == null) {
             Log.w(TAG, "MyApplication instance is null, loading mock directly.");
-            T data = (T) FakeDataSource.getSampleDataForScreen(screen);
+            T data = (T) FakeDataSource.getSampleDataForScreen(screen, params);
             callback.onLoaded(HitType.MISS, 0, data);
             return;
         }
@@ -100,6 +101,28 @@ public class Repository {
         ScreenId fromScreen = lastScreen;
         lastScreen = screen;
 
+        // Nếu TẮT chế độ mô phỏng mạng và có RealDataLoader: Gọi thẳng API mạng thật
+        if (!prefetchEngine.isSimulationMode() && realDataLoader != null) {
+            realDataLoader.execute(new ScreenLoadCallback<T>() {
+                @Override
+                public void onLoaded(@NonNull HitType hitType, long actualLatencyMs, @Nullable T data) {
+                    long latencyMs = SystemClock.elapsedRealtime() - startTime;
+                    long uiLatencyMs = transitionNavStartTimeMs > 0 ? (SystemClock.elapsedRealtime() - transitionNavStartTimeMs) : latencyMs;
+                    long fetchedBytes = screen.getBaseSizeBytes();
+
+                    logAndNotify(metricsLogger, prefetchEngine, fromScreen, screen, HitType.MISS, latencyMs, uiLatencyMs, fetchedBytes);
+
+                    callback.onLoaded(HitType.MISS, latencyMs, data);
+                }
+
+                @Override
+                public void onError(@NonNull Throwable error) {
+                    callback.onError(error);
+                }
+            });
+            return;
+        }
+
         // 1. Kiểm tra FULL HIT trong PrefetchCache
         if (cache.contains(screen)) {
             cache.markUsed(screen);
@@ -107,10 +130,16 @@ public class Repository {
             long uiLatencyMs = transitionNavStartTimeMs > 0 ? (SystemClock.elapsedRealtime() - transitionNavStartTimeMs) : latencyMs;
 
             PrefetchEntry<?> entry = cache.get(screen);
-            T cachedData = entry != null ? (T) entry.getData() : null;
-            if (cachedData == null) {
-                cachedData = (T) FakeDataSource.getSampleDataForScreen(screen);
+            Object rawData = entry != null ? entry.getData() : null;
+            if (rawData == null || (rawData instanceof String && screen != ScreenId.FACT_CHECK && screen != ScreenId.SETTINGS)) {
+                rawData = FakeDataSource.getSampleDataForScreen(screen, params);
+            } else if (screen == ScreenId.POST_DETAIL && params != null && rawData instanceof PostResource) {
+                int requestedPostId = params.getInt("postId", -1);
+                if (requestedPostId != -1 && ((PostResource) rawData).id != requestedPostId) {
+                    rawData = FakeDataSource.getSampleDataForScreen(screen, params);
+                }
             }
+            T cachedData = (T) rawData;
 
             logAndNotify(metricsLogger, prefetchEngine, fromScreen, screen, HitType.FULL_HIT, latencyMs, uiLatencyMs, 0);
 
@@ -127,7 +156,7 @@ public class Repository {
                 long uiLatencyMs = transitionNavStartTimeMs > 0 ? (SystemClock.elapsedRealtime() - transitionNavStartTimeMs) : latencyMs;
 
                 cache.markUsed(screen);
-                T data = (T) FakeDataSource.getSampleDataForScreen(screen);
+                T data = (T) FakeDataSource.getSampleDataForScreen(screen, params);
 
                 logAndNotify(metricsLogger, prefetchEngine, fromScreen, screen, HitType.LATE_HIT, latencyMs, uiLatencyMs, 0);
 
@@ -151,7 +180,7 @@ public class Repository {
                 long uiLatencyMs = transitionNavStartTimeMs > 0 ? (SystemClock.elapsedRealtime() - transitionNavStartTimeMs) : latencyMs;
                 long fetchedBytes = (long) (screen.getBaseSizeBytes() * prefetchEngine.getPayloadScale());
 
-                T data = (T) FakeDataSource.getSampleDataForScreen(screen);
+                T data = (T) FakeDataSource.getSampleDataForScreen(screen, params);
 
                 logAndNotify(metricsLogger, prefetchEngine, fromScreen, screen, HitType.MISS, latencyMs, uiLatencyMs, fetchedBytes);
 

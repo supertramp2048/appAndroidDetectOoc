@@ -269,7 +269,7 @@ public class PrefetchManager {
 
         // CASE 1: FULL_HIT (Already in RAM and valid)
         PrefetchEntry<T> cachedEntry = cache.get(effectiveKey);
-        if (cachedEntry == null && !effectiveKey.startsWith("default_")) {
+        if (cachedEntry == null && !effectiveKey.startsWith("default_") && !ScreenPayloadConfig.SCREEN_POST_DETAIL.equals(screenName)) {
             cachedEntry = cache.get("default_" + screenName);
             if (cachedEntry != null) {
                 effectiveKey = "default_" + screenName;
@@ -296,7 +296,7 @@ public class PrefetchManager {
         // CASE 2: LATE_HIT (In-flight download in progress, if enabled)
         if (PrefetchRuntimeConfig.getInstance().isLateHitEnabled()) {
             InFlightTask<?> inFlight = inFlightRequests.get(effectiveKey);
-            if (inFlight == null && !effectiveKey.startsWith("default_")) {
+            if (inFlight == null && !effectiveKey.startsWith("default_") && !ScreenPayloadConfig.SCREEN_POST_DETAIL.equals(screenName)) {
                 inFlight = inFlightRequests.get("default_" + screenName);
                 if (inFlight != null) {
                     effectiveKey = "default_" + screenName;

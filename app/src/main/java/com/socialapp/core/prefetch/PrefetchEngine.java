@@ -233,8 +233,8 @@ public class PrefetchEngine {
             });
         }
 
-        // Nếu chính sách là P0 thì không tải gì cả
-        if (currentPolicy == Policy.P0_NONE) {
+        // Nếu chính sách là P0 hoặc đang TẮT mô phỏng thì không tải giả lập
+        if (currentPolicy == Policy.P0_NONE || !simulationMode) {
             return;
         }
 
@@ -329,7 +329,8 @@ public class PrefetchEngine {
 
             // Giả lập dữ liệu trả về và đưa vào Cache
             long sizeBytes = (long) (screenId.getBaseSizeBytes() * payloadScale);
-            cache.put(screenId, "MOCK_DATA_FOR_" + screenId.getId(), sizeBytes);
+            Object sampleData = FakeDataSource.getSampleDataForScreen(screenId);
+            cache.put(screenId, sampleData, sizeBytes);
 
             task.markDone();
             inFlightMap.remove(screenId);

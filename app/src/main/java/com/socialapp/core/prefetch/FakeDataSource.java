@@ -1,6 +1,9 @@
 package com.socialapp.core.prefetch;
 
+import android.os.Bundle;
+
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.socialapp.core.mock.FakeApi;
 import com.socialapp.core.network.dto.CommentResource;
@@ -18,6 +21,11 @@ public class FakeDataSource {
 
     @NonNull
     public static Object getSampleDataForScreen(@NonNull ScreenId screenId) {
+        return getSampleDataForScreen(screenId, null);
+    }
+
+    @NonNull
+    public static Object getSampleDataForScreen(@NonNull ScreenId screenId, @Nullable Bundle params) {
         switch (screenId) {
             case FEED_NEWEST:
             case FEED_HOT:
@@ -26,8 +34,27 @@ public class FakeDataSource {
                 return FakeApi.getSamplePosts();
 
             case POST_DETAIL:
+                int postId = params != null ? params.getInt("postId", 1) : 1;
                 List<PostResource> posts = FakeApi.getSamplePosts();
-                return !posts.isEmpty() ? posts.get(0) : new PostResource();
+                for (PostResource p : posts) {
+                    if (p.id == postId) {
+                        return p;
+                    }
+                }
+                PostResource dynamicPost = new PostResource();
+                dynamicPost.id = postId;
+                dynamicPost.title = "Bài viết thử nghiệm số " + postId + " - Cập nhật tin tức mới nhất trong ngày";
+                dynamicPost.contentHtml = "<p>Nội dung chi tiết bài viết số " + postId + " từ server giả lập.</p>";
+                dynamicPost.voteScore = postId * 5;
+                dynamicPost.userVote = 0;
+                dynamicPost.commentsCount = postId * 2;
+                dynamicPost.createdAt = "2026-10-09 10:00:00";
+                if (!posts.isEmpty()) {
+                    dynamicPost.author = posts.get(0).author;
+                    dynamicPost.category = posts.get(0).category;
+                }
+                dynamicPost.sourceName = "Báo Mới";
+                return dynamicPost;
 
             case COMMENTS:
                 List<CommentResource> comments = new ArrayList<>();
