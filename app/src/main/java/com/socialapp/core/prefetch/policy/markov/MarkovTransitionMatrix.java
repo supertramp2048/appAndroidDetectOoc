@@ -63,6 +63,13 @@ public class MarkovTransitionMatrix {
         setExplicitProbability(ScreenPayloadConfig.SCREEN_SEARCH, ScreenPayloadConfig.SCREEN_HOME, 0.05);
     }
 
+    // Online Markov Predictor (Kiên - Tasks B1-B5)
+    private final MarkovPredictor<String> predictor = new MarkovPredictor<>(1, 1);
+
+    public MarkovPredictor<String> getPredictor() {
+        return predictor;
+    }
+
     /**
      * Records a live user transition S_from -> S_to (Online Learning).
      */
@@ -70,6 +77,7 @@ public class MarkovTransitionMatrix {
         countMatrix.computeIfAbsent(fromScreen, k -> new ConcurrentHashMap<>())
                 .computeIfAbsent(toScreen, k -> new AtomicInteger(0))
                 .incrementAndGet();
+        predictor.learn(Collections.singletonList(fromScreen), toScreen);
     }
 
     public void setExplicitProbability(@NonNull String fromScreen, @NonNull String toScreen, double probability) {

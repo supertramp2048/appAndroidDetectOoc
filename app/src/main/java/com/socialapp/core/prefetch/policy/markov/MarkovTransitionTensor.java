@@ -63,6 +63,13 @@ public class MarkovTransitionTensor {
                 ScreenPayloadConfig.SCREEN_POST_DETAIL, 0.85);
     }
 
+    // Online Markov Predictor (Kiên - Tasks B1-B5)
+    private final MarkovPredictor<String> predictor = new MarkovPredictor<>(2, 1);
+
+    public MarkovPredictor<String> getPredictor() {
+        return predictor;
+    }
+
     public void recordSequence(@NonNull String prev, @NonNull String curr, @NonNull String next) {
         String key = makeKey(prev, curr);
         tensorCounts.computeIfAbsent(key, k -> new ConcurrentHashMap<>())
@@ -71,6 +78,9 @@ public class MarkovTransitionTensor {
 
         // Also train Order 1 simultaneously
         order1Fallback.recordTransition(curr, next);
+
+        // Train Kiên's MarkovPredictor
+        predictor.learn(java.util.Arrays.asList(prev, curr), next);
     }
 
     public void setExplicitProbability(@NonNull String prev, @NonNull String curr, @NonNull String next, double prob) {
