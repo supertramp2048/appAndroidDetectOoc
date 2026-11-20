@@ -8,9 +8,11 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.socialapp.core.prefetch.policy.markov.MarkovPredictor;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -110,10 +112,10 @@ public class PrefetchEngine {
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private final Map<ScreenId, InFlightTask> inFlightMap = new ConcurrentHashMap<>();
 
-    // Lịch sử điều hướng người dùng để huấn luyện Markov tại chỗ
+    // Lịch sử điều hướng người dùng và bộ dự đoán Markov chuẩn của B (MarkovPredictor)
     private final List<ScreenId> navigationHistory = new ArrayList<>();
-    private final Map<ScreenId, Map<ScreenId, Integer>> order1Transitions = new ConcurrentHashMap<>();
-    private final Map<String, Map<ScreenId, Integer>> order2Transitions = new ConcurrentHashMap<>();
+    private final MarkovPredictor<ScreenId> markovOrder1 = new MarkovPredictor<>(1, 3);
+    private final MarkovPredictor<ScreenId> markovOrder2 = new MarkovPredictor<>(2, 3);
 
     private Policy currentPolicy = Policy.P3_MARKOV_FIXED;
     private NetworkProfile currentNetwork = NetworkProfile.LTE;
@@ -338,64 +340,28 @@ public class PrefetchEngine {
         });
     }
 
-    private void updateMarkovTransitions(ScreenId currentScreen) {
-        int historySize = navigationHistory.size();
-
-        if (historySize >= 1) {
-            ScreenId prev = navigationHistory.get(historySize - 1);
-            order1Transitions.putIfAbsent(prev, new ConcurrentHashMap<>());
-            Map<ScreenId, Integer> nextMap = order1Transitions.get(prev);
-            nextMap.put(currentScreen, nextMap.getOrDefault(currentScreen, 0) + 1);
+    private synchronized void updateMarkovTransitions(ScreenId currentScreen) {
+        if (!navigationHistory.isEmpty()) {
+            markovOrder1.learn(navigationHistory, currentScreen);
+            markovOrder2.learn(navigationHistory, currentScreen);
         }
-
-        if (historySize >= 2) {
-            ScreenId prev2 = navigationHistory.get(historySize - 2);
-            ScreenId prev1 = navigationHistory.get(historySize - 1);
-            String key = prev2.getId() + "->" + prev1.getId();
-            order2Transitions.putIfAbsent(key, new ConcurrentHashMap<>());
-            Map<ScreenId, Integer> nextMap = order2Transitions.get(key);
-            nextMap.put(currentScreen, nextMap.getOrDefault(currentScreen, 0) + 1);
-        }
-
         navigationHistory.add(currentScreen);
     }
 
-    private List<Map.Entry<ScreenId, Double>> predictNext(ScreenId currentScreen) {
-        Map<ScreenId, Double> probabilities = new HashMap<>();
-
-        if (currentPolicy == Policy.P4_MARKOV_ORDER2 && navigationHistory.size() >= 2) {
-            ScreenId prev = navigationHistory.get(navigationHistory.size() - 2);
-            String key = prev.getId() + "->" + currentScreen.getId();
-            Map<ScreenId, Integer> nextMap = order2Transitions.get(key);
-            if (nextMap != null && !nextMap.isEmpty()) {
-                int total = 0;
-                for (int count : nextMap.values()) total += count;
-                for (Map.Entry<ScreenId, Integer> e : nextMap.entrySet()) {
-                    probabilities.put(e.getKey(), (double) e.getValue() / total);
-                }
-            }
+    private synchronized List<Map.Entry<ScreenId, Double>> predictNext(ScreenId currentScreen) {
+        if (navigationHistory.isEmpty()) {
+            return markovOrder1.predict(Collections.singletonList(currentScreen));
         }
-
-        // Nếu bậc 2 chưa có dữ liệu hoặc ở các chính sách khác, dùng bậc 1
-        if (probabilities.isEmpty()) {
-            Map<ScreenId, Integer> nextMap = order1Transitions.get(currentScreen);
-            if (nextMap != null && !nextMap.isEmpty()) {
-                int total = 0;
-                for (int count : nextMap.values()) total += count;
-                for (Map.Entry<ScreenId, Integer> e : nextMap.entrySet()) {
-                    probabilities.put(e.getKey(), (double) e.getValue() / total);
-                }
-            }
+        if (currentPolicy == Policy.P4_MARKOV_ORDER2 || currentPolicy == Policy.P5_ADAPTIVE_NETWORK) {
+            // MarkovPredictor bậc 2 tự động hạ bậc (backoff) về bậc 1 nếu ngữ cảnh 2 bước chưa đủ minSupport = 3
+            return markovOrder2.predict(navigationHistory);
         }
-
-        List<Map.Entry<ScreenId, Double>> sorted = new ArrayList<>(probabilities.entrySet());
-        sorted.sort((a, b) -> Double.compare(b.getValue(), a.getValue()));
-        return sorted;
+        return markovOrder1.predict(navigationHistory);
     }
 
     private void seedInitialTransitions() {
-        // Dựng sẵn dữ liệu ban đầu cho kịch bản đọc tin phổ biến:
-        // Trang chủ -> thường bấm xem chi tiết bài (60%) hoặc tìm kiếm (25%) hoặc sang tab khác (15%)
+        // Dựng sẵn dữ liệu ban đầu (warm-start) cho kịch bản đọc tin phổ biến:
+        // Trang chủ -> thường bấm xem chi tiết bài (60%) hoặc tìm kiếm (20%) hoặc sang tab khác (20%)
         addTransition(ScreenId.FEED_NEWEST, ScreenId.POST_DETAIL, 6);
         addTransition(ScreenId.FEED_NEWEST, ScreenId.SEARCH, 2);
         addTransition(ScreenId.FEED_NEWEST, ScreenId.FEED_HOT, 2);
@@ -403,23 +369,54 @@ public class PrefetchEngine {
         addTransition(ScreenId.FEED_HOT, ScreenId.POST_DETAIL, 7);
         addTransition(ScreenId.FEED_HOT, ScreenId.FEED_NEWEST, 3);
 
-        addTransition(ScreenId.POST_DETAIL, ScreenId.COMMENTS, 6);
-        addTransition(ScreenId.POST_DETAIL, ScreenId.FEED_NEWEST, 3);
-        addTransition(ScreenId.POST_DETAIL, ScreenId.PROFILE, 1);
+        addTransition(ScreenId.POST_DETAIL, ScreenId.COMMENTS, 5);
+        addTransition(ScreenId.POST_DETAIL, ScreenId.FACT_CHECK, 3);
+        addTransition(ScreenId.POST_DETAIL, ScreenId.FEED_NEWEST, 2);
 
         addTransition(ScreenId.COMMENTS, ScreenId.POST_DETAIL, 5);
         addTransition(ScreenId.COMMENTS, ScreenId.FEED_NEWEST, 5);
+
+        // Ngữ cảnh bậc 2 đặc trưng
+        addOrder2Transition(ScreenId.FEED_NEWEST, ScreenId.POST_DETAIL, ScreenId.FACT_CHECK, 4);
+        addOrder2Transition(ScreenId.FEED_NEWEST, ScreenId.POST_DETAIL, ScreenId.COMMENTS, 3);
+        addOrder2Transition(ScreenId.FEED_FOLLOWING, ScreenId.PROFILE, ScreenId.POST_DETAIL, 4);
+        addOrder2Transition(ScreenId.POST_DETAIL, ScreenId.FACT_CHECK, ScreenId.FEED_NEWEST, 4);
     }
 
     private void addTransition(ScreenId from, ScreenId to, int weight) {
-        order1Transitions.putIfAbsent(from, new ConcurrentHashMap<>());
-        order1Transitions.get(from).put(to, weight);
+        List<ScreenId> ctx = Collections.singletonList(from);
+        for (int i = 0; i < weight; i++) {
+            markovOrder1.learn(ctx, to);
+            markovOrder2.learn(ctx, to);
+        }
     }
 
-    public void resetSession() {
+    private void addOrder2Transition(ScreenId prev, ScreenId curr, ScreenId next, int weight) {
+        List<ScreenId> ctx2 = Arrays.asList(prev, curr);
+        for (int i = 0; i < weight; i++) {
+            markovOrder2.learn(ctx2, next);
+        }
+    }
+
+    /**
+     * Bắt đầu một phiên điều hướng mới (xóa lịch sử phiên cũ nhưng giữ lại bảng Markov đã học).
+     */
+    public synchronized void startNewSession() {
         navigationHistory.clear();
         cache.clear();
         inFlightMap.clear();
+    }
+
+    /**
+     * Đặt lại toàn bộ phiên và bộ dự đoán Markov về trạng thái ban đầu (dùng khi đổi cấu hình thí nghiệm).
+     */
+    public synchronized void resetSession() {
+        navigationHistory.clear();
+        cache.clear();
+        inFlightMap.clear();
+        markovOrder1.reset();
+        markovOrder2.reset();
+        seedInitialTransitions();
     }
 }
 

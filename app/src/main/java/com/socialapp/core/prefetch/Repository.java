@@ -47,6 +47,12 @@ public class Repository {
     }
 
     public static synchronized void setSessionId(int sessionId) {
+        if (currentSessionId != sessionId) {
+            AppContainer container = MyApplication.getInstance() != null ? MyApplication.getInstance().getAppContainer() : null;
+            if (container != null) {
+                container.getPrefetchEngine().startNewSession();
+            }
+        }
         currentSessionId = sessionId;
         currentStepIndex = 1;
         lastScreen = null;

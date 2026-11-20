@@ -1,14 +1,7 @@
 import java.util.*;
 
 /**
- * Bộ kiểm thử toàn diện (Unit Test) cho MarkovPredictor covering 7 trường hợp cốt lõi:
- * 1. Ví dụ tính tay cơ bản (C = 2/3, D = 1/3)
- * 2. Cold-start / Chưa đủ ngưỡng minSupport (< 3 mẫu -> trả về rỗng)
- * 3. Cơ chế hạ bậc (Backoff từ Bậc 2 xuống Bậc 1 khi Bậc 2 < minSupport)
- * 4. Ưu tiên Bậc 2 khi Bậc 2 đã tích lũy đủ >= minSupport
- * 5. Xử lý hòa xác suất (Tie-break theo thứ tự bảng chữ cái A -> Z)
- * 6. Lịch sử dài hơn maxOrder (tự cắt k phần tử cuối) & xử lý đầu vào rỗng/null
- * 7. So sánh đa bậc (k = 1, 2, 3)
+ * Bộ kiểm thử toàn diện (Unit Test) cho MarkovPredictor covering 6 trường hợp cốt lõi.
  */
 public class MarkovTest {
     private static int passed = 0;
@@ -48,7 +41,7 @@ public class MarkovTest {
             MarkovPredictor<String> pred = new MarkovPredictor<>(2, 3);
             List<String> ctx = Arrays.asList("Home", "List");
             pred.learn(ctx, "Detail");
-            pred.learn(ctx, "Detail"); // Tổng = 2 < minSupport(3) ở cả bậc 1 lẫn bậc 2
+            pred.learn(ctx, "Detail");
             List<Map.Entry<String, Double>> res = pred.predict(ctx);
             check("Case 2 (Dưới ngưỡng minSupport=3 -> Rỗng)", res.isEmpty(), "size=" + res.size());
         }
@@ -56,14 +49,10 @@ public class MarkovTest {
         // CASE 3: Hạ bậc (Backoff từ Bậc 2 xuống Bậc 1)
         {
             MarkovPredictor<String> pred = new MarkovPredictor<>(2, 3);
-            // Học ["Home", "List"] -> "Detail" 3 lần (Bậc 1 ["List"] có 3 lần "Detail")
             for (int i = 0; i < 3; i++) {
                 pred.learn(Arrays.asList("Home", "List"), "Detail");
             }
-            // Học ["Search", "List"] -> "Cart" chỉ 1 lần (Bậc 2 ["Search", "List"] mới có 1 mẫu < 3)
             pred.learn(Arrays.asList("Search", "List"), "Cart");
-
-            // Khi đoán ["Search", "List"]: Bậc 2 chỉ có 1 mẫu (< 3) nên phải hạ xuống Bậc 1 ["List"] (4 mẫu: 3 Detail, 1 Cart)
             List<Map.Entry<String, Double>> res = pred.predict(Arrays.asList("Search", "List"));
             boolean ok = res.size() == 2
                     && res.get(0).getKey().equals("Detail") && Math.abs(res.get(0).getValue() - 0.75) < 1e-6
@@ -77,11 +66,9 @@ public class MarkovTest {
             for (int i = 0; i < 4; i++) {
                 pred.learn(Arrays.asList("Home", "List"), "Detail");
             }
-            // Bây giờ cho ["Search", "List"] học đủ 3 lần sang "Cart"
             for (int i = 0; i < 3; i++) {
                 pred.learn(Arrays.asList("Search", "List"), "Cart");
             }
-            // Bậc 1 ["List"] vẫn nghiêng về "Detail" (4/7), nhưng Bậc 2 ["Search", "List"] đã đủ 3 mẫu (100% "Cart")
             List<Map.Entry<String, Double>> res = pred.predict(Arrays.asList("Search", "List"));
             boolean ok = res.size() == 1
                     && res.get(0).getKey().equals("Cart") && Math.abs(res.get(0).getValue() - 1.0) < 1e-6;
@@ -95,7 +82,7 @@ public class MarkovTest {
             pred.learn(ctx, "Reviews");
             pred.learn(ctx, "Cart");
             pred.learn(ctx, "Reviews");
-            pred.learn(ctx, "Cart"); // Cart = 2, Reviews = 2 (cùng 50%)
+            pred.learn(ctx, "Cart");
             List<Map.Entry<String, Double>> res = pred.predict(ctx);
             boolean ok = res.size() == 2
                     && res.get(0).getKey().equals("Cart")
@@ -109,8 +96,6 @@ public class MarkovTest {
             pred.learn(Arrays.asList("Home", "List", "Detail"), "Cart");
             pred.learn(Arrays.asList("Search", "List", "Detail"), "Cart");
             pred.learn(Arrays.asList("Profile", "List", "Detail"), "Reviews");
-
-            // Truyền lịch sử dài 5 trang nhưng 2 trang cuối vẫn là ["List", "Detail"]
             List<Map.Entry<String, Double>> res = pred.predict(
                     Arrays.asList("Home", "Search", "Profile", "List", "Detail")
             );
