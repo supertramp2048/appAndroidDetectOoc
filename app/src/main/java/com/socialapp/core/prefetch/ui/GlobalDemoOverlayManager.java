@@ -57,6 +57,11 @@ public class GlobalDemoOverlayManager {
 
             @Override
             public void onReplayFinished() {
+                container.getMetricsLogger().saveCurrentRunSnapshot(
+                        container.getPrefetchEngine().getCurrentPolicy().code,
+                        container.getPrefetchEngine().getCurrentNetwork().code
+                );
+                container.getMetricsLogger().exportComparisonCsv();
                 if (currentActiveOverlay != null) {
                     currentActiveOverlay.refreshUI();
                 }

@@ -51,13 +51,22 @@ public enum ScreenId {
             return FEED_NEWEST;
         }
 
+        // Khớp trực tiếp theo mã enum ScreenId (dùng trong mock_replay_100_sessions.json)
+        String upper = route.trim().toUpperCase();
+        for (ScreenId id : values()) {
+            if (id.id.equals(upper) || id.name().equals(upper)) {
+                return id;
+            }
+        }
+
+        // Khớp theo đường dẫn route (dùng trong Navigator)
         String lower = route.toLowerCase().trim();
-        if (lower.contains("tab=hot")) return FEED_HOT;
-        if (lower.contains("tab=following")) return FEED_FOLLOWING;
+        if (lower.contains("tab=hot") || lower.contains("feed_hot")) return FEED_HOT;
+        if (lower.contains("tab=following") || lower.contains("feed_following")) return FEED_FOLLOWING;
         if (lower.contains("comments")) return COMMENTS;
-        if (lower.startsWith("post/")) return POST_DETAIL;
+        if (lower.startsWith("post/") || lower.contains("post_detail")) return POST_DETAIL;
         if (lower.startsWith("profile")) return PROFILE;
-        if (lower.startsWith("factcheck")) return FACT_CHECK;
+        if (lower.startsWith("factcheck") || lower.contains("fact_check")) return FACT_CHECK;
         if (lower.startsWith("search")) return SEARCH;
         if (lower.startsWith("settings")) return SETTINGS;
 
