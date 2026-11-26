@@ -20,8 +20,6 @@ import com.socialapp.core.di.AppContainer;
 import com.socialapp.core.navigation.Navigator;
 import com.socialapp.core.network.dto.PostResource;
 import com.socialapp.core.network.dto.UserResource;
-import com.socialapp.core.network.sim.ScreenPayloadConfig;
-import com.socialapp.core.prefetch.PrefetchManager;
 import com.socialapp.core.session.SessionManager;
 import com.socialapp.core.ui.ReportSheetBottomSheet;
 import com.socialapp.core.ui.blocks.adapter.PostDetailBlockAssembler;
@@ -432,8 +430,6 @@ public class PostDetailActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        PrefetchManager.getInstance()
-                .onScreenVisited(ScreenPayloadConfig.SCREEN_POST_DETAIL);
     }
 
     @Override
