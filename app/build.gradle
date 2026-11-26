@@ -28,6 +28,15 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+        benchmark {
+            initWith release
+            signingConfig signingConfigs.debug
+            matchingFallbacks = ['release']
+            debuggable false
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
     }
 
     testOptions {
@@ -52,6 +61,7 @@ dependencies {
     implementation libs.constraintlayout
     implementation libs.swiperefreshlayout
     implementation libs.browser
+    implementation libs.profileinstaller
 
     // CameraX
     implementation libs.camera.core

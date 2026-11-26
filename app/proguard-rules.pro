@@ -1,21 +1,34 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# Preserve generic signatures and annotations required by Retrofit & Gson
+-keepattributes Signature, InnerClasses, EnclosingMethod, *Annotation*
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# Preserve Gson DTO models and any class with @SerializedName fields
+-keepclassmembers,allowobfuscation class * {
+    @com.google.gson.annotations.SerializedName <fields>;
+}
+-keep class com.socialapp.core.network.dto.** { *; }
+-keep class com.socialapp.feature.factcheck.ChatRequest { *; }
+-keep class com.socialapp.feature.factcheck.ChatResponse { *; }
+-keep class com.socialapp.feature.factcheck.ChatResponse$* { *; }
+-keep class com.socialapp.feature.factcheck.PredictionResponse { *; }
+-keep class com.socialapp.feature.factcheck.PredictionResponse$* { *; }
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# Preserve Retrofit service interfaces
+-keep,allowobfuscation,allowshrinking interface com.socialapp.core.network.SocialAppApiService { *; }
+-keep,allowobfuscation,allowshrinking interface com.socialapp.core.network.FactCheckApiService { *; }
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# Preserve WebView JavascriptInterface methods
+-keepclassmembers class * {
+    @android.webkit.JavascriptInterface <methods>;
+}
+-keep class com.socialapp.core.ui.blocks.editor.WebAppInterfaceProxy { *; }
+-keep class com.socialapp.feature.compose.WebAppInterface { *; }
+
+# Preserve custom Views instantiated via XML or ViewPools
+-keep public class * extends android.view.View {
+    public <init>(android.content.Context);
+    public <init>(android.content.Context, android.util.AttributeSet);
+    public <init>(android.content.Context, android.util.AttributeSet, int);
+}
+
+# Preserve androidx.profileinstaller startup initializer
+-keep class androidx.profileinstaller.** { *; }

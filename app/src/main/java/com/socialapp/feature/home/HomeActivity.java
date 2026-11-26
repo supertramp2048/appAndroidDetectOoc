@@ -10,11 +10,14 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.socialapp.MyApplication;
 import com.socialapp.R;
+import com.socialapp.core.di.AppContainer;
 import com.socialapp.core.navigation.Navigator;
 import com.socialapp.core.session.SessionManager;
 import com.socialapp.core.ui.RequireLoginBottomSheet;
+import com.socialapp.core.ui.blocks.adapter.HighRefreshRateHelper;
 import com.socialapp.databinding.ActivityHomeBinding;
 import com.socialapp.feature.factcheck.AiChatBottomSheet;
+import com.socialapp.feature.feed.FeedAdapter;
 
 public class HomeActivity extends AppCompatActivity {
 
@@ -27,6 +30,7 @@ public class HomeActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        HighRefreshRateHelper.requestHighRefreshRate(this);
         binding = ActivityHomeBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
@@ -55,6 +59,17 @@ public class HomeActivity extends AppCompatActivity {
             AiChatBottomSheet bottomSheet = AiChatBottomSheet.newInstanceForSearch();
             bottomSheet.show(getSupportFragmentManager(), "AiChatBottomSheet");
         });
+
+        AppContainer container = MyApplication.getAppContainer(this);
+        // L3 ViewHolder pool warmup only — keep Reading Path (Feed/PostDetail/Comments) strictly
+        // 0-WebView; EditorWebViewPool warms lazily on first ComposeActivity session and stays pooled.
+        container.getBlockWarmupEngine().scheduleL3PoolWarmup(
+                binding.getRoot(),
+                () -> {
+                    FeedAdapter.preallocatePostHolders(this, container.getUnifiedBlockViewPool(), 4);
+                    FeedAdapter.preallocateAdHolders(this, container.getUnifiedBlockViewPool(), 2);
+                }
+        );
     }
 
     @Override

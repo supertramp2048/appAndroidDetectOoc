@@ -15,6 +15,13 @@ import com.socialapp.core.prefetch.PrefetchEngine;
 import com.socialapp.core.prefetch.ReplayEngine;
 import com.socialapp.core.security.KeystoreHelper;
 import com.socialapp.core.session.SessionManager;
+import com.socialapp.core.ui.blocks.adapter.BlockWarmupEngine;
+import com.socialapp.core.ui.blocks.adapter.UnifiedBlockViewPool;
+import com.socialapp.core.ui.blocks.editor.EditorWebViewPool;
+import com.socialapp.core.ui.blocks.layout.BlockLayoutCache;
+import com.socialapp.core.ui.blocks.layout.BlockPrecomputer;
+import com.socialapp.core.ui.blocks.layout.TextPaintRegistry;
+import com.socialapp.core.ui.blocks.parser.ArticleAstCache;
 
 import java.util.concurrent.TimeUnit;
 
@@ -32,6 +39,15 @@ public class AppContainer {
     private final MetricsLogger metricsLogger;
     private final ReplayEngine replayEngine;
     private final BatchExperimentRunner batchRunner;
+
+    // Pillar 4.1 Unified Block Rendering singletons
+    private final TextPaintRegistry textPaintRegistry;
+    private final BlockLayoutCache blockLayoutCache;
+    private final BlockPrecomputer blockPrecomputer;
+    private final UnifiedBlockViewPool unifiedBlockViewPool;
+    private final BlockWarmupEngine blockWarmupEngine;
+    private final ArticleAstCache articleAstCache;
+    private final EditorWebViewPool editorWebViewPool;
 
     private final OkHttpClient socialAppOkHttpClient;
     private final OkHttpClient factCheckOkHttpClient;
@@ -51,6 +67,14 @@ public class AppContainer {
         this.metricsLogger = new MetricsLogger(this.applicationContext);
         this.replayEngine = new ReplayEngine(this.applicationContext);
         this.batchRunner = new BatchExperimentRunner(this.applicationContext);
+
+        this.textPaintRegistry = new TextPaintRegistry();
+        this.blockLayoutCache = new BlockLayoutCache();
+        this.blockPrecomputer = new BlockPrecomputer(this.textPaintRegistry, this.blockLayoutCache);
+        this.unifiedBlockViewPool = new UnifiedBlockViewPool();
+        this.blockWarmupEngine = new BlockWarmupEngine(this.blockPrecomputer, this.unifiedBlockViewPool);
+        this.articleAstCache = new ArticleAstCache();
+        this.editorWebViewPool = new EditorWebViewPool(this.applicationContext);
 
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
         loggingInterceptor.setLevel(BuildConfig.DEBUG ? HttpLoggingInterceptor.Level.BODY : HttpLoggingInterceptor.Level.NONE);
@@ -121,5 +145,40 @@ public class AppContainer {
 
     public BatchExperimentRunner getBatchRunner() {
         return batchRunner;
+    }
+
+    @NonNull
+    public TextPaintRegistry getTextPaintRegistry() {
+        return textPaintRegistry;
+    }
+
+    @NonNull
+    public BlockLayoutCache getBlockLayoutCache() {
+        return blockLayoutCache;
+    }
+
+    @NonNull
+    public BlockPrecomputer getBlockPrecomputer() {
+        return blockPrecomputer;
+    }
+
+    @NonNull
+    public UnifiedBlockViewPool getUnifiedBlockViewPool() {
+        return unifiedBlockViewPool;
+    }
+
+    @NonNull
+    public BlockWarmupEngine getBlockWarmupEngine() {
+        return blockWarmupEngine;
+    }
+
+    @NonNull
+    public ArticleAstCache getArticleAstCache() {
+        return articleAstCache;
+    }
+
+    @NonNull
+    public EditorWebViewPool getEditorWebViewPool() {
+        return editorWebViewPool;
     }
 }

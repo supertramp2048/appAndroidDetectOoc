@@ -16,6 +16,7 @@ navigation = "2.8.5"
 coreTesting = "2.2.0"
 swiperefreshlayout = "1.1.0"
 browser = "1.8.0"
+profileinstaller = "1.4.1"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -42,6 +43,7 @@ mockwebserver = { group = "com.squareup.okhttp3", name = "mockwebserver", versio
 core-testing = { group = "androidx.arch.core", name = "core-testing", version.ref = "coreTesting" }
 swiperefreshlayout = { group = "androidx.swiperefreshlayout", name = "swiperefreshlayout", version.ref = "swiperefreshlayout" }
 browser = { group = "androidx.browser", name = "browser", version.ref = "browser" }
+profileinstaller = { group = "androidx.profileinstaller", name = "profileinstaller", version.ref = "profileinstaller" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

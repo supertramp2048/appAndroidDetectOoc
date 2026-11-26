@@ -1,12 +1,16 @@
 package com.socialapp.core.ui;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.net.Uri;
 import android.util.AttributeSet;
-import android.view.LayoutInflater;
+import android.util.TypedValue;
+import android.view.Gravity;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -15,10 +19,15 @@ import com.bumptech.glide.Glide;
 import com.socialapp.R;
 import com.socialapp.core.network.dto.AdvertisementResource;
 
+/**
+ * Lightweight programmatic ad banner view replacing XML LayoutInflater inflation overhead.
+ */
 public class AdSlotView extends FrameLayout {
 
     private ImageView adBannerImage;
     private AdvertisementResource currentAd;
+    @Nullable
+    private String loadedImageUrl;
 
     public AdSlotView(@NonNull Context context) {
         super(context);
@@ -36,8 +45,32 @@ public class AdSlotView extends FrameLayout {
     }
 
     private void init(@NonNull Context context) {
-        LayoutInflater.from(context).inflate(R.layout.view_ad_slot, this, true);
-        adBannerImage = findViewById(R.id.ad_banner_image);
+        float density = context.getResources().getDisplayMetrics().density;
+        int bannerHeightPx = Math.round(100f * density);
+
+        adBannerImage = new ImageView(context);
+        adBannerImage.setId(R.id.ad_banner_image);
+        adBannerImage.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, bannerHeightPx));
+        adBannerImage.setContentDescription("Quảng cáo");
+        adBannerImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        addView(adBannerImage);
+
+        TextView badgeView = new TextView(context);
+        LayoutParams badgeLp = new LayoutParams(
+                LayoutParams.WRAP_CONTENT,
+                LayoutParams.WRAP_CONTENT,
+                Gravity.TOP | Gravity.END
+        );
+        badgeView.setLayoutParams(badgeLp);
+        badgeView.setBackgroundColor(0x80000000);
+        int padH = Math.round(6f * density);
+        int padV = Math.round(2f * density);
+        badgeView.setPadding(padH, padV, padH, padV);
+        badgeView.setText("Quảng cáo");
+        badgeView.setTextColor(0xFFFFFFFF);
+        badgeView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 10f);
+        addView(badgeView);
+
         setVisibility(GONE);
 
         setOnClickListener(v -> {
@@ -55,12 +88,45 @@ public class AdSlotView extends FrameLayout {
         this.currentAd = ad;
         if (ad != null && ad.imageUrl != null && !ad.imageUrl.trim().isEmpty()) {
             setVisibility(VISIBLE);
-            Glide.with(this)
-                    .load(ad.imageUrl)
-                    .centerCrop()
-                    .into(adBannerImage);
+            if (ad.imageUrl.equals(loadedImageUrl)) {
+                return;
+            }
+            loadedImageUrl = ad.imageUrl;
+            if (isContextValidForGlide(getContext())) {
+                try {
+                    Glide.with(this)
+                            .load(ad.imageUrl)
+                            .centerCrop()
+                            .into(adBannerImage);
+                } catch (Throwable ignored) {
+                }
+            }
         } else {
+            clearImage();
             setVisibility(GONE);
         }
+    }
+
+    public void clearImage() {
+        loadedImageUrl = null;
+        if (adBannerImage != null && isContextValidForGlide(getContext())) {
+            try {
+                Glide.with(this).clear(adBannerImage);
+            } catch (Throwable ignored) {
+            }
+            adBannerImage.setImageDrawable(null);
+        }
+    }
+
+    private static boolean isContextValidForGlide(@Nullable Context context) {
+        Context cur = context;
+        while (cur instanceof ContextWrapper) {
+            if (cur instanceof Activity) {
+                Activity activity = (Activity) cur;
+                return !activity.isFinishing() && !activity.isDestroyed();
+            }
+            cur = ((ContextWrapper) cur).getBaseContext();
+        }
+        return cur != null;
     }
 }

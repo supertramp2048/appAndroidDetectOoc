@@ -7,6 +7,8 @@ import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.socialapp.MyApplication;
+import com.socialapp.core.di.AppContainer;
 import com.socialapp.core.network.ApiErrorParser;
 import com.socialapp.core.network.ApiResult;
 import com.socialapp.core.network.SocialAppApiService;
@@ -19,6 +21,7 @@ import com.socialapp.core.prefetch.HitType;
 import com.socialapp.core.prefetch.Repository;
 import com.socialapp.core.prefetch.ScreenId;
 import com.socialapp.core.prefetch.ScreenLoadCallback;
+import com.socialapp.core.ui.blocks.adapter.FeedBlockListBuilder;
 
 import java.util.Collections;
 import java.util.List;
@@ -109,6 +112,7 @@ public class FeedRepository {
                     @Override
                     public void onLoaded(@NonNull HitType hitType, long latencyMs, @Nullable List<PostResource> data) {
                         List<PostResource> items = data != null ? data : Collections.emptyList();
+                        warmupFeedPostsL1(items);
                         callback.onSuccess(new PageLoader.PageResult<>(items, 1, items.size() >= 10));
                     }
 
@@ -126,6 +130,7 @@ public class FeedRepository {
                                 if (response.isSuccessful() && response.body() != null) {
                                     PostListResponse body = response.body();
                                     List<PostResource> items = body.data != null ? body.data : Collections.emptyList();
+                                    warmupFeedPostsL1(items);
                                     boolean hasNext = body.links != null && body.links.hasNext();
                                     int currentPage = (body.meta != null && body.meta.currentPage > 0) ? body.meta.currentPage : page;
                                     callback.onSuccess(new PageLoader.PageResult<>(items, currentPage, hasNext));
@@ -141,5 +146,14 @@ public class FeedRepository {
                         });
             }
         };
+    }
+
+    private static void warmupFeedPostsL1(@NonNull List<PostResource> posts) {
+        if (posts.isEmpty()) return;
+        MyApplication app = MyApplication.getInstance();
+        AppContainer container = app != null ? app.getAppContainer() : null;
+        if (container != null) {
+            container.getBlockWarmupEngine().warmupL1(app, FeedBlockListBuilder.build(posts));
+        }
     }
 }

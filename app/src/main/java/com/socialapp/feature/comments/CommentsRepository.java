@@ -7,6 +7,8 @@ import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.socialapp.MyApplication;
+import com.socialapp.core.di.AppContainer;
 import com.socialapp.core.network.ApiErrorParser;
 import com.socialapp.core.network.ApiResult;
 import com.socialapp.core.network.SocialAppApiService;
@@ -19,6 +21,10 @@ import com.socialapp.core.prefetch.HitType;
 import com.socialapp.core.prefetch.Repository;
 import com.socialapp.core.prefetch.ScreenId;
 import com.socialapp.core.prefetch.ScreenLoadCallback;
+import com.socialapp.core.ui.blocks.model.CommentBlock;
+import com.socialapp.core.ui.blocks.model.ContentBlock;
+
+import java.util.ArrayList;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -68,6 +74,7 @@ public class CommentsRepository {
                     @Override
                     public void onLoaded(@NonNull HitType hitType, long latencyMs, @Nullable List<CommentResource> data) {
                         List<CommentResource> items = data != null ? data : Collections.emptyList();
+                        warmupCommentsL1(items, 0);
                         callback.onSuccess(new PageLoader.PageResult<>(items, 1, items.size() >= 10));
                     }
 
@@ -83,6 +90,7 @@ public class CommentsRepository {
                         if (response.isSuccessful() && response.body() != null) {
                             CommentListResponse body = response.body();
                             List<CommentResource> items = body.data != null ? body.data : Collections.emptyList();
+                            warmupCommentsL1(items, 0);
                             boolean hasNext = body.links != null && body.links.hasNext();
                             int currentPage = (body.meta != null && body.meta.currentPage > 0) ? body.meta.currentPage : page;
                             callback.onSuccess(new PageLoader.PageResult<>(items, currentPage, hasNext));
@@ -107,6 +115,7 @@ public class CommentsRepository {
                 if (response.isSuccessful() && response.body() != null) {
                     CommentListResponse body = response.body();
                     List<CommentResource> items = body.data != null ? body.data : Collections.emptyList();
+                    warmupCommentsL1(items, 1);
                     boolean hasNext = body.links != null && body.links.hasNext();
                     int currentPage = (body.meta != null && body.meta.currentPage > 0) ? body.meta.currentPage : page;
                     callback.onSuccess(new PageLoader.PageResult<>(items, currentPage, hasNext));
@@ -228,5 +237,20 @@ public class CommentsRepository {
         });
 
         return resultLiveData;
+    }
+
+    private static void warmupCommentsL1(@NonNull List<CommentResource> comments, int depth) {
+        if (comments.isEmpty()) return;
+        MyApplication app = MyApplication.getInstance();
+        AppContainer container = app != null ? app.getAppContainer() : null;
+        if (container != null) {
+            List<ContentBlock> blocks = new ArrayList<>(comments.size());
+            for (CommentResource c : comments) {
+                if (c != null) {
+                    blocks.add(CommentBlock.fromCommentResource(c, depth, false));
+                }
+            }
+            container.getBlockWarmupEngine().warmupL1(app, blocks);
+        }
     }
 }

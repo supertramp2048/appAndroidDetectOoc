@@ -23,6 +23,7 @@ import com.socialapp.core.network.dto.UserResource;
 import com.socialapp.core.pagination.PageLoader;
 import com.socialapp.core.session.SessionManager;
 import com.socialapp.core.ui.ConfirmDialog;
+import com.socialapp.core.ui.blocks.adapter.RecyclerView120HzTuner;
 import com.socialapp.databinding.FragmentProfileBinding;
 import com.socialapp.feature.feed.FeedAdapter;
 
@@ -71,7 +72,12 @@ public class ProfileFragment extends Fragment {
 
     private void setupPostsRecyclerView() {
         userPostsAdapter = new FeedAdapter(post -> Navigator.navigateToPostDetail(requireContext(), post.id));
-        binding.profilePostsRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+        LinearLayoutManager layoutManager = new LinearLayoutManager(requireContext());
+        binding.profilePostsRecyclerView.setLayoutManager(layoutManager);
+        RecyclerView120HzTuner.tuneReadingList(binding.profilePostsRecyclerView, layoutManager, true);
+        binding.profilePostsRecyclerView.setRecycledViewPool(
+                MyApplication.getAppContainer(requireContext()).getUnifiedBlockViewPool()
+        );
         binding.profilePostsRecyclerView.setAdapter(userPostsAdapter);
     }
 

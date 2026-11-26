@@ -19,6 +19,7 @@ import com.socialapp.core.network.dto.PostResource;
 import com.socialapp.core.pagination.PageLoader;
 import com.socialapp.core.session.SessionManager;
 import com.socialapp.core.ui.RequireLoginBottomSheet;
+import com.socialapp.core.ui.blocks.adapter.RecyclerView120HzTuner;
 import com.socialapp.databinding.FragmentFeedBinding;
 
 public class FeedFragment extends Fragment {
@@ -94,7 +95,12 @@ public class FeedFragment extends Fragment {
 
     private void setupFeedRecyclerView() {
         feedAdapter = new FeedAdapter(post -> Navigator.navigateToPostDetail(requireContext(), post.id));
-        binding.feedRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+        LinearLayoutManager layoutManager = new LinearLayoutManager(requireContext());
+        binding.feedRecyclerView.setLayoutManager(layoutManager);
+        RecyclerView120HzTuner.tuneReadingList(binding.feedRecyclerView, layoutManager, true);
+        binding.feedRecyclerView.setRecycledViewPool(
+                MyApplication.getAppContainer(requireContext()).getUnifiedBlockViewPool()
+        );
         binding.feedRecyclerView.setAdapter(feedAdapter);
 
         PageLoader<PostResource> pageLoader = viewModel.getPostPageLoader();

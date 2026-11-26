@@ -1,24 +1,41 @@
 package com.socialapp.feature.comments;
 
-import android.view.LayoutInflater;
+import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.AsyncListDiffer;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.socialapp.R;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestManager;
+import com.socialapp.MyApplication;
+import com.socialapp.core.di.AppContainer;
 import com.socialapp.core.navigation.Navigator;
 import com.socialapp.core.network.dto.CommentResource;
-import com.socialapp.core.ui.UserAvatarView;
-import com.socialapp.core.util.DateTimeUtils;
+import com.socialapp.core.network.dto.UserResource;
+import com.socialapp.core.ui.blocks.adapter.BlockScrollPreloader;
+import com.socialapp.core.ui.blocks.adapter.BlockWarmupEngine;
+import com.socialapp.core.ui.blocks.adapter.CommentBlockTreeHelper;
+import com.socialapp.core.ui.blocks.adapter.ContentBlockDiffCallback;
+import com.socialapp.core.ui.blocks.layout.BlockLayoutCache;
+import com.socialapp.core.ui.blocks.layout.BlockPrecomputer;
+import com.socialapp.core.ui.blocks.layout.TextPaintRegistry;
+import com.socialapp.core.ui.blocks.model.BlockPayloads;
+import com.socialapp.core.ui.blocks.model.CommentBlock;
+import com.socialapp.core.ui.blocks.model.ContentBlock;
+import com.socialapp.core.ui.blocks.view.SinglePassCommentView;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+/**
+ * Flattened CommentsAdapter backed by AsyncListDiffer (Myers O(N + D^2)) and SinglePassCommentView.
+ */
 public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHolder> {
 
     public interface OnCommentActionListener {
@@ -27,236 +44,366 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
         void onMenuClick(@NonNull CommentResource comment, @NonNull View anchor);
     }
 
-    public static class CommentItemWrapper {
-        public final CommentResource comment;
-        public final int depth; // 0 = root, 1 = level 1, 2 = level 2+
-        public boolean isRepliesExpanded = false;
-
-        public CommentItemWrapper(CommentResource comment, int depth) {
-            this.comment = comment;
-            this.depth = Math.min(depth, 2);
-        }
-    }
-
-    private final List<CommentItemWrapper> items = new ArrayList<>();
+    private final AsyncListDiffer<ContentBlock> differ =
+            new AsyncListDiffer<>(this, new ContentBlockDiffCallback());
+    private final Map<Integer, CommentResource> commentLookup = new HashMap<>();
+    @Nullable
     private final OnCommentActionListener listener;
+
+    @Nullable
+    private TextPaintRegistry fallbackPaintRegistry;
+    @Nullable
+    private BlockPrecomputer fallbackPrecomputer;
+    @Nullable
+    private RecyclerView attachedRecyclerView;
+    @Nullable
+    private AppContainer cachedContainer;
+    @Nullable
+    private RequestManager cachedRequestManager;
+    @Nullable
+    private BlockScrollPreloader scrollPreloader;
+
+    private final SinglePassCommentView.OnCommentInteractionListener sharedInteractionListener =
+            new SinglePassCommentView.OnCommentInteractionListener() {
+                @Override
+                public void onAuthorClick(@NonNull CommentBlock block) {
+                    Context ctx = resolveNavigationContext();
+                    if (ctx != null && block.getAuthorId() > 0) {
+                        Navigator.navigateToUserProfile(ctx, block.getAuthorId());
+                    }
+                }
+
+                @Override
+                public void onReplyClick(@NonNull CommentBlock block) {
+                    if (listener != null) {
+                        listener.onReplyClick(resolveCommentDto(block));
+                    }
+                }
+
+                @Override
+                public void onLoadRepliesClick(@NonNull CommentBlock block) {
+                    if (listener != null) {
+                        int pos = CommentBlockTreeHelper.findCommentIndex(differ.getCurrentList(), block.getCommentId());
+                        listener.onLoadRepliesClick(resolveCommentDto(block), pos);
+                    }
+                }
+
+                @Override
+                public void onCollapseRepliesClick(@NonNull CommentBlock block) {
+                    collapseRepliesForParent(block.getCommentId());
+                }
+
+                @Override
+                public void onMenuClick(@NonNull CommentBlock block, @NonNull View anchorView) {
+                    if (listener != null) {
+                        listener.onMenuClick(resolveCommentDto(block), anchorView);
+                    }
+                }
+            };
 
     public CommentsAdapter(@Nullable OnCommentActionListener listener) {
         this.listener = listener;
     }
 
     public void setComments(@Nullable List<CommentResource> rootComments) {
-        items.clear();
-        if (rootComments != null) {
+        if (rootComments == null || rootComments.isEmpty()) {
+            commentLookup.clear();
+        } else {
             for (CommentResource c : rootComments) {
-                items.add(new CommentItemWrapper(c, 0));
+                if (c != null) {
+                    commentLookup.put(c.id, c);
+                }
             }
         }
-        notifyDataSetChanged();
+        List<ContentBlock> next = CommentBlockTreeHelper.fromRootComments(rootComments, differ.getCurrentList());
+        warmupL1IfAvailable(next);
+        differ.submitList(next);
     }
 
     public void insertCommentAtTop(@NonNull CommentResource comment) {
-        items.add(0, new CommentItemWrapper(comment, 0));
-        notifyItemInserted(0);
+        commentLookup.put(comment.id, comment);
+        List<ContentBlock> next = CommentBlockTreeHelper.insertRootAtTop(differ.getCurrentList(), comment);
+        warmupL1IfAvailable(next);
+        differ.submitList(next);
     }
 
     public boolean insertReplyUnderParent(int parentId, @NonNull CommentResource reply) {
-        for (int i = 0; i < items.size(); i++) {
-            if (items.get(i).comment.id == parentId) {
-                CommentItemWrapper parent = items.get(i);
-                parent.isRepliesExpanded = true;
-                parent.comment.repliesCount += 1;
-
-                int targetDepth = parent.depth + 1;
-                int insertPos = i + 1;
-                while (insertPos < items.size() && items.get(insertPos).depth > parent.depth) {
-                    insertPos++;
-                }
-
-                items.add(insertPos, new CommentItemWrapper(reply, targetDepth));
-                notifyItemInserted(insertPos);
-                notifyItemChanged(i);
-                return true;
-            }
+        commentLookup.put(reply.id, reply);
+        CommentResource parentDto = commentLookup.get(parentId);
+        if (parentDto != null) {
+            parentDto.repliesCount += 1;
         }
-        insertCommentAtTop(reply);
-        return false;
+        int parentIdx = CommentBlockTreeHelper.findCommentIndex(differ.getCurrentList(), parentId);
+        List<ContentBlock> next = CommentBlockTreeHelper.insertReplyUnderParent(differ.getCurrentList(), parentId, reply);
+        warmupL1IfAvailable(next);
+        differ.submitList(next);
+        return parentIdx >= 0;
     }
 
     public void insertReplies(int parentPosition, @NonNull List<CommentResource> replies) {
-        if (parentPosition < 0 || parentPosition >= items.size()) return;
-
-        CommentItemWrapper parent = items.get(parentPosition);
-        parent.isRepliesExpanded = true;
-        int nextDepth = parent.depth + 1;
-
-        int insertIndex = parentPosition + 1;
-        for (CommentResource reply : replies) {
-            items.add(insertIndex++, new CommentItemWrapper(reply, nextDepth));
+        List<ContentBlock> current = differ.getCurrentList();
+        if (parentPosition < 0 || parentPosition >= current.size()) {
+            return;
         }
-        notifyItemRangeInserted(parentPosition + 1, replies.size());
-        notifyItemChanged(parentPosition);
+        ContentBlock parentBlock = current.get(parentPosition);
+        if (parentBlock instanceof CommentBlock) {
+            insertRepliesForParent(((CommentBlock) parentBlock).getCommentId(), replies);
+        }
     }
 
-    public void collapseReplies(int parentPosition) {
-        if (parentPosition < 0 || parentPosition >= items.size()) return;
-
-        CommentItemWrapper parent = items.get(parentPosition);
-        parent.isRepliesExpanded = false;
-
-        int removeIndex = parentPosition + 1;
-        int removeCount = 0;
-        while (removeIndex < items.size() && items.get(removeIndex).depth > parent.depth) {
-            items.remove(removeIndex);
-            removeCount++;
+    public void insertRepliesForParent(int parentCommentId, @NonNull List<CommentResource> replies) {
+        for (CommentResource r : replies) {
+            if (r != null) {
+                commentLookup.put(r.id, r);
+            }
         }
+        List<ContentBlock> next = CommentBlockTreeHelper.insertReplies(differ.getCurrentList(), parentCommentId, replies);
+        warmupL1IfAvailable(next);
+        differ.submitList(next);
+    }
 
-        if (removeCount > 0) {
-            notifyItemRangeRemoved(parentPosition + 1, removeCount);
-            notifyItemChanged(parentPosition);
-        }
+    public void collapseRepliesForParent(int parentCommentId) {
+        List<ContentBlock> next = CommentBlockTreeHelper.collapseReplies(differ.getCurrentList(), parentCommentId);
+        differ.submitList(next);
     }
 
     public void updateCommentContent(int commentId, @NonNull String newContent) {
-        for (int i = 0; i < items.size(); i++) {
-            if (items.get(i).comment.id == commentId) {
-                items.get(i).comment.content = newContent;
-                items.get(i).comment.updatedAt = items.get(i).comment.createdAt + "_edited";
-                notifyItemChanged(i);
-                break;
-            }
+        CommentResource dto = commentLookup.get(commentId);
+        if (dto != null) {
+            dto.content = newContent;
+            dto.updatedAt = dto.createdAt + "_edited";
         }
+        List<ContentBlock> next = CommentBlockTreeHelper.updateCommentContent(differ.getCurrentList(), commentId, newContent);
+        warmupL1IfAvailable(next);
+        differ.submitList(next);
     }
 
     public void removeComment(int commentId) {
-        for (int i = 0; i < items.size(); i++) {
-            if (items.get(i).comment.id == commentId) {
-                items.remove(i);
-                notifyItemRemoved(i);
-                break;
-            }
+        commentLookup.remove(commentId);
+        List<ContentBlock> next = CommentBlockTreeHelper.removeComment(differ.getCurrentList(), commentId);
+        differ.submitList(next);
+    }
+
+    @Override
+    public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
+        super.onAttachedToRecyclerView(recyclerView);
+        this.attachedRecyclerView = recyclerView;
+        this.cachedContainer = getAppContainer(recyclerView.getContext());
+        try {
+            this.cachedRequestManager = Glide.with(recyclerView);
+        } catch (Throwable ignored) {
+            this.cachedRequestManager = null;
         }
+        if (scrollPreloader == null && cachedContainer != null) {
+            scrollPreloader = new BlockScrollPreloader(
+                    cachedContainer.getBlockWarmupEngine(),
+                    differ::getCurrentList
+            );
+        }
+        if (scrollPreloader != null) {
+            scrollPreloader.setRequestManager(cachedRequestManager);
+            recyclerView.removeOnScrollListener(scrollPreloader);
+            recyclerView.addOnScrollListener(scrollPreloader);
+        }
+    }
+
+    @Override
+    public void onDetachedFromRecyclerView(@NonNull RecyclerView recyclerView) {
+        super.onDetachedFromRecyclerView(recyclerView);
+        if (scrollPreloader != null) {
+            recyclerView.removeOnScrollListener(scrollPreloader);
+            scrollPreloader.detachCleanup();
+        }
+        this.cachedRequestManager = null;
+        if (this.attachedRecyclerView == recyclerView) {
+            this.attachedRecyclerView = null;
+        }
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return ContentBlock.TYPE_COMMENT;
+    }
+
+    @Override
+    public int getItemCount() {
+        return differ.getCurrentList().size();
     }
 
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_comment, parent, false);
+        Context context = parent.getContext();
+        AppContainer container = cachedContainer != null ? cachedContainer : getAppContainer(context);
+        TextPaintRegistry registry = container != null ? container.getTextPaintRegistry() : getFallbackPaintRegistry();
+        BlockPrecomputer precomputer = container != null ? container.getBlockPrecomputer() : getFallbackPrecomputer();
+
+        SinglePassCommentView view = new SinglePassCommentView(context, registry, precomputer);
+        view.setLayoutParams(new RecyclerView.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT));
+        view.setInteractionListener(sharedInteractionListener);
+        view.setRequestManager(cachedRequestManager);
         return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        CommentItemWrapper wrapper = items.get(position);
-        CommentResource comment = wrapper.comment;
-
-        // Indentation by depth
-        int indentPixels = (int) (wrapper.depth * 24 * holder.itemView.getContext().getResources().getDisplayMetrics().density);
-        holder.container.setPadding(indentPixels + (int) (12 * holder.itemView.getContext().getResources().getDisplayMetrics().density),
-                holder.container.getPaddingTop(),
-                holder.container.getPaddingRight(),
-                holder.container.getPaddingBottom());
-
-        // Author
-        if (comment.author != null) {
-            holder.authorNameText.setText(comment.author.name != null ? comment.author.name : "Thành viên");
-            holder.avatarView.loadAvatar(comment.author.getAvatarUrl());
-
-            View.OnClickListener authorClickListener = v -> {
-                if (comment.author != null && comment.author.id > 0) {
-                    Navigator.navigateToUserProfile(v.getContext(), comment.author.id);
-                }
-            };
-            holder.avatarView.setOnClickListener(authorClickListener);
-            holder.authorNameText.setOnClickListener(authorClickListener);
-        } else {
-            holder.authorNameText.setText("Thành viên");
-            holder.avatarView.loadAvatar(null);
-            holder.avatarView.setOnClickListener(null);
-            holder.authorNameText.setOnClickListener(null);
+        ContentBlock item = differ.getCurrentList().get(position);
+        if (!(item instanceof CommentBlock)) {
+            return;
         }
-
-        // Time & Edited status
-        holder.timeText.setText(DateTimeUtils.formatRelativeTime(comment.createdAt));
-        if (comment.createdAt != null && comment.updatedAt != null && !comment.createdAt.equals(comment.updatedAt)) {
-            holder.editedTag.setVisibility(View.VISIBLE);
-        } else {
-            holder.editedTag.setVisibility(View.GONE);
+        CommentBlock block = (CommentBlock) item;
+        SinglePassCommentView view = holder.commentView;
+        AppContainer container = cachedContainer != null ? cachedContainer : getAppContainer(view.getContext());
+        if (container != null) {
+            view.setDependencies(container.getTextPaintRegistry(), container.getBlockPrecomputer());
         }
-
-        // Content / Status Check
-        if (comment.status != null && !"published".equalsIgnoreCase(comment.status.trim())) {
-            holder.contentText.setVisibility(View.GONE);
-            holder.removedText.setVisibility(View.VISIBLE);
-        } else {
-            holder.contentText.setVisibility(View.VISIBLE);
-            holder.removedText.setVisibility(View.GONE);
-            holder.contentText.setText(comment.content != null ? comment.content : "");
-        }
-
-        // Reply button
-        holder.btnReply.setOnClickListener(v -> {
-            if (listener != null) {
-                listener.onReplyClick(comment);
-            }
-        });
-
-        // Load / Collapse replies button
-        if (comment.repliesCount > 0) {
-            if (!wrapper.isRepliesExpanded) {
-                holder.btnLoadReplies.setText("Xem " + comment.repliesCount + " phản hồi");
-                holder.btnLoadReplies.setVisibility(View.VISIBLE);
-                holder.btnLoadReplies.setOnClickListener(v -> {
-                    if (listener != null) {
-                        listener.onLoadRepliesClick(comment, holder.getAdapterPosition());
-                    }
-                });
-            } else {
-                holder.btnLoadReplies.setText("Ẩn phản hồi");
-                holder.btnLoadReplies.setVisibility(View.VISIBLE);
-                holder.btnLoadReplies.setOnClickListener(v -> collapseReplies(holder.getAdapterPosition()));
-            }
-        } else {
-            holder.btnLoadReplies.setVisibility(View.GONE);
-        }
-
-        // Menu
-        holder.btnMenu.setOnClickListener(v -> {
-            if (listener != null) {
-                listener.onMenuClick(comment, v);
-            }
-        });
+        view.setRequestManager(cachedRequestManager);
+        view.setInteractionListener(sharedInteractionListener);
+        view.bind(block, resolveAvailableWidth(view));
     }
 
     @Override
-    public int getItemCount() {
-        return items.size();
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position, @NonNull List<Object> payloads) {
+        if (payloads.isEmpty()) {
+            onBindViewHolder(holder, position);
+            return;
+        }
+        ContentBlock item = differ.getCurrentList().get(position);
+        if (item instanceof CommentBlock && payloads.get(0) instanceof BlockPayloads.CommentRepliesPayload) {
+            holder.commentView.applyRepliesPayload(
+                    (CommentBlock) item,
+                    (BlockPayloads.CommentRepliesPayload) payloads.get(0)
+            );
+            return;
+        }
+        onBindViewHolder(holder, position);
+    }
+
+    @Override
+    public void onViewRecycled(@NonNull ViewHolder holder) {
+        super.onViewRecycled(holder);
+        holder.commentView.clearGlideTargets();
+    }
+
+    @Nullable
+    private Context resolveNavigationContext() {
+        if (attachedRecyclerView != null) {
+            return attachedRecyclerView.getContext();
+        }
+        return MyApplication.getInstance();
+    }
+
+    @NonNull
+    private CommentResource resolveCommentDto(@NonNull CommentBlock block) {
+        CommentResource cached = commentLookup.get(block.getCommentId());
+        if (cached != null) {
+            return cached;
+        }
+        CommentResource fallback = new CommentResource();
+        fallback.id = block.getCommentId();
+        fallback.postId = block.getPostId();
+        fallback.parentId = block.getParentId();
+        fallback.content = block.getContent();
+        fallback.status = block.getStatus();
+        fallback.createdAt = block.getCreatedAt();
+        fallback.updatedAt = block.getUpdatedAt();
+        fallback.repliesCount = block.getRepliesCount();
+        if (block.getAuthorId() > 0 || block.getAuthorName() != null) {
+            UserResource author = new UserResource();
+            author.id = block.getAuthorId();
+            author.name = block.getAuthorName();
+            author.avatarUrl = block.getAuthorAvatarUrl();
+            fallback.author = author;
+        }
+        return fallback;
+    }
+
+    private void warmupL1IfAvailable(@NonNull List<ContentBlock> blocks) {
+        if (blocks.isEmpty()) {
+            return;
+        }
+        if (scrollPreloader != null) {
+            scrollPreloader.resetWindow();
+        }
+        MyApplication app = MyApplication.getInstance();
+        AppContainer container = cachedContainer != null ? cachedContainer : (app != null ? app.getAppContainer() : null);
+        if (container == null) {
+            return;
+        }
+        Context ctx = attachedRecyclerView != null ? attachedRecyclerView.getContext() : app;
+        if (ctx == null) {
+            return;
+        }
+        BlockWarmupEngine warmupEngine = container.getBlockWarmupEngine();
+        float density = ctx.getResources().getDisplayMetrics().density;
+        float fontScale = ctx.getResources().getConfiguration().fontScale;
+        int availWidth = attachedRecyclerView != null && attachedRecyclerView.getWidth() > 0
+                ? Math.max(1, attachedRecyclerView.getWidth() - attachedRecyclerView.getPaddingLeft() - attachedRecyclerView.getPaddingRight())
+                : ctx.getResources().getDisplayMetrics().widthPixels;
+        warmupEngine.warmupL1(blocks, availWidth, density, fontScale);
+
+        List<String> avatarUrls = new ArrayList<>();
+        int limit = Math.min(blocks.size(), 10);
+        for (int i = 0; i < limit; i++) {
+            ContentBlock b = blocks.get(i);
+            if (b instanceof CommentBlock) {
+                CommentBlock cb = (CommentBlock) b;
+                if (cb.getAuthorAvatarUrl() != null) {
+                    avatarUrls.add(cb.getAuthorAvatarUrl());
+                }
+            }
+        }
+        if (!avatarUrls.isEmpty()) {
+            int size = BlockPrecomputer.dpToPx(BlockPrecomputer.COMMENT_AVATAR_SIZE_DP, density);
+            warmupEngine.warmupL2Avatars(ctx, cachedRequestManager, avatarUrls, size);
+        }
+    }
+
+    private int resolveAvailableWidth(@NonNull SinglePassCommentView view) {
+        if (view.getWidth() > 0) {
+            return view.getWidth();
+        }
+        if (attachedRecyclerView != null && attachedRecyclerView.getWidth() > 0) {
+            return attachedRecyclerView.getWidth()
+                    - attachedRecyclerView.getPaddingLeft()
+                    - attachedRecyclerView.getPaddingRight();
+        }
+        return view.getResources().getDisplayMetrics().widthPixels;
+    }
+
+    @NonNull
+    private TextPaintRegistry getFallbackPaintRegistry() {
+        if (fallbackPaintRegistry == null) {
+            fallbackPaintRegistry = new TextPaintRegistry();
+        }
+        return fallbackPaintRegistry;
+    }
+
+    @NonNull
+    private BlockPrecomputer getFallbackPrecomputer() {
+        if (fallbackPrecomputer == null) {
+            fallbackPrecomputer = new BlockPrecomputer(getFallbackPaintRegistry(), new BlockLayoutCache(64));
+        }
+        return fallbackPrecomputer;
+    }
+
+    @Nullable
+    private static AppContainer getAppContainer(@NonNull Context context) {
+        Context appCtx = context.getApplicationContext();
+        if (appCtx instanceof MyApplication) {
+            return ((MyApplication) appCtx).getAppContainer();
+        }
+        return null;
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        View container;
-        UserAvatarView avatarView;
-        TextView authorNameText;
-        TextView timeText;
-        TextView editedTag;
-        TextView contentText;
-        TextView removedText;
-        TextView btnReply;
-        TextView btnLoadReplies;
-        ImageButton btnMenu;
+        final SinglePassCommentView commentView;
 
-        public ViewHolder(@NonNull View itemView) {
+        public ViewHolder(@NonNull SinglePassCommentView itemView) {
             super(itemView);
-            container = itemView.findViewById(R.id.comment_item_container);
-            avatarView = itemView.findViewById(R.id.comment_author_avatar);
-            authorNameText = itemView.findViewById(R.id.comment_author_name);
-            timeText = itemView.findViewById(R.id.comment_time_text);
-            editedTag = itemView.findViewById(R.id.comment_edited_tag);
-            contentText = itemView.findViewById(R.id.comment_content_text);
-            removedText = itemView.findViewById(R.id.comment_removed_text);
-            btnReply = itemView.findViewById(R.id.btn_reply_comment);
-            btnLoadReplies = itemView.findViewById(R.id.btn_load_replies);
-            btnMenu = itemView.findViewById(R.id.btn_comment_menu);
+            this.commentView = itemView;
         }
     }
 }

@@ -192,13 +192,14 @@
                 android:textColor="#64748B"
                 android:textSize="11sp" />
 
-            <WebView
-                android:id="@+id/compose_editor_web_view"
+            <FrameLayout
+                android:id="@+id/compose_editor_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:background="@drawable/bg_input_editorial"
-                android:minHeight="280dp" />
+                android:minHeight="280dp"
+                android:padding="1dp" />
 
             <!-- Delete Post Button (Edit Mode Only) -->
             <com.google.android.material.button.MaterialButton

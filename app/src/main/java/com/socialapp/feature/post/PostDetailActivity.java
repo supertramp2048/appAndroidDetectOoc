@@ -3,11 +3,7 @@ package com.socialapp.feature.post;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.text.Html;
 import android.view.View;
-import android.webkit.WebResourceRequest;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.PopupMenu;
 import android.widget.Toast;
 
@@ -15,23 +11,38 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.browser.customtabs.CustomTabsIntent;
-import androidx.core.content.ContextCompat;
-import androidx.core.widget.NestedScrollView;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
-import android.content.res.ColorStateList;
-
-import com.bumptech.glide.Glide;
 import com.socialapp.MyApplication;
-import com.socialapp.R;
+import com.socialapp.core.di.AppContainer;
 import com.socialapp.core.navigation.Navigator;
 import com.socialapp.core.network.dto.PostResource;
 import com.socialapp.core.network.dto.UserResource;
+import com.socialapp.core.network.sim.ScreenPayloadConfig;
+import com.socialapp.core.prefetch.PrefetchManager;
 import com.socialapp.core.session.SessionManager;
 import com.socialapp.core.ui.ReportSheetBottomSheet;
-import com.socialapp.core.util.DateTimeUtils;
+import com.socialapp.core.ui.blocks.adapter.PostDetailBlockAssembler;
+import com.socialapp.core.ui.blocks.adapter.HighRefreshRateHelper;
+import com.socialapp.core.ui.blocks.adapter.RecyclerView120HzTuner;
+import com.socialapp.core.ui.blocks.adapter.UnifiedBlockAdapter;
+import com.socialapp.core.ui.blocks.model.ContentBlock;
+import com.socialapp.core.ui.blocks.parser.ArticleAstCache;
 import com.socialapp.databinding.ActivityPostDetailBinding;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+
+/**
+ * PostDetailActivity rendered on the unified Pillar 4.1 flattened RecyclerView architecture:
+ * - Zero WebView overhead and zero Html.fromHtml() on the Main Thread
+ * - Streaming HTML AST parsed off-main-thread and cached in ArticleAstCache
+ * - Off-main-thread StaticLayout precomputation + API 29+ RenderNode caching in body blocks
+ * - Partial DiffUtil payloads for Follow and Vote state changes with zero body rebinds
+ */
 public class PostDetailActivity extends AppCompatActivity {
 
     public static final String EXTRA_POST_ID = "EXTRA_POST_ID";
@@ -39,15 +50,29 @@ public class PostDetailActivity extends AppCompatActivity {
     private ActivityPostDetailBinding binding;
     private PostDetailViewModel viewModel;
     private SessionManager sessionManager;
+    private AppContainer appContainer;
+    private UnifiedBlockAdapter unifiedBlockAdapter;
     private int postId = -1;
+
+    private final AtomicInteger renderGeneration = new AtomicInteger(0);
+    @Nullable
+    private PostResource latestRenderedPost;
+    @NonNull
+    private List<ContentBlock> latestBodyBlocks = Collections.emptyList();
+    @NonNull
+    private String cachedPlainTextSummary = "";
+    private int cachedPostId = -1;
+    private int cachedHtmlHash = 0;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        HighRefreshRateHelper.requestHighRefreshRate(this);
         binding = ActivityPostDetailBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        sessionManager = MyApplication.getAppContainer(this).getSessionManager();
+        appContainer = MyApplication.getAppContainer(this);
+        sessionManager = appContainer.getSessionManager();
 
         if (getIntent() != null) {
             postId = getIntent().getIntExtra(EXTRA_POST_ID, -1);
@@ -70,7 +95,7 @@ public class PostDetailActivity extends AppCompatActivity {
             return;
         }
 
-        PostDetailRepository repository = new PostDetailRepository(MyApplication.getAppContainer(this).getSocialAppApiService());
+        PostDetailRepository repository = new PostDetailRepository(appContainer.getSocialAppApiService());
         viewModel = new ViewModelProvider(this, new PostDetailViewModelFactory(repository)).get(PostDetailViewModel.class);
 
         setupUI();
@@ -82,55 +107,19 @@ public class PostDetailActivity extends AppCompatActivity {
     private void setupUI() {
         binding.postDetailToolbar.setNavigationOnClickListener(v -> finish());
 
-        setupWebView();
+        unifiedBlockAdapter = new UnifiedBlockAdapter();
+        unifiedBlockAdapter.setDetailCallbacks(createDetailCallbacks());
+
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        binding.postDetailRecyclerView.setLayoutManager(layoutManager);
+        binding.postDetailRecyclerView.setRecycledViewPool(appContainer.getUnifiedBlockViewPool());
+        binding.postDetailRecyclerView.setAdapter(unifiedBlockAdapter);
+        RecyclerView120HzTuner.tuneReadingList(binding.postDetailRecyclerView, layoutManager, false);
+
         setupReadingProgressBar();
 
         binding.btnSharePost.setOnClickListener(v -> sharePost());
         binding.btnOverflowMenu.setOnClickListener(this::showOverflowMenu);
-
-        binding.btnUpvote.setOnClickListener(v -> {
-            if (sessionManager.isLoggedIn()) {
-                viewModel.upvote();
-            } else {
-                sessionManager.requireLogin(() -> viewModel.upvote(), this);
-            }
-        });
-
-        binding.btnDownvote.setOnClickListener(v -> {
-            if (sessionManager.isLoggedIn()) {
-                viewModel.downvote();
-            } else {
-                sessionManager.requireLogin(() -> viewModel.downvote(), this);
-            }
-        });
-
-        binding.btnFollowAuthor.setOnClickListener(v -> {
-            if (sessionManager.isLoggedIn()) {
-                viewModel.toggleFollowAuthor();
-            } else {
-                sessionManager.requireLogin(() -> viewModel.toggleFollowAuthor(), this);
-            }
-        });
-
-        binding.btnComments.setOnClickListener(v -> Navigator.navigateToPostComments(this, postId));
-
-        binding.btnFactcheck.setOnClickListener(v -> {
-            PostResource post = viewModel.getCurrentPost();
-            if (post != null && post.thumbnailUrl != null && !post.thumbnailUrl.trim().isEmpty()) {
-                String plainTextSummary = "";
-                if (post.contentHtml != null && !post.contentHtml.trim().isEmpty()) {
-                    String fullText = Html.fromHtml(post.contentHtml, Html.FROM_HTML_MODE_LEGACY).toString().trim();
-                    if (fullText.length() > 300) {
-                        plainTextSummary = fullText.substring(0, 300) + "...";
-                    } else {
-                        plainTextSummary = fullText;
-                    }
-                }
-                String caption = (post.title != null ? post.title : "") + (plainTextSummary.isEmpty() ? "" : "\n" + plainTextSummary);
-                String route = "factcheck?imageUrl=" + Uri.encode(post.thumbnailUrl) + "&postId=" + post.id + "&caption=" + Uri.encode(caption);
-                Navigator.navigateTo(this, route);
-            }
-        });
 
         binding.postDetailSwipeRefresh.setOnRefreshListener(() -> {
             viewModel.loadPostDetail(postId);
@@ -140,52 +129,129 @@ public class PostDetailActivity extends AppCompatActivity {
         binding.postDetailErrorState.setOnRetryClickListener(v -> viewModel.loadPostDetail(postId));
     }
 
-    private void setupReadingProgressBar() {
-        binding.postDetailContentContainer.setOnScrollChangeListener((NestedScrollView.OnScrollChangeListener) (v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
-            if (v.getChildCount() > 0) {
-                int totalScrollableDistance = v.getChildAt(0).getMeasuredHeight() - v.getMeasuredHeight();
-                if (totalScrollableDistance > 0) {
-                    int progress = (int) (((float) scrollY / totalScrollableDistance) * 100);
-                    binding.readingProgressBar.setProgress(Math.min(100, Math.max(0, progress)));
+    @NonNull
+    private UnifiedBlockAdapter.DetailCallbacks createDetailCallbacks() {
+        return new UnifiedBlockAdapter.DetailCallbacks() {
+            @Override
+            public void onAuthorClick(int authorId) {
+                if (authorId > 0) {
+                    Navigator.navigateToUserProfile(PostDetailActivity.this, authorId);
+                }
+            }
+
+            @Override
+            public void onFollowClick() {
+                if (sessionManager.isLoggedIn()) {
+                    viewModel.toggleFollowAuthor();
                 } else {
-                    binding.readingProgressBar.setProgress(0);
+                    sessionManager.requireLogin(() -> viewModel.toggleFollowAuthor(), PostDetailActivity.this);
                 }
+            }
+
+            @Override
+            public void onLinkClick(@NonNull String url) {
+                openCustomTab(url);
+            }
+
+            @Override
+            public void onSourceClick(@NonNull String sourceUrl) {
+                openCustomTab(sourceUrl);
+            }
+
+            @Override
+            public void onUpvoteClick() {
+                if (sessionManager.isLoggedIn()) {
+                    viewModel.upvote();
+                } else {
+                    sessionManager.requireLogin(() -> viewModel.upvote(), PostDetailActivity.this);
+                }
+            }
+
+            @Override
+            public void onDownvoteClick() {
+                if (sessionManager.isLoggedIn()) {
+                    viewModel.downvote();
+                } else {
+                    sessionManager.requireLogin(() -> viewModel.downvote(), PostDetailActivity.this);
+                }
+            }
+
+            @Override
+            public void onCommentsClick(int targetPostId) {
+                Navigator.navigateToPostComments(
+                        PostDetailActivity.this,
+                        targetPostId > 0 ? targetPostId : postId
+                );
+            }
+
+            @Override
+            public void onFactCheckClick() {
+                navigateToFactCheck();
+            }
+        };
+    }
+
+    private void navigateToFactCheck() {
+        PostResource post = viewModel.getCurrentPost();
+        if (post == null || post.thumbnailUrl == null || post.thumbnailUrl.trim().isEmpty()) {
+            return;
+        }
+        String summary = cachedPlainTextSummary;
+        if (summary.isEmpty() && post.contentHtml != null && !post.contentHtml.trim().isEmpty()) {
+            ArticleAstCache.ParsedArticle cached = appContainer.getArticleAstCache().getIfPresent(post.id, post.contentHtml);
+            if (cached != null) {
+                summary = cached.plainTextSummary;
+            }
+        }
+        String title = post.title != null ? post.title : "";
+        String caption = title + (summary.isEmpty() ? "" : "\n" + summary);
+        String route = "factcheck?imageUrl=" + Uri.encode(post.thumbnailUrl)
+                + "&postId=" + post.id
+                + "&caption=" + Uri.encode(caption);
+        Navigator.navigateTo(this, route);
+    }
+
+    private void setupReadingProgressBar() {
+        binding.postDetailRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                updateReadingProgress();
             }
         });
     }
 
-    private void setupWebView() {
-        binding.postDetailWebView.setBackgroundColor(0); // Transparent background
-        binding.postDetailWebView.getSettings().setJavaScriptEnabled(false);
-        binding.postDetailWebView.getSettings().setDefaultTextEncodingName("UTF-8");
-        binding.postDetailWebView.setWebViewClient(new WebViewClient() {
-            @Override
-            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-                if (request != null && request.getUrl() != null) {
-                    openCustomTab(request.getUrl().toString());
-                    return true;
-                }
-                return super.shouldOverrideUrlLoading(view, request);
-            }
-
-            @Override
-            public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                if (url != null) {
-                    openCustomTab(url);
-                    return true;
-                }
-                return super.shouldOverrideUrlLoading(view, url);
-            }
-        });
+    private void updateReadingProgress() {
+        int offset = binding.postDetailRecyclerView.computeVerticalScrollOffset();
+        int range = binding.postDetailRecyclerView.computeVerticalScrollRange();
+        int extent = binding.postDetailRecyclerView.computeVerticalScrollExtent();
+        int totalScrollableDistance = range - extent;
+        if (totalScrollableDistance > 0) {
+            int progress = Math.round(((float) offset / totalScrollableDistance) * 100f);
+            binding.readingProgressBar.setProgress(Math.min(100, Math.max(0, progress)));
+        } else {
+            binding.readingProgressBar.setProgress(0);
+        }
     }
 
-    private void openCustomTab(String url) {
+    private void openCustomTab(@NonNull String url) {
+        String trimmed = url.trim();
+        if (trimmed.isEmpty()) {
+            return;
+        }
+        Uri uri = Uri.parse(trimmed);
+        if (uri.getScheme() == null) {
+            uri = Uri.parse("https://" + trimmed);
+        }
         try {
             CustomTabsIntent intent = new CustomTabsIntent.Builder().build();
-            intent.launchUrl(this, Uri.parse(url));
+            intent.launchUrl(this, uri);
         } catch (Exception e) {
-            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-            startActivity(intent);
+            try {
+                Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                startActivity(intent);
+            } catch (Exception ignored) {
+                Toast.makeText(this, "Không thể mở liên kết", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
@@ -194,17 +260,16 @@ public class PostDetailActivity extends AppCompatActivity {
             if (result == null) return;
 
             if (result.isLoading()) {
+                renderGeneration.incrementAndGet();
                 binding.postDetailLoadingSkeleton.setVisibility(View.VISIBLE);
                 binding.postDetailErrorState.setVisibility(View.GONE);
-                binding.postDetailContentContainer.setVisibility(View.GONE);
+                binding.postDetailRecyclerView.setVisibility(View.GONE);
             } else if (result.isSuccess() && result.data != null) {
-                binding.postDetailLoadingSkeleton.setVisibility(View.GONE);
-                binding.postDetailErrorState.setVisibility(View.GONE);
-                binding.postDetailContentContainer.setVisibility(View.VISIBLE);
                 bindPostData(result.data);
             } else if (result.isError()) {
+                renderGeneration.incrementAndGet();
                 binding.postDetailLoadingSkeleton.setVisibility(View.GONE);
-                binding.postDetailContentContainer.setVisibility(View.GONE);
+                binding.postDetailRecyclerView.setVisibility(View.GONE);
                 binding.postDetailErrorState.setVisibility(View.VISIBLE);
                 if (result.error != null) {
                     binding.postDetailErrorState.setErrorMessage(result.error.getMessage());
@@ -213,117 +278,100 @@ public class PostDetailActivity extends AppCompatActivity {
         });
 
         viewModel.getIsFollowingLiveData().observe(this, isFollowing -> {
-            if (Boolean.TRUE.equals(isFollowing)) {
-                binding.btnFollowAuthor.setText("Đang theo dõi");
-            } else {
-                binding.btnFollowAuthor.setText("Theo dõi");
+            if (latestRenderedPost == null) {
+                return;
+            }
+            List<ContentBlock> current = unifiedBlockAdapter.getCurrentBlocks();
+            if (!current.isEmpty()) {
+                unifiedBlockAdapter.submitBlocks(
+                        PostDetailBlockAssembler.withFollowState(current, Boolean.TRUE.equals(isFollowing))
+                );
             }
         });
     }
 
     private void bindPostData(@NonNull PostResource post) {
-        binding.postDetailTitle.setText(post.title != null ? post.title : "");
-        binding.postDetailTime.setText(DateTimeUtils.formatFullDateTime(post.createdAt));
+        int htmlHash = post.contentHtml != null ? post.contentHtml.hashCode() : 0;
 
-        if (post.category != null && post.category.name != null) {
-            binding.postDetailCategory.setText(post.category.name);
-            binding.postDetailCategory.setVisibility(View.VISIBLE);
-        } else {
-            binding.postDetailCategory.setVisibility(View.GONE);
+        // Fast reuse during optimistic Vote/Follow updates on the currently open article
+        if (cachedPostId == post.id && cachedHtmlHash == htmlHash && latestRenderedPost != null) {
+            renderGeneration.incrementAndGet();
+            submitAssembledBlocks(post, latestBodyBlocks, cachedPlainTextSummary, htmlHash);
+            return;
         }
 
-        if (post.author != null) {
-            binding.postDetailAuthorName.setText(post.author.name != null ? "Bởi " + post.author.name : "Nặc danh");
-            binding.postDetailAuthorAvatar.loadAvatar(post.author.getAvatarUrl());
+        // Fast hit from Repository off-main-thread AST warmup
+        ArticleAstCache.ParsedArticle cached = appContainer.getArticleAstCache().getIfPresent(post.id, post.contentHtml);
+        if (cached != null) {
+            renderGeneration.incrementAndGet();
+            submitAssembledBlocks(post, cached.bodyBlocks, cached.plainTextSummary, htmlHash);
+            return;
+        }
 
-            View.OnClickListener authorClickListener = v -> {
-                if (post.author != null && post.author.id > 0) {
-                    Navigator.navigateToUserProfile(PostDetailActivity.this, post.author.id);
+        // Cold fallback: parse HTML AST + shape StaticLayouts off the Main Thread
+        final int generation = renderGeneration.incrementAndGet();
+        final int rvWidth = binding.postDetailRecyclerView.getWidth();
+        final int targetWidth = rvWidth > 0 ? rvWidth : getResources().getDisplayMetrics().widthPixels;
+        final float density = getResources().getDisplayMetrics().density;
+        final float fontScale = getResources().getConfiguration().fontScale;
+
+        try {
+            appContainer.getBlockPrecomputer().submitBackgroundTask(() -> {
+                ArticleAstCache.ParsedArticle parsed =
+                        appContainer.getArticleAstCache().getOrParse(post.id, post.contentHtml);
+                if (!appContainer.getBlockWarmupEngine().isMemoryPressureActive()) {
+                    appContainer.getBlockPrecomputer().precomputeBlocksSync(
+                            parsed.bodyBlocks, targetWidth, density, fontScale
+                    );
                 }
-            };
-            binding.postDetailAuthorAvatar.setOnClickListener(authorClickListener);
-            binding.postDetailAuthorName.setOnClickListener(authorClickListener);
+                runOnUiThread(() -> {
+                    if (isFinishing() || isDestroyed() || generation != renderGeneration.get()) {
+                        return;
+                    }
+                    submitAssembledBlocks(post, parsed.bodyBlocks, parsed.plainTextSummary, htmlHash);
+                });
+            });
+        } catch (Throwable ignored) {
+            ArticleAstCache.ParsedArticle parsed =
+                    appContainer.getArticleAstCache().getOrParse(post.id, post.contentHtml);
+            submitAssembledBlocks(post, parsed.bodyBlocks, parsed.plainTextSummary, htmlHash);
+        }
+    }
 
-            UserResource currentUser = sessionManager.getCurrentUser();
-            if (currentUser != null && currentUser.id == post.author.id) {
-                binding.btnFollowAuthor.setVisibility(View.GONE);
-            } else {
-                binding.btnFollowAuthor.setVisibility(View.VISIBLE);
+    private void submitAssembledBlocks(
+            @NonNull PostResource post,
+            @NonNull List<ContentBlock> bodyBlocks,
+            @NonNull String plainTextSummary,
+            int htmlHash) {
+        this.latestRenderedPost = post;
+        this.cachedPostId = post.id;
+        this.cachedHtmlHash = htmlHash;
+        this.latestBodyBlocks = bodyBlocks;
+        this.cachedPlainTextSummary = plainTextSummary;
+
+        UserResource currentUser = sessionManager.getCurrentUser();
+        int currentUserId = currentUser != null ? currentUser.id : -1;
+        Boolean followingVal = viewModel.getIsFollowingLiveData().getValue();
+        boolean isFollowing = followingVal != null ? followingVal : post.isFollowingAuthor;
+
+        List<ContentBlock> assembled = PostDetailBlockAssembler.assemble(
+                post,
+                currentUserId,
+                isFollowing,
+                bodyBlocks,
+                null
+        );
+
+        binding.postDetailLoadingSkeleton.setVisibility(View.GONE);
+        binding.postDetailErrorState.setVisibility(View.GONE);
+        binding.postDetailRecyclerView.setVisibility(View.VISIBLE);
+
+        unifiedBlockAdapter.submitBlocks(assembled);
+        binding.postDetailRecyclerView.post(() -> {
+            if (!isFinishing() && !isDestroyed()) {
+                updateReadingProgress();
             }
-        }
-
-        if (post.thumbnailUrl != null && !post.thumbnailUrl.trim().isEmpty()) {
-            binding.postDetailThumbnailCard.setVisibility(View.VISIBLE);
-            binding.postDetailThumbnail.setVisibility(View.VISIBLE);
-            Glide.with(this).load(post.thumbnailUrl).centerCrop().into(binding.postDetailThumbnail);
-
-            binding.btnFactcheck.setVisibility(View.VISIBLE);
-        } else {
-            binding.postDetailThumbnailCard.setVisibility(View.GONE);
-            binding.postDetailThumbnail.setVisibility(View.GONE);
-            binding.btnFactcheck.setVisibility(View.GONE);
-        }
-
-        // HTML WebView with editorial typography styling
-        if (post.contentHtml != null && !post.contentHtml.trim().isEmpty()) {
-            String htmlData = buildEditorialHtml(post.contentHtml);
-            binding.postDetailWebView.setVisibility(View.VISIBLE);
-            binding.postDetailWebView.loadDataWithBaseURL(null, htmlData, "text/html", "UTF-8", null);
-        } else {
-            binding.postDetailWebView.setVisibility(View.GONE);
-        }
-
-        // Source URL
-        if (post.sourceName != null && !post.sourceName.trim().isEmpty()) {
-            binding.postDetailSourceText.setText("Nguồn: " + post.sourceName);
-            binding.postDetailSourceText.setVisibility(View.VISIBLE);
-            if (post.sourceUrl != null && !post.sourceUrl.trim().isEmpty()) {
-                binding.postDetailSourceText.setOnClickListener(v -> openCustomTab(post.sourceUrl));
-            }
-        } else {
-            binding.postDetailSourceText.setVisibility(View.GONE);
-        }
-
-        // Vote score
-        binding.postDetailVoteScore.setText(String.valueOf(post.voteScore));
-        int primaryColor = ContextCompat.getColor(this, R.color.app_primary);
-        int dangerColor = ContextCompat.getColor(this, R.color.app_danger);
-        int secondaryTextColor = ContextCompat.getColor(this, R.color.app_text_secondary);
-        int primaryTextColor = ContextCompat.getColor(this, R.color.app_text_primary);
-
-        if (post.userVote == 1) {
-            binding.btnUpvote.setAlpha(1.0f);
-            binding.btnUpvote.setText("▲");
-            binding.btnUpvote.setTextColor(primaryColor);
-
-            binding.btnDownvote.setAlpha(0.6f);
-            binding.btnDownvote.setText("▼");
-            binding.btnDownvote.setTextColor(secondaryTextColor);
-
-            binding.postDetailVoteScore.setTextColor(primaryColor);
-        } else if (post.userVote == -1) {
-            binding.btnUpvote.setAlpha(0.6f);
-            binding.btnUpvote.setText("▲");
-            binding.btnUpvote.setTextColor(secondaryTextColor);
-
-            binding.btnDownvote.setAlpha(1.0f);
-            binding.btnDownvote.setText("▼");
-            binding.btnDownvote.setTextColor(dangerColor);
-
-            binding.postDetailVoteScore.setTextColor(dangerColor);
-        } else {
-            binding.btnUpvote.setAlpha(1.0f);
-            binding.btnUpvote.setText("▲");
-            binding.btnUpvote.setTextColor(secondaryTextColor);
-
-            binding.btnDownvote.setAlpha(1.0f);
-            binding.btnDownvote.setText("▼");
-            binding.btnDownvote.setTextColor(secondaryTextColor);
-
-            binding.postDetailVoteScore.setTextColor(primaryTextColor);
-        }
-
-        binding.btnComments.setText("💬 " + post.commentsCount + " bình luận");
+        });
     }
 
     private void showOverflowMenu(View anchor) {
@@ -381,110 +429,22 @@ public class PostDetailActivity extends AppCompatActivity {
         startActivity(Intent.createChooser(intent, "Chia sẻ bài viết qua"));
     }
 
-    @NonNull
-    private String buildEditorialHtml(@NonNull String contentHtml) {
-        return "<!DOCTYPE html><html><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no\"><style>"
-                + "* { box-sizing: border-box; }"
-                + "body {"
-                + "  font-family: Georgia, 'Times New Roman', Cambria, serif;"
-                + "  font-size: 18px;"
-                + "  line-height: 1.85;"
-                + "  color: #17212B;"
-                + "  background-color: transparent;"
-                + "  margin: 0;"
-                + "  padding: 4px 0 24px 0;"
-                + "  word-wrap: break-word;"
-                + "  letter-spacing: 0.01em;"
-                + "}"
-                + "p {"
-                + "  margin: 0 0 18px 0;"
-                + "  text-align: left;"
-                + "}"
-                + "p:first-of-type, .lead {"
-                + "  font-size: 19px;"
-                + "  font-weight: normal;"
-                + "  color: #17212B;"
-                + "  line-height: 1.8;"
-                + "  margin-bottom: 22px;"
-                + "}"
-                + "img {"
-                + "  max-width: 100% !important;"
-                + "  height: auto !important;"
-                + "  display: block;"
-                + "  margin: 20px auto 8px auto;"
-                + "  border-radius: 4px;"
-                + "  border: 1px solid #D8E0EA;"
-                + "}"
-                + "figcaption, .caption, em {"
-                + "  display: block;"
-                + "  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;"
-                + "  font-size: 13px;"
-                + "  font-style: italic;"
-                + "  color: #64748B;"
-                + "  text-align: left;"
-                + "  margin: 6px auto 18px auto;"
-                + "  line-height: 1.5;"
-                + "}"
-                + "h1, h2, h3, h4 {"
-                + "  font-family: Georgia, 'Times New Roman', serif;"
-                + "  color: #17212B;"
-                + "  font-weight: 700;"
-                + "  margin: 28px 0 12px 0;"
-                + "  line-height: 1.35;"
-                + "}"
-                + "h2 { font-size: 21px; }"
-                + "h3 { font-size: 19px; }"
-                + "blockquote {"
-                + "  margin: 22px 0;"
-                + "  padding: 14px 20px;"
-                + "  background-color: #F8FAFC;"
-                + "  border-left: 3px solid #1E5AA8;"
-                + "  border-radius: 0 4px 4px 0;"
-                + "  font-family: Georgia, serif;"
-                + "  font-style: italic;"
-                + "  font-size: 18px;"
-                + "  line-height: 1.7;"
-                + "  color: #334155;"
-                + "}"
-                + "table {"
-                + "  width: 100% !important;"
-                + "  border-collapse: collapse;"
-                + "  margin: 20px 0;"
-                + "  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;"
-                + "  font-size: 14px;"
-                + "}"
-                + "th, td {"
-                + "  border: 1px solid #D8E0EA;"
-                + "  padding: 10px 12px;"
-                + "  text-align: left;"
-                + "}"
-                + "th {"
-                + "  background-color: #EEF2F6;"
-                + "  font-weight: 600;"
-                + "  color: #17212B;"
-                + "}"
-                + "pre, code {"
-                + "  background: #EEF2F6;"
-                + "  padding: 4px 8px;"
-                + "  border-radius: 4px;"
-                + "  font-size: 14px;"
-                + "  color: #17212B;"
-                + "  overflow-x: auto;"
-                + "}"
-                + "a {"
-                + "  color: #1E5AA8;"
-                + "  text-decoration: underline;"
-                + "  font-weight: 500;"
-                + "}"
-                + "</style></head><body>"
-                + contentHtml
-                + "</body></html>";
-    }
-
     @Override
     protected void onResume() {
         super.onResume();
-        com.socialapp.core.prefetch.PrefetchManager.getInstance()
-                .onScreenVisited(com.socialapp.core.network.sim.ScreenPayloadConfig.SCREEN_POST_DETAIL);
+        PrefetchManager.getInstance()
+                .onScreenVisited(ScreenPayloadConfig.SCREEN_POST_DETAIL);
+    }
+
+    @Override
+    protected void onDestroy() {
+        renderGeneration.incrementAndGet();
+        if (unifiedBlockAdapter != null) {
+            unifiedBlockAdapter.setDetailCallbacks(null);
+        }
+        if (binding != null) {
+            binding.postDetailRecyclerView.setAdapter(null);
+        }
+        super.onDestroy();
     }
 }
