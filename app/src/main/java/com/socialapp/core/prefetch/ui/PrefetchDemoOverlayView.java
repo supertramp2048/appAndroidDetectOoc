@@ -66,22 +66,34 @@ public class PrefetchDemoOverlayView extends FrameLayout {
         tvLastHitStatus = findViewById(R.id.tvLastHitStatus);
         tvStatsSummary = findViewById(R.id.tvStatsSummary);
 
+        AppContainer container = getAppContainer();
+        if (container != null) {
+            isExpanded = container.getPrefetchDemoPreferences().isOverlayExpanded();
+        }
         applyExpandState();
 
-        btnToggleExpand.setOnClickListener(v -> {
-            isExpanded = !isExpanded;
-            applyExpandState();
-        });
+        btnToggleExpand.setOnClickListener(v -> toggleExpandState());
 
-        findViewById(R.id.headerBar).setOnClickListener(v -> {
-            isExpanded = !isExpanded;
-            applyExpandState();
-        });
+        findViewById(R.id.headerBar).setOnClickListener(v -> toggleExpandState());
 
         btnConfig.setOnClickListener(v -> showConfigDialog());
         btnReplayToggle.setOnClickListener(v -> handleReplayToggle());
 
         refreshUI();
+    }
+
+    @Nullable
+    private AppContainer getAppContainer() {
+        return MyApplication.getInstance() != null ? MyApplication.getInstance().getAppContainer() : null;
+    }
+
+    private void toggleExpandState() {
+        isExpanded = !isExpanded;
+        AppContainer container = getAppContainer();
+        if (container != null) {
+            container.getPrefetchDemoPreferences().setOverlayExpanded(isExpanded);
+        }
+        applyExpandState();
     }
 
     private void applyExpandState() {
@@ -94,8 +106,11 @@ public class PrefetchDemoOverlayView extends FrameLayout {
     }
 
     public void refreshUI() {
-        AppContainer container = MyApplication.getInstance() != null ? MyApplication.getInstance().getAppContainer() : null;
+        AppContainer container = getAppContainer();
         if (container == null) return;
+
+        isExpanded = container.getPrefetchDemoPreferences().isOverlayExpanded();
+        applyExpandState();
 
         PrefetchEngine engine = container.getPrefetchEngine();
         MetricsLogger logger = container.getMetricsLogger();
@@ -114,9 +129,10 @@ public class PrefetchDemoOverlayView extends FrameLayout {
         } else {
             btnReplayToggle.setText("▶ Replay");
             btnReplayToggle.setTextColor(0xFF4ADE80); // Xanh lá
+            String networkOrReal = engine.isSimulationMode() ? engine.getCurrentNetwork().code : "REAL";
             String badge = String.format(Locale.US, "[%s | %s | %.1fx]",
                     engine.getCurrentPolicy().code,
-                    engine.getCurrentNetwork().code,
+                    networkOrReal,
                     engine.getTimeScale()
             );
             tvConfigBadge.setText(badge);

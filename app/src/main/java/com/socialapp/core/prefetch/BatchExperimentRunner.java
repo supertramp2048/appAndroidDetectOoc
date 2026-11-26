@@ -131,9 +131,9 @@ public class BatchExperimentRunner {
         MetricsLogger logger = container.getMetricsLogger();
         ReplayEngine replay = container.getReplayEngine();
 
-        // 1. Áp dụng cấu hình thí nghiệm
-        engine.setCurrentPolicy(config.policy);
-        engine.setCurrentNetwork(config.network);
+        // 1. Áp dụng cấu hình thí nghiệm (không ghi đè lựa chọn người dùng trong Prefs)
+        engine.setCurrentPolicy(config.policy, false);
+        engine.setCurrentNetwork(config.network, false);
         engine.setPayloadScale(config.payloadScale);
         logger.setConfigName(config.getConfigFileName());
         logger.resetSessionStats();

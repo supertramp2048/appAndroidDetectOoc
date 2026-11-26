@@ -11,6 +11,7 @@ import com.socialapp.core.network.FactCheckApiService;
 import com.socialapp.core.network.SocialAppApiService;
 import com.socialapp.core.prefetch.BatchExperimentRunner;
 import com.socialapp.core.prefetch.MetricsLogger;
+import com.socialapp.core.prefetch.PrefetchDemoPreferences;
 import com.socialapp.core.prefetch.PrefetchEngine;
 import com.socialapp.core.prefetch.ReplayEngine;
 import com.socialapp.core.security.KeystoreHelper;
@@ -35,6 +36,7 @@ public class AppContainer {
     private final Context applicationContext;
     private final KeystoreHelper keystoreHelper;
     private final SessionManager sessionManager;
+    private final PrefetchDemoPreferences prefetchDemoPreferences;
     private final PrefetchEngine prefetchEngine;
     private final MetricsLogger metricsLogger;
     private final ReplayEngine replayEngine;
@@ -63,7 +65,8 @@ public class AppContainer {
 
         this.keystoreHelper = new KeystoreHelper(this.applicationContext);
         this.sessionManager = new SessionManager(this.applicationContext, this.keystoreHelper);
-        this.prefetchEngine = new PrefetchEngine();
+        this.prefetchDemoPreferences = new PrefetchDemoPreferences(this.applicationContext);
+        this.prefetchEngine = new PrefetchEngine(this.prefetchDemoPreferences);
         this.metricsLogger = new MetricsLogger(this.applicationContext);
         this.replayEngine = new ReplayEngine(this.applicationContext);
         this.batchRunner = new BatchExperimentRunner(this.applicationContext);
@@ -129,6 +132,11 @@ public class AppContainer {
 
     public FactCheckApiService getFactCheckApiService() {
         return factCheckApiService;
+    }
+
+    @NonNull
+    public PrefetchDemoPreferences getPrefetchDemoPreferences() {
+        return prefetchDemoPreferences;
     }
 
     public PrefetchEngine getPrefetchEngine() {

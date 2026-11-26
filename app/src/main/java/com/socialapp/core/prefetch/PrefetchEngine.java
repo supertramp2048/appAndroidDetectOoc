@@ -1,5 +1,6 @@
 package com.socialapp.core.prefetch;
 
+import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
@@ -117,11 +118,14 @@ public class PrefetchEngine {
     private final MarkovPredictor<ScreenId> markovOrder1 = new MarkovPredictor<>(1, 3);
     private final MarkovPredictor<ScreenId> markovOrder2 = new MarkovPredictor<>(2, 3);
 
-    private Policy currentPolicy = Policy.P3_MARKOV_FIXED;
-    private NetworkProfile currentNetwork = NetworkProfile.LTE;
+    @Nullable
+    private final PrefetchDemoPreferences demoPreferences;
+
+    private Policy currentPolicy = PrefetchDemoPreferences.DEFAULT_POLICY;
+    private NetworkProfile currentNetwork = PrefetchDemoPreferences.DEFAULT_NETWORK;
     private float payloadScale = 1.0f;
-    private float timeScale = 1.0f; // Hệ số tua nhanh (1.0 = thời gian thực)
-    private boolean simulationMode = true;
+    private float timeScale = PrefetchDemoPreferences.DEFAULT_TIME_SCALE; // Hệ số tua nhanh (1.0 = thời gian thực)
+    private boolean simulationMode = PrefetchDemoPreferences.DEFAULT_SIMULATION_MODE;
 
     private ScreenId lastCurrentScreen = ScreenId.FEED_NEWEST;
     private List<Map.Entry<ScreenId, Double>> lastPredictions = Collections.emptyList();
@@ -129,6 +133,21 @@ public class PrefetchEngine {
     private OnPredictionUpdatedListener predictionListener;
 
     public PrefetchEngine() {
+        this((PrefetchDemoPreferences) null);
+    }
+
+    public PrefetchEngine(@Nullable Context context) {
+        this(context != null ? new PrefetchDemoPreferences(context) : null);
+    }
+
+    public PrefetchEngine(@Nullable PrefetchDemoPreferences demoPreferences) {
+        this.demoPreferences = demoPreferences;
+        if (demoPreferences != null) {
+            this.currentPolicy = demoPreferences.getPolicy();
+            this.currentNetwork = demoPreferences.getNetwork();
+            this.timeScale = demoPreferences.getTimeScale();
+            this.simulationMode = demoPreferences.isSimulationMode();
+        }
         seedInitialTransitions();
     }
 
@@ -152,16 +171,32 @@ public class PrefetchEngine {
         return currentPolicy;
     }
 
-    public void setCurrentPolicy(Policy currentPolicy) {
+    public void setCurrentPolicy(@NonNull Policy currentPolicy) {
+        setCurrentPolicy(currentPolicy, true);
+    }
+
+    public void setCurrentPolicy(@NonNull Policy currentPolicy, boolean persist) {
+        if (currentPolicy == null) return;
         this.currentPolicy = currentPolicy;
+        if (persist && demoPreferences != null) {
+            demoPreferences.setPolicy(currentPolicy);
+        }
     }
 
     public NetworkProfile getCurrentNetwork() {
         return currentNetwork;
     }
 
-    public void setCurrentNetwork(NetworkProfile currentNetwork) {
+    public void setCurrentNetwork(@NonNull NetworkProfile currentNetwork) {
+        setCurrentNetwork(currentNetwork, true);
+    }
+
+    public void setCurrentNetwork(@NonNull NetworkProfile currentNetwork, boolean persist) {
+        if (currentNetwork == null) return;
         this.currentNetwork = currentNetwork;
+        if (persist && demoPreferences != null) {
+            demoPreferences.setNetwork(currentNetwork);
+        }
     }
 
     public float getPayloadScale() {
@@ -177,7 +212,13 @@ public class PrefetchEngine {
     }
 
     public void setTimeScale(float timeScale) {
-        this.timeScale = Math.max(0.1f, timeScale);
+        float sanitized = Float.isNaN(timeScale) || Float.isInfinite(timeScale)
+                ? PrefetchDemoPreferences.DEFAULT_TIME_SCALE
+                : Math.max(PrefetchDemoPreferences.MIN_TIME_SCALE, timeScale);
+        this.timeScale = sanitized;
+        if (demoPreferences != null) {
+            demoPreferences.setTimeScale(sanitized);
+        }
     }
 
     public boolean isSimulationMode() {
@@ -186,6 +227,9 @@ public class PrefetchEngine {
 
     public void setSimulationMode(boolean simulationMode) {
         this.simulationMode = simulationMode;
+        if (demoPreferences != null) {
+            demoPreferences.setSimulationMode(simulationMode);
+        }
     }
 
     /**
