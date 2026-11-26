@@ -22,6 +22,7 @@ import com.socialapp.core.network.dto.ReportRequest;
 import com.socialapp.core.network.dto.VoteResponse;
 import com.socialapp.core.prefetch.HitType;
 import com.socialapp.core.prefetch.Repository;
+import com.socialapp.core.telemetry.LoadContext;
 import com.socialapp.core.prefetch.ScreenId;
 import com.socialapp.core.prefetch.ScreenLoadCallback;
 import com.socialapp.core.ui.blocks.adapter.BlockWarmupEngine;
@@ -52,8 +53,8 @@ public class PostDetailRepository {
 
         Repository.load(ScreenId.POST_DETAIL, params, new Repository.RealDataLoader<PostResource>() {
             @Override
-            public void execute(@NonNull ScreenLoadCallback<PostResource> callback) {
-                fetchViaRetrofit(postId, callback);
+            public void execute(@NonNull ScreenLoadCallback<PostResource> callback, @NonNull LoadContext load) {
+                fetchViaRetrofit(postId, callback, load);
             }
         }, new ScreenLoadCallback<PostResource>() {
             @Override
@@ -117,8 +118,8 @@ public class PostDetailRepository {
         }
     }
 
-    private void fetchViaRetrofit(int postId, @NonNull ScreenLoadCallback<PostResource> callback) {
-        apiService.getPostDetail(postId).enqueue(new Callback<PostDetailResponse>() {
+    private void fetchViaRetrofit(int postId, @NonNull ScreenLoadCallback<PostResource> callback, LoadContext load) {
+        apiService.getPostDetailMeasured(postId, load).enqueue(new Callback<PostDetailResponse>() {
             @Override
             public void onResponse(@NonNull Call<PostDetailResponse> call, @NonNull Response<PostDetailResponse> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().data != null) {
@@ -130,7 +131,8 @@ public class PostDetailRepository {
 
             @Override
             public void onFailure(@NonNull Call<PostDetailResponse> call, @NonNull Throwable t) {
-                callback.onError(t);
+                if (call.isCanceled()) callback.onCancelled(t);
+                else callback.onError(t);
             }
         });
     }

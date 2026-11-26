@@ -37,6 +37,7 @@ public class PrefetchEntry<T> {
     private final long createdAtMs;
     private final long softExpiresAtMs;
     private final long expiresAtMs;
+    private final P5Experiment.Attempt attempt;
 
     private volatile boolean isUsed;
     private volatile long lastAccessedAtMs;
@@ -54,7 +55,26 @@ public class PrefetchEntry<T> {
                 data,
                 payloadSizeBytes,
                 Math.min(PrefetchConfig.DEFAULT_SOFT_TTL_MS, Math.max(1L, ttlMs / 2)),
-                ttlMs
+                ttlMs,
+                null
+        );
+    }
+
+    PrefetchEntry(
+            @NonNull String key,
+            @NonNull String screenName,
+            @Nullable T data,
+            long payloadSizeBytes,
+            long ttlMs,
+            @Nullable P5Experiment.Attempt attempt) {
+        this(
+                key,
+                screenName,
+                data,
+                payloadSizeBytes,
+                Math.min(PrefetchConfig.DEFAULT_SOFT_TTL_MS, Math.max(1L, ttlMs / 2)),
+                ttlMs,
+                attempt
         );
     }
 
@@ -65,6 +85,17 @@ public class PrefetchEntry<T> {
             long payloadSizeBytes,
             long softTtlMs,
             long hardTtlMs) {
+        this(key, screenName, data, payloadSizeBytes, softTtlMs, hardTtlMs, null);
+    }
+
+    private PrefetchEntry(
+            @NonNull String key,
+            @NonNull String screenName,
+            @Nullable T data,
+            long payloadSizeBytes,
+            long softTtlMs,
+            long hardTtlMs,
+            @Nullable P5Experiment.Attempt attempt) {
         this.key = key;
         this.screenName = screenName;
         this.data = data;
@@ -74,6 +105,7 @@ public class PrefetchEntry<T> {
         long validSoftTtl = Math.max(1L, Math.min(softTtlMs, validHardTtl));
         this.softExpiresAtMs = this.createdAtMs + validSoftTtl;
         this.expiresAtMs = this.createdAtMs + validHardTtl;
+        this.attempt = attempt;
         this.isUsed = false;
         this.lastAccessedAtMs = this.createdAtMs;
     }
@@ -162,6 +194,11 @@ public class PrefetchEntry<T> {
     public void markUsed() {
         this.isUsed = true;
         this.lastAccessedAtMs = System.currentTimeMillis();
+        if (attempt != null) attempt.use();
+    }
+
+    void recordExperimentWaste() {
+        if (attempt != null) attempt.waste();
     }
 
     public long getLastAccessedAtMs() {

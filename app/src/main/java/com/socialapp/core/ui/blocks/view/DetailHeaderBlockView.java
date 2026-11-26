@@ -72,6 +72,7 @@ public class DetailHeaderBlockView extends LinearLayout {
 
         // 2. Headline (25sp serif bold)
         titleView = new TextView(context);
+        titleView.setId(R.id.post_detail_title);
         titleView.setTypeface(Typeface.SERIF, Typeface.BOLD);
         titleView.setLineSpacing(0f, 1.2f);
         titleView.setTextColor(ContextCompat.getColor(context, R.color.app_text_primary));

@@ -13,6 +13,7 @@ import androidx.annotation.Nullable;
 import com.socialapp.MyApplication;
 import com.socialapp.core.di.AppContainer;
 import com.socialapp.core.prefetch.ReplayEngine;
+import com.socialapp.core.prefetch.ReplayResult;
 import com.socialapp.core.prefetch.ScreenId;
 
 /**
@@ -57,10 +58,13 @@ public class GlobalDemoOverlayManager {
 
             @Override
             public void onReplayFinished() {
-                container.getMetricsLogger().saveCurrentRunSnapshot(
-                        container.getPrefetchEngine().getCurrentPolicy().code,
-                        container.getPrefetchEngine().getCurrentNetwork().code
-                );
+                ReplayResult latest = container.getReplayEngine().getLatestResult();
+                if (!container.getMetricsLogger().saveReplayResultSnapshot(latest)) {
+                    container.getMetricsLogger().saveCurrentRunSnapshot(
+                            container.getPrefetchEngine().getCurrentPolicy().code,
+                            container.getPrefetchEngine().getCurrentNetwork().code
+                    );
+                }
                 container.getMetricsLogger().exportComparisonCsv();
                 if (currentActiveOverlay != null) {
                     currentActiveOverlay.refreshUI();
@@ -72,6 +76,11 @@ public class GlobalDemoOverlayManager {
                 if (currentActiveOverlay != null) {
                     currentActiveOverlay.refreshUI();
                 }
+            }
+
+            @Override
+            public void onReplayFailed(java.util.UUID runId, String reason) {
+                onReplayStopped();
             }
         });
 

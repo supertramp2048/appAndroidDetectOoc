@@ -13,6 +13,7 @@ import androidx.annotation.NonNull;
 import com.bumptech.glide.Glide;
 import com.socialapp.core.di.AppContainer;
 import com.socialapp.core.prefetch.ui.GlobalDemoOverlayManager;
+import com.socialapp.core.telemetry.FrameTelemetry;
 import com.socialapp.core.ui.blocks.adapter.BlockWarmupEngine;
 import com.socialapp.core.ui.blocks.adapter.UnifiedBlockViewPool;
 import com.socialapp.core.ui.blocks.editor.EditorWebViewPool;
@@ -41,7 +42,10 @@ public class MyApplication extends Application {
         super.onCreate();
         instance = this;
         appContainer = new AppContainer(this);
-        GlobalDemoOverlayManager.init(this);
+        FrameTelemetry frames = new FrameTelemetry(appContainer.getPerformanceTelemetry());
+        if (!BuildConfig.PROFILE_FIXTURES) {
+            GlobalDemoOverlayManager.init(this);
+        }
 
         registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks() {
             @Override
@@ -56,6 +60,10 @@ public class MyApplication extends Application {
             @Override
             public void onActivityStopped(Activity activity) {
                 startedActivityCount = Math.max(0, startedActivityCount - 1);
+                if (startedActivityCount == 0) {
+                    appContainer.getProfileManager().saveLiveProfile();
+                    frames.checkpoint();
+                }
             }
 
             @Override
@@ -64,10 +72,14 @@ public class MyApplication extends Application {
 
             @Override
             public void onActivityResumed(Activity activity) {
+                appContainer.getNavigationObserver().onActivityResumed(activity);
+                frames.onResume(activity);
             }
 
             @Override
             public void onActivityPaused(Activity activity) {
+                appContainer.getNavigationObserver().onActivityPaused(activity);
+                frames.onPause(activity);
             }
 
             @Override

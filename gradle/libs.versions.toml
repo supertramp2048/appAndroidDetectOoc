@@ -16,6 +16,8 @@ navigation = "2.8.5"
 coreTesting = "2.2.0"
 swiperefreshlayout = "1.1.0"
 browser = "1.8.0"
+benchmark = "1.5.0"
+uiautomator = "2.4.0"
 profileinstaller = "1.4.1"
 
 [libraries]
@@ -33,7 +35,6 @@ camera-view = { group = "androidx.camera", name = "camera-view", version.ref = "
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
 converter-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
-logging-interceptor = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
 ucrop = { group = "com.github.yalantis", name = "ucrop", version.ref = "ucrop" }
 glide = { group = "com.github.bumptech.glide", name = "glide", version.ref = "glide" }
 glide-compiler = { group = "com.github.bumptech.glide", name = "compiler", version.ref = "glide" }
@@ -43,7 +44,11 @@ mockwebserver = { group = "com.squareup.okhttp3", name = "mockwebserver", versio
 core-testing = { group = "androidx.arch.core", name = "core-testing", version.ref = "coreTesting" }
 swiperefreshlayout = { group = "androidx.swiperefreshlayout", name = "swiperefreshlayout", version.ref = "swiperefreshlayout" }
 browser = { group = "androidx.browser", name = "browser", version.ref = "browser" }
+benchmark-macro-junit4 = { group = "androidx.benchmark", name = "benchmark-macro-junit4", version.ref = "benchmark" }
+uiautomator = { group = "androidx.test.uiautomator", name = "uiautomator", version.ref = "uiautomator" }
 profileinstaller = { group = "androidx.profileinstaller", name = "profileinstaller", version.ref = "profileinstaller" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
+android-test = { id = "com.android.test", version.ref = "agp" }
+androidx-baselineprofile = { id = "androidx.baselineprofile", version.ref = "benchmark" }

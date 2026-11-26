@@ -28,20 +28,13 @@ TRANSITIONS_O2 = {
     ("Detail", "Cart"): [("Checkout", 0.75), ("List", 0.15), ("Home", 0.10)],
 }
 
-# Chuyển tiếp khi có concept drift (nếu drift_session >= 0)
-TRANSITIONS_DRIFT_O2 = {
-    ("Home", "List"): [("Search", 0.60), ("Detail", 0.30), ("Home", 0.10)],
-    ("List", "Detail"): [("Cart", 0.70), ("List", 0.20), ("Reviews", 0.10)],
-    ("Detail", "Cart"): [("Home", 0.55), ("Checkout", 0.30), ("List", 0.15)],
-}
-
 
 def sample_next(dist, rng):
     targets, weights = zip(*dist)
     return rng.choices(targets, weights=weights, k=1)[0]
 
 
-def generate_sessions(n_sessions=1000, drift_at=-1, seed=42):
+def generate_sessions(n_sessions=1000, seed=42):
     rng = random.Random(seed)
     rows = []
 
@@ -56,9 +49,7 @@ def generate_sessions(n_sessions=1000, drift_at=-1, seed=42):
 
             # Chọn màn hình tiếp theo
             ctx2 = (hist[-2], hist[-1]) if len(hist) >= 2 else None
-            if 0 <= drift_at <= sid and ctx2 in TRANSITIONS_DRIFT_O2:
-                nxt = sample_next(TRANSITIONS_DRIFT_O2[ctx2], rng)
-            elif ctx2 in TRANSITIONS_O2:
+            if ctx2 in TRANSITIONS_O2:
                 nxt = sample_next(TRANSITIONS_O2[ctx2], rng)
             else:
                 nxt = sample_next(TRANSITIONS_O1[cur], rng)
@@ -68,12 +59,11 @@ def generate_sessions(n_sessions=1000, drift_at=-1, seed=42):
 
 
 def main():
-    # Cú pháp: python generate_logs.py <num_sessions> <drift_at> <output_csv>
+    # Cú pháp: python generate_logs.py <num_sessions> <output_csv>
     n_sessions = int(sys.argv[1]) if len(sys.argv) > 1 else 1000
-    drift_at = int(sys.argv[2]) if len(sys.argv) > 2 else -1
-    out_path = Path(sys.argv[3]) if len(sys.argv) > 3 else Path("sessions.csv")
+    out_path = Path(sys.argv[2]) if len(sys.argv) > 2 else Path("sessions.csv")
 
-    rows = generate_sessions(n_sessions=n_sessions, drift_at=drift_at)
+    rows = generate_sessions(n_sessions=n_sessions)
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
     with out_path.open("w", newline="", encoding="utf-8") as f:

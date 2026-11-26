@@ -19,6 +19,7 @@ import com.socialapp.core.network.dto.ReportRequest;
 import com.socialapp.core.pagination.PageLoader;
 import com.socialapp.core.prefetch.HitType;
 import com.socialapp.core.prefetch.Repository;
+import com.socialapp.core.telemetry.LoadContext;
 import com.socialapp.core.prefetch.ScreenId;
 import com.socialapp.core.prefetch.ScreenLoadCallback;
 import com.socialapp.core.ui.blocks.model.CommentBlock;
@@ -52,8 +53,8 @@ public class CommentsRepository {
 
                 Repository.load(ScreenId.COMMENTS, params, new Repository.RealDataLoader<List<CommentResource>>() {
                     @Override
-                    public void execute(@NonNull ScreenLoadCallback<List<CommentResource>> screenCallback) {
-                        apiService.getComments(postId, page, 10).enqueue(new Callback<CommentListResponse>() {
+                    public void execute(@NonNull ScreenLoadCallback<List<CommentResource>> screenCallback, @NonNull LoadContext load) {
+                        apiService.getCommentsMeasured(postId, page, 10, load).enqueue(new Callback<CommentListResponse>() {
                             @Override
                             public void onResponse(@NonNull Call<CommentListResponse> call, @NonNull Response<CommentListResponse> response) {
                                 if (response.isSuccessful() && response.body() != null) {
@@ -66,7 +67,8 @@ public class CommentsRepository {
 
                             @Override
                             public void onFailure(@NonNull Call<CommentListResponse> call, @NonNull Throwable t) {
-                                screenCallback.onError(t);
+                                    if (call.isCanceled()) screenCallback.onCancelled(t);
+                                    else screenCallback.onError(t);
                             }
                         });
                     }

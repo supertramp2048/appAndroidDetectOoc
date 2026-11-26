@@ -14,8 +14,18 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.socialapp.R;
+import com.socialapp.feature.home.HomeActivity;
 
 public class FactCheckTabFragment extends Fragment {
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        View view = getView();
+        if (view != null && getActivity() instanceof HomeActivity) {
+            ((HomeActivity) getActivity()).onFactCheckContentBound(this, view);
+        }
+    }
 
     @Nullable
     @Override

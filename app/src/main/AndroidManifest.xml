@@ -33,6 +33,16 @@
             android:shell="true"
             tools:targetApi="29" />
 
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.demo-export"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/demo_export_paths" />
+        </provider>
+
         <activity
             android:name="com.socialapp.feature.home.HomeActivity"
             android:exported="true">

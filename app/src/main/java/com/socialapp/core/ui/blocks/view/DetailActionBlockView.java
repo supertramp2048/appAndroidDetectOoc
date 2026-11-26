@@ -95,6 +95,7 @@ public class DetailActionBlockView extends LinearLayout {
         actionRow.addView(spacer, new LayoutParams(0, 0, 1f));
 
         btnComments = createTextButton(context, "💬 0 bình luận", 15f, density, dp(12, density));
+        btnComments.setId(R.id.btn_comments);
         btnComments.setTextColor(ContextCompat.getColor(context, R.color.app_text_primary));
         actionRow.addView(btnComments, new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, dp(44, density)));
 

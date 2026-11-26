@@ -15,6 +15,6 @@ if [ $? -eq 0 ]; then
     ls -lh "$OUTPUT_FOLDER"/*.csv 2>/dev/null
 else
     echo "[!] Fallback: pulling from internal app directory..."
-    adb exec-out run-as com.socialapp cat files/metrics/metrics_default.csv > "$OUTPUT_FOLDER/metrics_default.csv"
+    adb exec-out run-as com.socialapp cat files/metrics/metrics_v2_default.csv > "$OUTPUT_FOLDER/metrics_v2_default.csv"
 fi
 

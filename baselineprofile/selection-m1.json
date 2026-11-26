@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "method": "M1",
+  "criterion": "Rank verified post-startup transitions by count in valid calibration NavigationEvents. Break ties by ascending Journey ID.",
+  "journeyIds": [
+    "launcher_to_feed_newest",
+    "feed_newest_to_post_detail",
+    "post_detail_to_comments"
+  ],
+  "calibration": {
+    "runId": "e28c0f10-b3e4-452e-a586-a77c8a0c6742",
+    "source": "REPLAY",
+    "workloadManifest": "scripts/replay_workload_t3.json",
+    "export": "build/step-t4b1-recovery-export/20261125_151810_827_13680a30",
+    "sessionIds": [12, 13, 17, 18, 23, 31, 41, 46, 52, 53],
+    "confirmedNavigationEvents": 50,
+    "confirmedTransitions": 40,
+    "candidateTransitionCounts": {
+      "feed_newest_to_post_detail": 10,
+      "post_detail_to_comments": 10,
+      "feed_newest_to_fact_check": 0,
+      "feed_newest_to_search": 0
+    }
+  }
+}

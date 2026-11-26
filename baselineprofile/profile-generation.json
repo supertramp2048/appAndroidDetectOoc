@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-11-26T00:05:40+07:00",
+  "generationTask": ":app:generateReleaseBaselineProfile",
+  "sourceVariant": "release",
+  "collectionVariant": "nonMinifiedRelease",
+  "verificationVariant": "benchmarkRelease",
+  "collectionDevice": {
+    "avd": "Pixel_9a",
+    "apiLevel": 37
+  },
+  "journeyManifest": "baselineprofile/journeys.json",
+  "selectionRunId": "e28c0f10-b3e4-452e-a586-a77c8a0c6742",
+  "journeys": [
+    {
+      "id": "launcher_to_feed_newest",
+      "selectionSource": "MANUAL_STARTUP",
+      "observedTransitionCount": null,
+      "includeInStartupProfile": true
+    },
+    {
+      "id": "feed_newest_to_post_detail",
+      "selectionSource": "TELEMETRY",
+      "observedTransitionCount": 10,
+      "includeInStartupProfile": false
+    },
+    {
+      "id": "post_detail_to_comments",
+      "selectionSource": "TELEMETRY",
+      "observedTransitionCount": 10,
+      "includeInStartupProfile": false
+    }
+  ],
+  "profiles": {
+    "baseline": {
+      "path": "app/src/release/generated/baselineProfiles/baseline-prof.txt",
+      "sha256": "b43e3b3c3813074a64b713a6d0cd969838ece6e260c41fc56ec133413e8c9b60",
+      "ruleCount": 6762
+    },
+    "startup": {
+      "path": "app/src/release/generated/baselineProfiles/startup-prof.txt",
+      "sha256": "875518f3bf04d629b0176fe2b013533cb46858d64ebc5032ca84c151621caf1e",
+      "ruleCount": 6119
+    }
+  },
+  "benchmarkVerification": {
+    "applicationId": "com.socialapp.profile",
+    "apkSha256": "711a87b1fcb254b1d596b58062aa8d8430cec9520ed04e0d5038d921f04afc86",
+    "baselineProfBytes": 8625,
+    "baselineProfmBytes": 289,
+    "dexZipCrc32": {
+      "classes.dex": "07fe97b9",
+      "classes2.dex": "398a73f8",
+      "classes3.dex": "267f52a4"
+    },
+    "dexCompiler": "D8 8.9.32",
+    "startupDexClassCount": 1443,
+    "startupDexMethodCount": 17826,
+    "profileInstallerResult": "RESULT_INSTALL_SUCCESS",
+    "artStatusBeforeExplicitCompile": "verify",
+    "artStatusAfterExplicitCompile": "speed-profile",
+    "artCompilationReason": "cmdline"
+  }
+}

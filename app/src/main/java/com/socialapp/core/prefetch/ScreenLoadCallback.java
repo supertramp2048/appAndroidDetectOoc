@@ -22,5 +22,9 @@ public interface ScreenLoadCallback<T> {
      * @param error Ngoại lệ / Lỗi phát sinh
      */
     void onError(@NonNull Throwable error);
+
+    default void onCancelled(@NonNull Throwable error) {
+        onError(error);
+    }
 }
 

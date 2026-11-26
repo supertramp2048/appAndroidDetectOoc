@@ -3,14 +3,16 @@ package com.socialapp.feature.post;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.view.View;
 import android.widget.PopupMenu;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.browser.customtabs.CustomTabsIntent;
+import androidx.core.view.OneShotPreDrawListener;
+import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -20,10 +22,13 @@ import com.socialapp.core.di.AppContainer;
 import com.socialapp.core.navigation.Navigator;
 import com.socialapp.core.network.dto.PostResource;
 import com.socialapp.core.network.dto.UserResource;
+import com.socialapp.core.prefetch.ScreenId;
 import com.socialapp.core.session.SessionManager;
+import com.socialapp.core.telemetry.NavigationTiming;
+import com.socialapp.core.telemetry.TelemetryActivity;
 import com.socialapp.core.ui.ReportSheetBottomSheet;
-import com.socialapp.core.ui.blocks.adapter.PostDetailBlockAssembler;
 import com.socialapp.core.ui.blocks.adapter.HighRefreshRateHelper;
+import com.socialapp.core.ui.blocks.adapter.PostDetailBlockAssembler;
 import com.socialapp.core.ui.blocks.adapter.RecyclerView120HzTuner;
 import com.socialapp.core.ui.blocks.adapter.UnifiedBlockAdapter;
 import com.socialapp.core.ui.blocks.model.ContentBlock;
@@ -41,7 +46,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * - Off-main-thread StaticLayout precomputation + API 29+ RenderNode caching in body blocks
  * - Partial DiffUtil payloads for Follow and Vote state changes with zero body rebinds
  */
-public class PostDetailActivity extends AppCompatActivity {
+public class PostDetailActivity extends TelemetryActivity {
 
     public static final String EXTRA_POST_ID = "EXTRA_POST_ID";
 
@@ -51,6 +56,10 @@ public class PostDetailActivity extends AppCompatActivity {
     private AppContainer appContainer;
     private UnifiedBlockAdapter unifiedBlockAdapter;
     private int postId = -1;
+    private NavigationTiming contentTiming;
+    private long contentRevision;
+    private boolean awaitingArticle;
+    private boolean contentReady;
 
     private final AtomicInteger renderGeneration = new AtomicInteger(0);
     @Nullable
@@ -73,6 +82,10 @@ public class PostDetailActivity extends AppCompatActivity {
         sessionManager = appContainer.getSessionManager();
 
         if (getIntent() != null) {
+            if (savedInstanceState == null && getIntent().hasExtra(Navigator.EXTRA_CONTENT_REQUEST_MS)) {
+                contentTiming = new NavigationTiming(getIntent().getLongExtra(Navigator.EXTRA_CONTENT_REQUEST_MS, 0));
+            }
+            getIntent().removeExtra(Navigator.EXTRA_CONTENT_REQUEST_MS);
             postId = getIntent().getIntExtra(EXTRA_POST_ID, -1);
             if (postId == -1 && getIntent().getData() != null) {
                 Uri data = getIntent().getData();
@@ -259,13 +272,16 @@ public class PostDetailActivity extends AppCompatActivity {
 
             if (result.isLoading()) {
                 renderGeneration.incrementAndGet();
+                resetContentMeasurement();
                 binding.postDetailLoadingSkeleton.setVisibility(View.VISIBLE);
                 binding.postDetailErrorState.setVisibility(View.GONE);
                 binding.postDetailRecyclerView.setVisibility(View.GONE);
             } else if (result.isSuccess() && result.data != null) {
+                resetContentMeasurement();
                 bindPostData(result.data);
             } else if (result.isError()) {
                 renderGeneration.incrementAndGet();
+                resetContentMeasurement();
                 binding.postDetailLoadingSkeleton.setVisibility(View.GONE);
                 binding.postDetailRecyclerView.setVisibility(View.GONE);
                 binding.postDetailErrorState.setVisibility(View.VISIBLE);
@@ -286,6 +302,30 @@ public class PostDetailActivity extends AppCompatActivity {
                 );
             }
         });
+    }
+
+    private void resetContentMeasurement() {
+        contentRevision++;
+        awaitingArticle = false;
+        contentReady = false;
+    }
+
+    private void scheduleContentMeasurement() {
+        NavigationTiming timing = contentTiming;
+        View content = binding.postDetailRecyclerView;
+        if (timing == null || !contentReady || !content.isAttachedToWindow()) return;
+        long revision = contentRevision;
+        OneShotPreDrawListener.add(content, () -> content.post(() -> {
+            if (timing != contentTiming || contentRevision != revision || !contentReady || !content.isShown()
+                    || isFinishing() || isDestroyed() || !getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED)) return;
+            long now = SystemClock.elapsedRealtime();
+            if (!timing.markReady(now)) return;
+            contentTiming = null;
+            AppContainer app = MyApplication.getAppContainer(this);
+            app.getPerformanceTelemetry().contentReady(ScreenId.POST_DETAIL, timing,
+                    app.getNavigationObserver().getContentNavigation(this, ScreenId.POST_DETAIL, timing.startedAtMs), now);
+        }));
+        content.invalidate();
     }
 
     private void bindPostData(@NonNull PostResource post) {
@@ -365,6 +405,10 @@ public class PostDetailActivity extends AppCompatActivity {
         binding.postDetailRecyclerView.setVisibility(View.VISIBLE);
 
         unifiedBlockAdapter.submitBlocks(assembled);
+        if (contentTiming != null) {
+            contentReady = true;
+            scheduleContentMeasurement();
+        }
         binding.postDetailRecyclerView.post(() -> {
             if (!isFinishing() && !isDestroyed()) {
                 updateReadingProgress();
@@ -430,6 +474,7 @@ public class PostDetailActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        scheduleContentMeasurement();
     }
 
     @Override

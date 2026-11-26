@@ -4,13 +4,13 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.SystemClock;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.socialapp.R;
-import com.socialapp.core.prefetch.Repository;
 import com.socialapp.core.prefetch.ScreenId;
 import com.socialapp.feature.auth.AuthActivity;
 import com.socialapp.feature.comments.CommentsActivity;
@@ -24,6 +24,8 @@ import com.socialapp.feature.settings.SettingsActivity;
 
 public class Navigator {
 
+    public static final String EXTRA_REPLAY_REQUEST_ID = "EXTRA_REPLAY_REQUEST_ID";
+    public static final String EXTRA_CONTENT_REQUEST_MS = "EXTRA_CONTENT_REQUEST_MS";
     public static final String ROUTE_HOME = "home";
     public static final String ROUTE_FACTCHECK = "factcheck";
     public static final String ROUTE_SEARCH = "search";
@@ -37,15 +39,17 @@ public class Navigator {
     public static final String ROUTE_ADMIN = "admin";
 
     public static void navigateTo(@NonNull Context context, @NonNull String route) {
-        Repository.markNavigationStart();
+        navigateTo(context, route, 0);
+    }
 
+    private static void navigateTo(@NonNull Context context, @NonNull String route, long replayRequestId) {
         if (route.startsWith("http://") || route.startsWith("https://")) {
             try {
                 Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(route));
                 if (!(context instanceof Activity)) {
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 }
-                context.startActivity(intent);
+                launch(context, intent, replayRequestId);
             } catch (Exception e) {
                 Toast.makeText(context, "Không thể mở liên kết", Toast.LENGTH_SHORT).show();
             }
@@ -55,11 +59,15 @@ public class Navigator {
         if (route.startsWith(ROUTE_HOME)) {
             Intent intent = new Intent(context, HomeActivity.class);
             intent.putExtra(HomeActivity.EXTRA_NAV_DESTINATION, R.id.nav_home);
+            String tab = Uri.parse(route).getQueryParameter("tab");
+            if (tab != null) {
+                intent.putExtra(HomeActivity.EXTRA_FEED_TAB, tab);
+            }
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             if (!(context instanceof Activity)) {
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             }
-            context.startActivity(intent);
+            launch(context, intent, replayRequestId);
             return;
         }
 
@@ -70,7 +78,7 @@ public class Navigator {
             if (!(context instanceof Activity)) {
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             }
-            context.startActivity(intent);
+            launch(context, intent, replayRequestId);
             return;
         }
 
@@ -81,7 +89,7 @@ public class Navigator {
             if (!(context instanceof Activity)) {
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             }
-            context.startActivity(intent);
+            launch(context, intent, replayRequestId);
             return;
         }
 
@@ -92,7 +100,7 @@ public class Navigator {
             if (!(context instanceof Activity)) {
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             }
-            context.startActivity(intent);
+            launch(context, intent, replayRequestId);
             return;
         }
 
@@ -102,7 +110,7 @@ public class Navigator {
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             }
             intent.putExtra(AuthActivity.EXTRA_SCREEN, AuthActivity.SCREEN_LOGIN);
-            context.startActivity(intent);
+            launch(context, intent, replayRequestId);
             return;
         }
 
@@ -112,7 +120,7 @@ public class Navigator {
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             }
             intent.putExtra(AuthActivity.EXTRA_SCREEN, AuthActivity.SCREEN_REGISTER);
-            context.startActivity(intent);
+            launch(context, intent, replayRequestId);
             return;
         }
 
@@ -122,7 +130,7 @@ public class Navigator {
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             }
             intent.putExtra(AuthActivity.EXTRA_SCREEN, AuthActivity.SCREEN_FORGOT_PASSWORD);
-            context.startActivity(intent);
+            launch(context, intent, replayRequestId);
             return;
         }
 
@@ -132,7 +140,7 @@ public class Navigator {
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             }
             intent.putExtra(AuthActivity.EXTRA_SCREEN, AuthActivity.SCREEN_RESET_PASSWORD);
-            context.startActivity(intent);
+            launch(context, intent, replayRequestId);
             return;
         }
 
@@ -141,7 +149,7 @@ public class Navigator {
             if (!(context instanceof Activity)) {
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             }
-            context.startActivity(intent);
+            launch(context, intent, replayRequestId);
             return;
         }
 
@@ -166,7 +174,7 @@ public class Navigator {
                 intent.putExtra("IMAGE_URL", imageUrl);
                 intent.putExtra("POST_ID", postId);
                 intent.putExtra("CAPTION", caption);
-                context.startActivity(intent);
+                launch(context, intent, replayRequestId);
                 return;
             }
         }
@@ -183,7 +191,7 @@ public class Navigator {
                     }
                     intent.putExtra(UserListActivity.EXTRA_USER_ID, userId);
                     intent.putExtra(UserListActivity.EXTRA_LIST_TYPE, UserListActivity.TYPE_FOLLOWERS);
-                    context.startActivity(intent);
+                    launch(context, intent, replayRequestId);
                     return;
                 } catch (Exception ignored) {
                 }
@@ -199,7 +207,7 @@ public class Navigator {
                     }
                     intent.putExtra(UserListActivity.EXTRA_USER_ID, userId);
                     intent.putExtra(UserListActivity.EXTRA_LIST_TYPE, UserListActivity.TYPE_FOLLOWING);
-                    context.startActivity(intent);
+                    launch(context, intent, replayRequestId);
                     return;
                 } catch (Exception ignored) {
                 }
@@ -213,7 +221,7 @@ public class Navigator {
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 }
                 intent.putExtra(ProfileActivity.EXTRA_USER_ID, userId);
-                context.startActivity(intent);
+                launch(context, intent, replayRequestId);
                 return;
             } catch (Exception ignored) {
             }
@@ -231,7 +239,7 @@ public class Navigator {
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     }
                     intent.putExtra(CommentsActivity.EXTRA_POST_ID, postId);
-                    context.startActivity(intent);
+                    launch(context, intent, replayRequestId);
                     return;
                 } catch (Exception ignored) {
                 }
@@ -246,7 +254,7 @@ public class Navigator {
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     }
                     intent.putExtra(ComposeActivity.EXTRA_POST_ID, postId);
-                    context.startActivity(intent);
+                    launch(context, intent, replayRequestId);
                     return;
                 } catch (Exception ignored) {
                 }
@@ -263,19 +271,20 @@ public class Navigator {
                     intent.putExtra(ComposeActivity.EXTRA_PREFILL_IMAGE, uri.getQueryParameter("imageUrl"));
                     intent.putExtra(ComposeActivity.EXTRA_PREFILL_BODY, uri.getQueryParameter("body"));
                 }
-                context.startActivity(intent);
+                launch(context, intent, replayRequestId);
                 return;
             }
 
             try {
                 int postId = Integer.parseInt(pathPart);
                 Intent intent = new Intent(context, PostDetailActivity.class);
+                intent.putExtra(EXTRA_CONTENT_REQUEST_MS, SystemClock.elapsedRealtime());
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 if (!(context instanceof Activity)) {
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 }
                 intent.putExtra(PostDetailActivity.EXTRA_POST_ID, postId);
-                context.startActivity(intent);
+                launch(context, intent, replayRequestId);
                 return;
             } catch (Exception e) {
                 Toast.makeText(context, "Lỗi mở bài viết: " + e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -288,6 +297,17 @@ public class Navigator {
 
     public static void navigateToScreen(@NonNull Context context, @NonNull ScreenId screenId) {
         navigateTo(context, screenId.getDefaultRoute());
+    }
+
+    public static void navigateToReplayScreen(@NonNull Context context, @NonNull ScreenId screenId, long requestId) {
+        navigateTo(context, screenId.getDefaultRoute(), requestId);
+    }
+
+    private static void launch(Context context, Intent intent, long replayRequestId) {
+        if (replayRequestId != 0) {
+            intent.putExtra(EXTRA_REPLAY_REQUEST_ID, replayRequestId);
+        }
+        context.startActivity(intent);
     }
 
     public static void navigateToPostDetail(@NonNull Context context, int postId) {

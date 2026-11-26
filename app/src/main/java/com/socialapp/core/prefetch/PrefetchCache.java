@@ -105,16 +105,17 @@ public class PrefetchCache {
             @Nullable T data,
             long payloadSizeBytes,
             long ttlMs) {
+        putEntry(key, screenName, data, payloadSizeBytes, ttlMs, false, null);
+    }
 
-        PrefetchEntry<T> newEntry = new PrefetchEntry<>(key, screenName, data, payloadSizeBytes, ttlMs);
-
-        // Put to storage
-        PrefetchEntry<?> old = storage.put(key, newEntry);
-        if (old != null && !old.isUsed()) {
-            recordWasted(old, false);
-        }
+    private <T> void putEntry(String key, String screenName, T data, long payloadSizeBytes,
+                              long ttlMs, boolean used, P5Experiment.Attempt attempt) {
+        PrefetchEntry<T> newEntry = new PrefetchEntry<>(key, screenName, data, payloadSizeBytes, ttlMs, attempt);
+        if (used) newEntry.markUsed();
 
         synchronized (lruLock) {
+            PrefetchEntry<?> old = storage.put(key, newEntry);
+            if (old != null && !old.isUsed()) recordWasted(old, false);
             lruMap.put(key, System.currentTimeMillis());
 
             // [Ý 1 - Cache Pollution Guard]:
@@ -163,24 +164,17 @@ public class PrefetchCache {
     @SuppressWarnings("unchecked")
     @Nullable
     public <T> PrefetchEntry<T> get(@NonNull String key) {
-        PrefetchEntry<?> entry = storage.get(key);
-        if (entry == null) {
-            return null;
-        }
-
-        if (entry.isExpired()) {
-            // Expired on read -> evict immediately and record wasted bytes
-            evictEntry(key, true);
-            return null;
-        }
-
-        // Update LRU access order
         synchronized (lruLock) {
+            PrefetchEntry<?> entry = storage.get(key);
+            if (entry == null) return null;
+            if (entry.isExpired()) {
+                evictEntry(key, true);
+                return null;
+            }
             lruMap.get(key);
+            entry.updateAccessTime();
+            return (PrefetchEntry<T>) entry;
         }
-        entry.updateAccessTime();
-
-        return (PrefetchEntry<T>) entry;
     }
 
     /**
@@ -198,21 +192,22 @@ public class PrefetchCache {
     public PrefetchEntry<?> remove(@NonNull String key) {
         synchronized (lruLock) {
             lruMap.remove(key);
+            return storage.remove(key);
         }
-        return storage.remove(key);
     }
 
     /**
      * Periodic or explicit sweep to evict all expired entries and calculate wasted bytes.
      */
     public int cleanupExpired() {
-        int removedCount = 0;
-        long now = System.currentTimeMillis();
+        return cleanupExpiredAt(System.currentTimeMillis());
+    }
 
-        for (Map.Entry<String, PrefetchEntry<?>> entry : storage.entrySet()) {
-            if (entry.getValue().isExpiredAt(now)) {
-                String key = entry.getKey();
-                if (evictEntry(key, true)) {
+    int cleanupExpiredAt(long now) {
+        int removedCount = 0;
+        synchronized (lruLock) {
+            for (Map.Entry<String, PrefetchEntry<?>> entry : storage.entrySet()) {
+                if (entry.getValue().isExpiredAt(now) && evictEntry(entry.getKey(), true)) {
                     removedCount++;
                 }
             }
@@ -222,9 +217,7 @@ public class PrefetchCache {
 
     private boolean evictEntry(@NonNull String key, boolean isExpired) {
         PrefetchEntry<?> entry = storage.remove(key);
-        synchronized (lruLock) {
-            lruMap.remove(key);
-        }
+        lruMap.remove(key);
 
         if (entry != null) {
             if (isExpired) {
@@ -244,6 +237,7 @@ public class PrefetchCache {
     private void recordWasted(@NonNull PrefetchEntry<?> entry, boolean wasExpired) {
         long bytes = entry.getPayloadSizeBytes();
         totalWastedBytes.addAndGet(bytes);
+        entry.recordExperimentWaste();
         notifyEviction(entry.getKey(), bytes, wasExpired, false);
     }
 
@@ -258,8 +252,8 @@ public class PrefetchCache {
     public void clear() {
         synchronized (lruLock) {
             lruMap.clear();
+            storage.clear();
         }
-        storage.clear();
     }
 
     public int size() {
@@ -398,6 +392,24 @@ public class PrefetchCache {
         }
     }
 
+    void putPrefetched(ScreenId screen, Object data, long sizeBytes, boolean used, P5Experiment.Attempt attempt) {
+        putEntry(screen.getId(), screen.getId(), data, sizeBytes, PrefetchConfig.DEFAULT_TTL_MS, used, attempt);
+    }
+
+    void putPrefetched(ScreenId screen, Object data, long sizeBytes, boolean used) {
+        putPrefetched(screen, data, sizeBytes, used, null);
+    }
+
+    @Nullable
+    PrefetchEntry<?> takePrefetched(ScreenId screen) {
+        synchronized (lruLock) {
+            PrefetchEntry<?> entry = get(screen);
+            if (entry == null || entry.getData() == null) return null;
+            entry.markUsed();
+            return entry;
+        }
+    }
+
     public boolean contains(@NonNull ScreenId screenId) {
         return containsValid(screenId.getId());
     }
@@ -458,5 +470,20 @@ public class PrefetchCache {
             totalWastedBytes.addAndGet(wasted);
         }
         return wasted;
+    }
+
+    /** Ends the engine's cache scope, returning expired, evicted and unused resident bytes exactly once. */
+    long closeResearchScope() {
+        synchronized (lruLock) {
+            cleanupExpiredAt(System.currentTimeMillis());
+            for (PrefetchEntry<?> entry : storage.values()) {
+                if (!entry.isUsed()) {
+                    totalWastedBytes.addAndGet(entry.getPayloadSizeBytes());
+                    entry.recordExperimentWaste();
+                }
+            }
+            clear();
+            return totalWastedBytes.getAndSet(0);
+        }
     }
 }
