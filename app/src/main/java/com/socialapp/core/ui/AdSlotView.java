@@ -2,7 +2,6 @@ package com.socialapp.core.ui;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.ContextWrapper;
 import android.content.Intent;
 import android.net.Uri;
 import android.util.AttributeSet;
@@ -15,9 +14,10 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestManager;
 import com.socialapp.R;
 import com.socialapp.core.network.dto.AdvertisementResource;
+import com.socialapp.core.ui.blocks.adapter.PooledViewContextHelper;
 
 /**
  * Lightweight programmatic ad banner view replacing XML LayoutInflater inflation overhead.
@@ -28,6 +28,8 @@ public class AdSlotView extends FrameLayout {
     private AdvertisementResource currentAd;
     @Nullable
     private String loadedImageUrl;
+    @Nullable
+    private RequestManager externalRequestManager;
 
     public AdSlotView(@NonNull Context context) {
         super(context);
@@ -77,11 +79,18 @@ public class AdSlotView extends FrameLayout {
             if (currentAd != null && currentAd.linkUrl != null && !currentAd.linkUrl.trim().isEmpty()) {
                 try {
                     Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(currentAd.linkUrl));
+                    if (!(context instanceof Activity)) {
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    }
                     context.startActivity(intent);
                 } catch (Exception ignored) {
                 }
             }
         });
+    }
+
+    public void setRequestManager(@Nullable RequestManager requestManager) {
+        this.externalRequestManager = requestManager;
     }
 
     public void setAdvertisement(@Nullable AdvertisementResource ad) {
@@ -92,10 +101,10 @@ public class AdSlotView extends FrameLayout {
                 return;
             }
             loadedImageUrl = ad.imageUrl;
-            if (isContextValidForGlide(getContext())) {
+            RequestManager rm = PooledViewContextHelper.resolveSafeRequestManager(this, externalRequestManager);
+            if (rm != null) {
                 try {
-                    Glide.with(this)
-                            .load(ad.imageUrl)
+                    rm.load(ad.imageUrl)
                             .centerCrop()
                             .into(adBannerImage);
                 } catch (Throwable ignored) {
@@ -109,24 +118,15 @@ public class AdSlotView extends FrameLayout {
 
     public void clearImage() {
         loadedImageUrl = null;
-        if (adBannerImage != null && isContextValidForGlide(getContext())) {
-            try {
-                Glide.with(this).clear(adBannerImage);
-            } catch (Throwable ignored) {
+        if (adBannerImage != null) {
+            RequestManager rm = PooledViewContextHelper.resolveSafeRequestManager(this, externalRequestManager);
+            if (rm != null) {
+                try {
+                    rm.clear(adBannerImage);
+                } catch (Throwable ignored) {
+                }
             }
             adBannerImage.setImageDrawable(null);
         }
-    }
-
-    private static boolean isContextValidForGlide(@Nullable Context context) {
-        Context cur = context;
-        while (cur instanceof ContextWrapper) {
-            if (cur instanceof Activity) {
-                Activity activity = (Activity) cur;
-                return !activity.isFinishing() && !activity.isDestroyed();
-            }
-            cur = ((ContextWrapper) cur).getBaseContext();
-        }
-        return cur != null;
     }
 }

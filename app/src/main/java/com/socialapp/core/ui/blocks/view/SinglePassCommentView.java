@@ -1,8 +1,6 @@
 package com.socialapp.core.ui.blocks.view;
 
-import android.app.Activity;
 import android.content.Context;
-import android.content.ContextWrapper;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RecordingCanvas;
@@ -28,12 +26,12 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat;
 import androidx.customview.widget.ExploreByTouchHelper;
 
-import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
 import com.socialapp.R;
 import com.socialapp.core.ui.blocks.adapter.BlockImageOptions;
+import com.socialapp.core.ui.blocks.adapter.PooledViewContextHelper;
 import com.socialapp.core.ui.blocks.layout.BlockPrecomputer;
 import com.socialapp.core.ui.blocks.layout.MeasuredCommentSpec;
 import com.socialapp.core.ui.blocks.layout.StyleId;
@@ -465,18 +463,7 @@ public class SinglePassCommentView extends View {
 
     @Nullable
     private RequestManager resolveRequestManager() {
-        if (externalRequestManager != null) {
-            return externalRequestManager;
-        }
-        Context ctx = getContext();
-        if (!isContextValidForGlide(ctx)) {
-            return null;
-        }
-        try {
-            return Glide.with(this);
-        } catch (Throwable ignored) {
-            return null;
-        }
+        return PooledViewContextHelper.resolveSafeRequestManager(this, externalRequestManager);
     }
 
     private final class ReusableAvatarTarget extends CustomTarget<Drawable> {
@@ -778,18 +765,6 @@ public class SinglePassCommentView extends View {
             return getWidth();
         }
         return getResources().getDisplayMetrics().widthPixels;
-    }
-
-    private static boolean isContextValidForGlide(@Nullable Context context) {
-        Context cur = context;
-        while (cur instanceof ContextWrapper) {
-            if (cur instanceof Activity) {
-                Activity activity = (Activity) cur;
-                return !activity.isFinishing() && !activity.isDestroyed();
-            }
-            cur = ((ContextWrapper) cur).getBaseContext();
-        }
-        return cur != null;
     }
 
     private static boolean equalsNullable(@Nullable String a, @Nullable String b) {

@@ -19,6 +19,7 @@ import com.socialapp.core.ui.blocks.adapter.BlockScrollPreloader;
 import com.socialapp.core.ui.blocks.adapter.BlockWarmupEngine;
 import com.socialapp.core.ui.blocks.adapter.ContentBlockDiffCallback;
 import com.socialapp.core.ui.blocks.adapter.FeedBlockListBuilder;
+import com.socialapp.core.ui.blocks.adapter.PooledViewContextHelper;
 import com.socialapp.core.ui.blocks.adapter.UnifiedBlockViewPool;
 import com.socialapp.core.ui.blocks.layout.BlockLayoutCache;
 import com.socialapp.core.ui.blocks.layout.BlockPrecomputer;
@@ -164,12 +165,13 @@ public class FeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        Context context = parent.getContext();
+        Context context = PooledViewContextHelper.getThemedApplicationContext(parent.getContext());
         if (viewType == ContentBlock.TYPE_AD_SLOT) {
             AdSlotView adSlotView = new AdSlotView(context);
             adSlotView.setLayoutParams(new ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT));
+            adSlotView.setRequestManager(cachedRequestManager);
             return new AdViewHolder(adSlotView);
         }
 
@@ -191,6 +193,7 @@ public class FeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             view.bind(block, resolveAvailableWidth(view));
         } else if (holder instanceof AdViewHolder && item instanceof AdSlotBlock) {
             AdSlotView adSlotView = (AdSlotView) holder.itemView;
+            adSlotView.setRequestManager(cachedRequestManager);
             adSlotView.setAdvertisement(((AdSlotBlock) item).toAdvertisementResource());
         }
     }
@@ -217,9 +220,13 @@ public class FeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     public void onViewRecycled(@NonNull RecyclerView.ViewHolder holder) {
         super.onViewRecycled(holder);
         if (holder instanceof PostViewHolder) {
-            ((SinglePassFeedPostView) holder.itemView).clearGlideTargets();
+            SinglePassFeedPostView view = (SinglePassFeedPostView) holder.itemView;
+            view.clearGlideTargets();
+            view.setRequestManager(null);
         } else if (holder instanceof AdViewHolder) {
-            ((AdSlotView) holder.itemView).clearImage();
+            AdSlotView adView = (AdSlotView) holder.itemView;
+            adView.clearImage();
+            adView.setRequestManager(null);
         }
     }
 
@@ -369,10 +376,11 @@ public class FeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         if (container == null) {
             return;
         }
+        Context viewCtx = PooledViewContextHelper.getThemedApplicationContext(context);
         TextPaintRegistry registry = container.getTextPaintRegistry();
         BlockPrecomputer precomputer = container.getBlockPrecomputer();
         for (int i = 0; i < count; i++) {
-            SinglePassFeedPostView view = new SinglePassFeedPostView(context, registry, precomputer);
+            SinglePassFeedPostView view = new SinglePassFeedPostView(viewCtx, registry, precomputer);
             view.setLayoutParams(new RecyclerView.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT));
@@ -384,8 +392,9 @@ public class FeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             @NonNull Context context,
             @NonNull UnifiedBlockViewPool pool,
             int count) {
+        Context viewCtx = PooledViewContextHelper.getThemedApplicationContext(context);
         for (int i = 0; i < count; i++) {
-            AdSlotView adSlotView = new AdSlotView(context);
+            AdSlotView adSlotView = new AdSlotView(viewCtx);
             adSlotView.setLayoutParams(new RecyclerView.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT));

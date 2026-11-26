@@ -132,4 +132,9 @@ public class Optimization120HzTest {
                 1080, 2400,
                 new int[]{1, 2}, new int[]{1080, 1080}, new int[]{2400, 2400}, new float[]{60.0f, 90.0f}));
     }
+
+    @Test
+    public void testPooledViewContextHelperNullSafety() {
+        assertFalse(PooledViewContextHelper.isActivityContextAlive(null));
+    }
 }

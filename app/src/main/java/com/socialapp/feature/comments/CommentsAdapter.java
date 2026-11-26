@@ -20,6 +20,7 @@ import com.socialapp.core.ui.blocks.adapter.BlockScrollPreloader;
 import com.socialapp.core.ui.blocks.adapter.BlockWarmupEngine;
 import com.socialapp.core.ui.blocks.adapter.CommentBlockTreeHelper;
 import com.socialapp.core.ui.blocks.adapter.ContentBlockDiffCallback;
+import com.socialapp.core.ui.blocks.adapter.PooledViewContextHelper;
 import com.socialapp.core.ui.blocks.layout.BlockLayoutCache;
 import com.socialapp.core.ui.blocks.layout.BlockPrecomputer;
 import com.socialapp.core.ui.blocks.layout.TextPaintRegistry;
@@ -233,7 +234,7 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        Context context = parent.getContext();
+        Context context = PooledViewContextHelper.getThemedApplicationContext(parent.getContext());
         AppContainer container = cachedContainer != null ? cachedContainer : getAppContainer(context);
         TextPaintRegistry registry = container != null ? container.getTextPaintRegistry() : getFallbackPaintRegistry();
         BlockPrecomputer precomputer = container != null ? container.getBlockPrecomputer() : getFallbackPrecomputer();
@@ -285,6 +286,7 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
     public void onViewRecycled(@NonNull ViewHolder holder) {
         super.onViewRecycled(holder);
         holder.commentView.clearGlideTargets();
+        holder.commentView.setRequestManager(null);
     }
 
     @Nullable

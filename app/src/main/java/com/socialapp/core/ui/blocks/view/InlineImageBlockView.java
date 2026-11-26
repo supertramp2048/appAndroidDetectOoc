@@ -12,9 +12,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 
-import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestManager;
 import com.google.android.material.card.MaterialCardView;
 import com.socialapp.R;
+import com.socialapp.core.ui.blocks.adapter.PooledViewContextHelper;
 import com.socialapp.core.ui.blocks.layout.BlockPrecomputer;
 import com.socialapp.core.ui.blocks.model.InlineImageBlock;
 
@@ -32,6 +33,8 @@ public class InlineImageBlockView extends LinearLayout {
     private float aspectRatio = InlineImageBlock.DEFAULT_ASPECT_RATIO;
     @Nullable
     private String boundImageUrl;
+    @Nullable
+    private RequestManager externalRequestManager;
 
     public InlineImageBlockView(@NonNull Context context) {
         super(context);
@@ -66,6 +69,10 @@ public class InlineImageBlockView extends LinearLayout {
         addView(captionView, capLp);
     }
 
+    public void setRequestManager(@Nullable RequestManager requestManager) {
+        this.externalRequestManager = requestManager;
+    }
+
     public void bind(@NonNull InlineImageBlock block) {
         float nextRatio = block.getAspectRatio();
         boolean ratioChanged = Math.abs(nextRatio - aspectRatio) > 0.01f;
@@ -87,18 +94,26 @@ public class InlineImageBlockView extends LinearLayout {
         String nextUrl = block.getImageUrl();
         if (!nextUrl.equals(boundImageUrl)) {
             boundImageUrl = nextUrl;
-            Glide.with(this)
-                    .load(nextUrl)
-                    .centerCrop()
-                    .into(imageView);
+            RequestManager rm = PooledViewContextHelper.resolveSafeRequestManager(this, externalRequestManager);
+            if (rm != null) {
+                try {
+                    rm.load(nextUrl)
+                            .centerCrop()
+                            .into(imageView);
+                } catch (Throwable ignored) {
+                }
+            }
         }
     }
 
     public void clearGlide() {
         boundImageUrl = null;
-        try {
-            Glide.with(this).clear(imageView);
-        } catch (Throwable ignored) {
+        RequestManager rm = PooledViewContextHelper.resolveSafeRequestManager(this, externalRequestManager);
+        if (rm != null) {
+            try {
+                rm.clear(imageView);
+            } catch (Throwable ignored) {
+            }
         }
     }
 

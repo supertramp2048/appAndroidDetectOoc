@@ -8,6 +8,8 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.AsyncListDiffer;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestManager;
 import com.socialapp.MyApplication;
 import com.socialapp.core.di.AppContainer;
 import com.socialapp.core.ui.AdSlotView;
@@ -58,6 +60,8 @@ public class UnifiedBlockAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
     @Nullable
     private RecyclerView attachedRecyclerView;
+    @Nullable
+    private RequestManager cachedRequestManager;
     @Nullable
     private TextPaintRegistry fallbackPaintRegistry;
     @Nullable
@@ -125,11 +129,17 @@ public class UnifiedBlockAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
         super.onAttachedToRecyclerView(recyclerView);
         this.attachedRecyclerView = recyclerView;
+        try {
+            this.cachedRequestManager = Glide.with(recyclerView);
+        } catch (Throwable ignored) {
+            this.cachedRequestManager = null;
+        }
     }
 
     @Override
     public void onDetachedFromRecyclerView(@NonNull RecyclerView recyclerView) {
         super.onDetachedFromRecyclerView(recyclerView);
+        this.cachedRequestManager = null;
         if (this.attachedRecyclerView == recyclerView) {
             this.attachedRecyclerView = null;
         }
@@ -148,13 +158,14 @@ public class UnifiedBlockAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        Context context = parent.getContext();
+        Context context = PooledViewContextHelper.getThemedApplicationContext(parent.getContext());
         BlockPrecomputer precomputer = resolvePrecomputer(context);
 
         switch (viewType) {
             case ContentBlock.TYPE_DETAIL_HEADER: {
                 DetailHeaderBlockView view = new DetailHeaderBlockView(context);
                 view.setLayoutParams(matchWrapParams());
+                view.setRequestManager(cachedRequestManager);
                 return new DetailHeaderHolder(view);
             }
             case ContentBlock.TYPE_RICH_TEXT: {
@@ -170,6 +181,7 @@ public class UnifiedBlockAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             case ContentBlock.TYPE_INLINE_IMAGE: {
                 InlineImageBlockView view = new InlineImageBlockView(context);
                 view.setLayoutParams(matchWrapParams());
+                view.setRequestManager(cachedRequestManager);
                 return new InlineImageHolder(view);
             }
             case ContentBlock.TYPE_CODE: {
@@ -191,6 +203,7 @@ public class UnifiedBlockAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             default: {
                 AdSlotView view = new AdSlotView(context);
                 view.setLayoutParams(matchWrapParams());
+                view.setRequestManager(cachedRequestManager);
                 return new AdSlotHolder(view);
             }
         }
@@ -206,6 +219,7 @@ public class UnifiedBlockAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         if (holder instanceof DetailHeaderHolder && item instanceof DetailHeaderBlock) {
             DetailHeaderBlockView view = ((DetailHeaderHolder) holder).view;
             view.setInteractionListener(sharedHeaderListener);
+            view.setRequestManager(cachedRequestManager);
             view.bind((DetailHeaderBlock) item);
         } else if (holder instanceof RichTextHolder && item instanceof RichTextBlock) {
             SinglePassRichTextView view = ((RichTextHolder) holder).view;
@@ -218,7 +232,9 @@ public class UnifiedBlockAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             view.setOnLinkClickListener(sharedLinkListener);
             view.bind((QuoteBlock) item, availWidth);
         } else if (holder instanceof InlineImageHolder && item instanceof InlineImageBlock) {
-            ((InlineImageHolder) holder).view.bind((InlineImageBlock) item);
+            InlineImageBlockView view = ((InlineImageHolder) holder).view;
+            view.setRequestManager(cachedRequestManager);
+            view.bind((InlineImageBlock) item);
         } else if (holder instanceof CodeHolder && item instanceof CodeBlock) {
             ((CodeHolder) holder).view.bind((CodeBlock) item);
         } else if (holder instanceof TableHolder && item instanceof TableBlock) {
@@ -228,7 +244,9 @@ public class UnifiedBlockAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             view.setInteractionListener(sharedDetailActionListener);
             view.bind((DetailActionBlock) item);
         } else if (holder instanceof AdSlotHolder && item instanceof AdSlotBlock) {
-            ((AdSlotHolder) holder).view.setAdvertisement(((AdSlotBlock) item).toAdvertisementResource());
+            AdSlotView view = ((AdSlotHolder) holder).view;
+            view.setRequestManager(cachedRequestManager);
+            view.setAdvertisement(((AdSlotBlock) item).toAdvertisementResource());
         }
     }
 
@@ -255,11 +273,17 @@ public class UnifiedBlockAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     public void onViewRecycled(@NonNull RecyclerView.ViewHolder holder) {
         super.onViewRecycled(holder);
         if (holder instanceof DetailHeaderHolder) {
-            ((DetailHeaderHolder) holder).view.clearGlide();
+            DetailHeaderBlockView view = ((DetailHeaderHolder) holder).view;
+            view.clearGlide();
+            view.setRequestManager(null);
         } else if (holder instanceof InlineImageHolder) {
-            ((InlineImageHolder) holder).view.clearGlide();
+            InlineImageBlockView view = ((InlineImageHolder) holder).view;
+            view.clearGlide();
+            view.setRequestManager(null);
         } else if (holder instanceof AdSlotHolder) {
-            ((AdSlotHolder) holder).view.clearImage();
+            AdSlotView view = ((AdSlotHolder) holder).view;
+            view.clearImage();
+            view.setRequestManager(null);
         }
     }
 

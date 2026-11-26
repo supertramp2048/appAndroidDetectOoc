@@ -6,9 +6,10 @@ import android.util.AttributeSet;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestManager;
 import com.google.android.material.imageview.ShapeableImageView;
 import com.socialapp.R;
+import com.socialapp.core.ui.blocks.adapter.PooledViewContextHelper;
 
 public class UserAvatarView extends ShapeableImageView {
 
@@ -32,15 +33,24 @@ public class UserAvatarView extends ShapeableImageView {
     }
 
     public void loadAvatar(@Nullable String url) {
+        loadAvatar(url, null);
+    }
+
+    public void loadAvatar(@Nullable String url, @Nullable RequestManager requestManager) {
         if (url != null && !url.trim().isEmpty()) {
-            Glide.with(this)
-                    .load(url)
-                    .placeholder(R.drawable.ic_profile_placeholder)
-                    .error(R.drawable.ic_profile_placeholder)
-                    .circleCrop()
-                    .into(this);
-        } else {
-            setImageResource(R.drawable.ic_profile_placeholder);
+            RequestManager rm = PooledViewContextHelper.resolveSafeRequestManager(this, requestManager);
+            if (rm != null) {
+                try {
+                    rm.load(url)
+                            .placeholder(R.drawable.ic_profile_placeholder)
+                            .error(R.drawable.ic_profile_placeholder)
+                            .circleCrop()
+                            .into(this);
+                    return;
+                } catch (Throwable ignored) {
+                }
+            }
         }
+        setImageResource(R.drawable.ic_profile_placeholder);
     }
 }

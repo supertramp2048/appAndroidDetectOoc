@@ -15,11 +15,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 
-import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestManager;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.socialapp.R;
 import com.socialapp.core.ui.UserAvatarView;
+import com.socialapp.core.ui.blocks.adapter.PooledViewContextHelper;
 import com.socialapp.core.ui.blocks.layout.BlockPrecomputer;
 import com.socialapp.core.ui.blocks.model.DetailHeaderBlock;
 
@@ -44,6 +45,8 @@ public class DetailHeaderBlockView extends LinearLayout {
 
     @Nullable
     private OnHeaderActionListener listener;
+    @Nullable
+    private RequestManager externalRequestManager;
     @Nullable
     private String boundThumbUrl;
     private int boundAuthorId = -1;
@@ -168,6 +171,10 @@ public class DetailHeaderBlockView extends LinearLayout {
         this.listener = listener;
     }
 
+    public void setRequestManager(@Nullable RequestManager requestManager) {
+        this.externalRequestManager = requestManager;
+    }
+
     public void bind(@NonNull DetailHeaderBlock block) {
         titleView.setText(block.getTitle());
         timeView.setText(block.getFormattedDate());
@@ -182,13 +189,13 @@ public class DetailHeaderBlockView extends LinearLayout {
         boundAuthorId = block.getAuthorId();
         if (block.getAuthorName() != null || block.getAuthorId() > 0) {
             authorNameView.setText(block.getAuthorName() != null ? "Bởi " + block.getAuthorName() : "Nặc danh");
-            avatarView.loadAvatar(block.getAuthorAvatarUrl());
+            avatarView.loadAvatar(block.getAuthorAvatarUrl(), externalRequestManager);
             avatarView.setVisibility(VISIBLE);
             btnFollow.setVisibility(block.isOwnPost() ? GONE : VISIBLE);
             applyFollowState(block.isFollowingAuthor());
         } else {
             authorNameView.setText("Nặc danh");
-            avatarView.loadAvatar(null);
+            avatarView.loadAvatar(null, externalRequestManager);
             btnFollow.setVisibility(GONE);
         }
 
@@ -197,7 +204,13 @@ public class DetailHeaderBlockView extends LinearLayout {
             thumbnailCard.setVisibility(VISIBLE);
             if (!nextThumb.equals(boundThumbUrl)) {
                 boundThumbUrl = nextThumb;
-                Glide.with(this).load(nextThumb).centerCrop().into(thumbnailImage);
+                RequestManager rm = PooledViewContextHelper.resolveSafeRequestManager(this, externalRequestManager);
+                if (rm != null) {
+                    try {
+                        rm.load(nextThumb).centerCrop().into(thumbnailImage);
+                    } catch (Throwable ignored) {
+                    }
+                }
             }
         } else {
             boundThumbUrl = null;
@@ -211,10 +224,13 @@ public class DetailHeaderBlockView extends LinearLayout {
 
     public void clearGlide() {
         boundThumbUrl = null;
-        try {
-            Glide.with(this).clear(thumbnailImage);
-            Glide.with(this).clear(avatarView);
-        } catch (Throwable ignored) {
+        RequestManager rm = PooledViewContextHelper.resolveSafeRequestManager(this, externalRequestManager);
+        if (rm != null) {
+            try {
+                rm.clear(thumbnailImage);
+                rm.clear(avatarView);
+            } catch (Throwable ignored) {
+            }
         }
     }
 
