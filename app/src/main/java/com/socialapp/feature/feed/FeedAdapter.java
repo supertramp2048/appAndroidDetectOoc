@@ -55,6 +55,25 @@ public class FeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         return position - (position / (AD_FREQUENCY + 1));
     }
 
+    /**
+     * [Ý 1 - Viewport Dwell Tracker]: Lấy đối tượng PostResource tại một vị trí của RecyclerView Adapter.
+     * Trả về null nếu vị trí đó là ô quảng cáo (AdSlot) hoặc nằm ngoài danh sách.
+     */
+    @Nullable
+    public PostResource getPostAtAdapterPosition(int position) {
+        if (position < 0 || position >= getItemCount()) {
+            return null;
+        }
+        if (getItemViewType(position) != VIEW_TYPE_POST) {
+            return null;
+        }
+        int postIndex = getPostIndex(position);
+        if (postIndex >= 0 && postIndex < rawPosts.size()) {
+            return rawPosts.get(postIndex);
+        }
+        return null;
+    }
+
     @Override
     public int getItemCount() {
         if (rawPosts.isEmpty()) return 0;

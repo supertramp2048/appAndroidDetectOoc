@@ -79,7 +79,5 @@ public class HomeActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        com.socialapp.core.prefetch.PrefetchManager.getInstance()
-                .onScreenVisited(com.socialapp.core.network.sim.ScreenPayloadConfig.SCREEN_HOME);
     }
 }

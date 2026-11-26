@@ -55,6 +55,8 @@ public class PrefetchDemoOverlayView extends FrameLayout {
     private TextView tvCurrentScreen;
     private TextView tvPredictions;
     private TextView tvLastHitStatus;
+    private TextView tvPrefetchActionStatus;
+    private TextView tvRadioAndMediaStatus;
     private TextView tvStatsSummary;
 
     private static boolean isExpanded = true;
@@ -80,6 +82,8 @@ public class PrefetchDemoOverlayView extends FrameLayout {
         tvCurrentScreen = findViewById(R.id.tvCurrentScreen);
         tvPredictions = findViewById(R.id.tvPredictions);
         tvLastHitStatus = findViewById(R.id.tvLastHitStatus);
+        tvPrefetchActionStatus = findViewById(R.id.tvPrefetchActionStatus);
+        tvRadioAndMediaStatus = findViewById(R.id.tvRadioAndMediaStatus);
         tvStatsSummary = findViewById(R.id.tvStatsSummary);
 
         // Cố định tốc độ thời gian thực 1.0x để độ trễ đo được phản ánh trung thực 100%
@@ -174,7 +178,32 @@ public class PrefetchDemoOverlayView extends FrameLayout {
             tvLastHitStatus.setTextColor(0xFF9CA3AF);
         }
 
-        // 4. Tóm tắt ngắn gọn: Hit%, Trễ TB, Lãng phí
+        // 4. Hiển thị chi tiết trạng thái Ý 1 (Viewport Dwell, SWR Cache, Ảnh Glide & Ngân sách mạng)
+        if (tvPrefetchActionStatus != null) {
+            tvPrefetchActionStatus.setText(engine.getLastPrefetchActionStatus());
+        }
+        if (tvRadioAndMediaStatus != null) {
+            int dwellPost = engine.getLastDwelledPostId() > 0 ? engine.getLastDwelledPostId() : engine.getLastActivePostId();
+            int glideImages = engine.getPreloadedImageCount();
+            int cacheEntries = engine.getCache().size();
+            long spentKb = engine.getRadioNetworkMonitor().getCellularPrefetchBytesSpent() / 1024;
+            String modeTag = engine.isSimulationMode()
+                    ? ("Sim:" + engine.getCurrentNetwork().code)
+                    : ("Real:" + engine.getRadioNetworkMonitor().detectLiveNetworkProfile(getContext()).code);
+
+            String radioInfo = String.format(
+                    Locale.US,
+                    "👁 Post #%d | 🖼 Glide: %d ảnh | 🗄 Cache: %d mục | 📶 %s (%d/2048 KB)",
+                    dwellPost,
+                    glideImages,
+                    cacheEntries,
+                    modeTag,
+                    spentKb
+            );
+            tvRadioAndMediaStatus.setText(radioInfo);
+        }
+
+        // 5. Tóm tắt ngắn gọn: Hit%, Trễ TB, Lãng phí
         int total = logger.getTotalSteps();
         int hits = logger.getHitCount();
         double hitRate = total > 0 ? ((double) hits / total * 100.0) : 0.0;
@@ -229,6 +258,7 @@ public class PrefetchDemoOverlayView extends FrameLayout {
         String[] options = new String[]{
                 "Chính sách:  " + engine.getCurrentPolicy().code,
                 "Mạng giả lập:  " + engine.getCurrentNetwork().code,
+                "Chế độ Mô phỏng mạng:  " + (engine.isSimulationMode() ? "BẬT" : "TẮT"),
                 "Đặt lại phiên hiện tại"
         };
 
@@ -243,6 +273,14 @@ public class PrefetchDemoOverlayView extends FrameLayout {
                             showNetworkSelectionDialog(engine, logger);
                             break;
                         case 2:
+                            engine.setSimulationMode(!engine.isSimulationMode());
+                            if (!engine.isSimulationMode()) {
+                                engine.getCache().clear();
+                            }
+                            Toast.makeText(getContext(), "Chế độ mô phỏng mạng: " + (engine.isSimulationMode() ? "BẬT" : "TẮT"), Toast.LENGTH_SHORT).show();
+                            refreshUI();
+                            break;
+                        case 3:
                             logger.saveCurrentRunSnapshot(
                                     engine.getCurrentPolicy().code,
                                     engine.getCurrentNetwork().code

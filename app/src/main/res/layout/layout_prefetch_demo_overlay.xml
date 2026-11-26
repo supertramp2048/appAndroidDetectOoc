@@ -176,7 +176,44 @@
                 android:textStyle="bold" />
         </LinearLayout>
 
-        <!-- Dòng 3: Tóm tắt Hit / Trễ TB / Lãng phí -->
+        <!-- Dòng 3: Trạng thái Prefetch & Cache SWR + Glide (Ý 1) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="3dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tvPrefetchActionStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="⚡ Prefetch: Chờ tín hiệu dừng mắt..."
+                android:textColor="#38BDF8"
+                android:textSize="11.5sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Dòng 4: Tín hiệu Dwell, Ảnh Glide, Độ tươi SWR & Ngân sách 4G (Ý 1) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tvRadioAndMediaStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="👁 Dwell: Post #1 | 🖼 Ảnh Glide: 0 | 🗄 Cache: 0 mục | 📶 4G Budget: 0/2048 KB"
+                android:textColor="#A7F3D0"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+        <!-- Dòng 5: Tóm tắt Hit / Trễ TB / Lãng phí -->
         <TextView
             android:id="@+id/tvStatsSummary"
             android:layout_width="match_parent"

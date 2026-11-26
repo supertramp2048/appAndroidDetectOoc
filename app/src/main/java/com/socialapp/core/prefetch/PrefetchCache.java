@@ -1,5 +1,7 @@
 package com.socialapp.core.prefetch;
 
+import android.os.Bundle;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -115,11 +117,17 @@ public class PrefetchCache {
         synchronized (lruLock) {
             lruMap.put(key, System.currentTimeMillis());
 
-            // Enforce capacity via LRU eviction
+            // [Ý 1 - Cache Pollution Guard]:
+            // Khi bộ nhớ đệm vượt quá sức chứa (maxEntries), ưu tiên trục xuất (evict) các bản ghi
+            // tải trước suy đoán CHƯA ĐƯỢC DÙNG (!isUsed) lâu nhất trước, để các gói prefetch đoán sai
+            // không bao giờ đẩy văng dữ liệu thật mà người dùng đã mở xem (isUsed == true).
             while (storage.size() > maxEntries && !lruMap.isEmpty()) {
-                String oldestKey = lruMap.keySet().iterator().next();
-                lruMap.remove(oldestKey);
-                PrefetchEntry<?> evicted = storage.remove(oldestKey);
+                String victimKey = findPollutionGuardVictimKeyLocked();
+                if (victimKey == null) {
+                    victimKey = lruMap.keySet().iterator().next();
+                }
+                lruMap.remove(victimKey);
+                PrefetchEntry<?> evicted = storage.remove(victimKey);
                 if (evicted != null) {
                     evictedCount.incrementAndGet();
                     if (!evicted.isUsed()) {
@@ -131,6 +139,21 @@ public class PrefetchCache {
                 }
             }
         }
+    }
+
+    /**
+     * [Ý 1 - Cache Pollution Guard]: Tìm mục chưa từng được sử dụng (!isUsed) cũ nhất theo thứ tự LRU
+     * để làm ứng viên bị loại bỏ trước tiên, bảo vệ các mục đã được người dùng sử dụng (isUsed = true).
+     */
+    @Nullable
+    private String findPollutionGuardVictimKeyLocked() {
+        for (String candidateKey : lruMap.keySet()) {
+            PrefetchEntry<?> entry = storage.get(candidateKey);
+            if (entry != null && !entry.isUsed()) {
+                return candidateKey;
+            }
+        }
+        return lruMap.isEmpty() ? null : lruMap.keySet().iterator().next();
     }
 
     /**
@@ -319,18 +342,83 @@ public class PrefetchCache {
         cleanupScheduler.shutdownNow();
     }
 
-    // --- ScreenId Adapter Methods (Tasks A1-A5 Compatibility) ---
+    // --- ScreenId & Contextual Entity Key Adapter Methods (Tasks A1-A5 + Ý 1 Upgrade) ---
+
+    /**
+     * [Ý 1] Tạo khóa Cache phân biệt theo từng ID thực thể (ví dụ: "POST_DETAIL:postId=42",
+     * "COMMENTS:postId=42", "PROFILE:userId=7") để tránh ghi đè dữ liệu giữa các bài viết khác nhau.
+     */
+    @NonNull
+    public static String buildContextualKey(@NonNull ScreenId screenId, @Nullable Bundle params) {
+        if (params == null) {
+            return screenId.getId();
+        }
+        if (screenId == ScreenId.POST_DETAIL || screenId == ScreenId.COMMENTS) {
+            int postId = params.getInt("postId", -1);
+            if (postId > 0) {
+                return screenId.getId() + ":postId=" + postId;
+            }
+        } else if (screenId == ScreenId.PROFILE) {
+            int userId = params.getInt("userId", -1);
+            if (userId > 0) {
+                return screenId.getId() + ":userId=" + userId;
+            }
+        } else if (screenId == ScreenId.SEARCH) {
+            String query = params.getString("query", null);
+            if (query != null && !query.trim().isEmpty()) {
+                return screenId.getId() + ":q=" + query.trim().toLowerCase();
+            }
+        }
+        return screenId.getId();
+    }
 
     public void put(@NonNull ScreenId screenId, @Nullable Object data, long sizeBytes) {
         put(screenId.getId(), screenId.getId(), data, sizeBytes, PrefetchConfig.DEFAULT_TTL_MS);
+    }
+
+    /**
+     * [Ý 1] Lưu dữ liệu vào Cache theo cả khóa ngữ cảnh cụ thể (ví dụ POST_DETAIL:postId=42)
+     * lẫn khóa màn hình chung để vừa tra cứu chính xác theo ID vừa tương thích ngược với ReplayEngine.
+     */
+    public void putContextual(
+            @NonNull ScreenId screenId,
+            @Nullable Bundle params,
+            @Nullable Object data,
+            long sizeBytes
+    ) {
+        String contextualKey = buildContextualKey(screenId, params);
+        put(contextualKey, screenId.getId(), data, sizeBytes, PrefetchConfig.DEFAULT_TTL_MS);
+        if (!contextualKey.equals(screenId.getId())) {
+            put(screenId.getId(), screenId.getId(), data, sizeBytes, PrefetchConfig.DEFAULT_TTL_MS);
+            // Đánh dấu bản ghi alias là đã đồng bộ để không tính đúp wasted_bytes với khóa chính
+            PrefetchEntry<?> aliasEntry = storage.get(screenId.getId());
+            if (aliasEntry != null) {
+                aliasEntry.markUsed();
+            }
+        }
     }
 
     public boolean contains(@NonNull ScreenId screenId) {
         return containsValid(screenId.getId());
     }
 
+    public boolean containsContextual(@NonNull ScreenId screenId, @Nullable Bundle params) {
+        String contextualKey = buildContextualKey(screenId, params);
+        return containsValid(contextualKey) || containsValid(screenId.getId());
+    }
+
     @Nullable
     public PrefetchEntry<?> get(@NonNull ScreenId screenId) {
+        return get(screenId.getId());
+    }
+
+    @Nullable
+    public PrefetchEntry<?> getContextual(@NonNull ScreenId screenId, @Nullable Bundle params) {
+        String contextualKey = buildContextualKey(screenId, params);
+        PrefetchEntry<?> exact = get(contextualKey);
+        if (exact != null) {
+            return exact;
+        }
         return get(screenId.getId());
     }
 
@@ -341,14 +429,34 @@ public class PrefetchCache {
         }
     }
 
+    public void markUsedContextual(@NonNull ScreenId screenId, @Nullable Bundle params) {
+        String contextualKey = buildContextualKey(screenId, params);
+        PrefetchEntry<?> exact = storage.get(contextualKey);
+        if (exact != null) {
+            exact.markUsed();
+        }
+        PrefetchEntry<?> generic = storage.get(screenId.getId());
+        if (generic != null) {
+            generic.markUsed();
+        }
+    }
+
     public long flushUnusedWastedBytes() {
         long wasted = 0;
-        for (PrefetchEntry<?> entry : storage.values()) {
-            if (!entry.isUsed()) {
+        List<String> unusedKeys = new ArrayList<>();
+        for (Map.Entry<String, PrefetchEntry<?>> mapEntry : storage.entrySet()) {
+            PrefetchEntry<?> entry = mapEntry.getValue();
+            if (entry != null && !entry.isUsed()) {
                 wasted += entry.getPayloadSizeBytes();
+                unusedKeys.add(mapEntry.getKey());
             }
         }
-        clear();
+        for (String key : unusedKeys) {
+            remove(key);
+        }
+        if (wasted > 0) {
+            totalWastedBytes.addAndGet(wasted);
+        }
         return wasted;
     }
 }
