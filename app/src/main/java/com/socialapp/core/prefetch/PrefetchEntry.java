@@ -22,6 +22,7 @@ public class PrefetchEntry<T> {
     private final long payloadSizeBytes;
     private final long createdAtMs;
     private final long expiresAtMs;
+    private final P5Experiment.Attempt attempt;
 
     private volatile boolean isUsed;
     private volatile long lastAccessedAtMs;
@@ -32,12 +33,18 @@ public class PrefetchEntry<T> {
             @Nullable T data,
             long payloadSizeBytes,
             long ttlMs) {
+        this(key, screenName, data, payloadSizeBytes, ttlMs, null);
+    }
+
+    PrefetchEntry(String key, String screenName, T data, long payloadSizeBytes, long ttlMs,
+                  P5Experiment.Attempt attempt) {
         this.key = key;
         this.screenName = screenName;
         this.data = data;
         this.payloadSizeBytes = Math.max(0, payloadSizeBytes);
         this.createdAtMs = System.currentTimeMillis();
         this.expiresAtMs = this.createdAtMs + Math.max(1L, ttlMs);
+        this.attempt = attempt;
         this.isUsed = false;
         this.lastAccessedAtMs = this.createdAtMs;
     }
@@ -88,6 +95,11 @@ public class PrefetchEntry<T> {
     public void markUsed() {
         this.isUsed = true;
         this.lastAccessedAtMs = System.currentTimeMillis();
+        if (attempt != null) attempt.use();
+    }
+
+    void recordExperimentWaste() {
+        if (attempt != null) attempt.waste();
     }
 
     public long getLastAccessedAtMs() {

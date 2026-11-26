@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "method": "M0",
+  "criterion": "Cover the main read and discovery entry points available to a guest. Use functionality, not workload frequency.",
+  "journeyIds": [
+    "launcher_to_feed_newest",
+    "feed_newest_to_post_detail",
+    "feed_newest_to_search"
+  ],
+  "rationale": {
+    "launcher_to_feed_newest": "Required startup journey in both methods",
+    "feed_newest_to_post_detail": "Core reading flow from the Home feed",
+    "feed_newest_to_search": "Primary discovery entry via Home bottom navigation"
+  }
+}

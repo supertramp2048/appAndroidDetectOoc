@@ -2,22 +2,31 @@ package com.socialapp.core.prefetch;
 
 import android.os.Handler;
 import android.os.Looper;
-import android.os.SystemClock;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.socialapp.core.prefetch.policy.markov.MarkovPredictor;
+import com.socialapp.core.prefetch.profile.NavigationProfile;
+import com.socialapp.core.telemetry.NavigationEvent;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
+import java.util.Set;
+import java.util.UUID;
+import java.util.EnumMap;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
  * Bộ xử lý Tải trước (Prefetch Engine):
@@ -29,6 +38,7 @@ import java.util.concurrent.Executors;
 public class PrefetchEngine {
 
     private static final String TAG = "PrefetchEngine";
+    private static final String LEARNING_TAG = "NavigationLearning";
 
     public enum Policy {
         P0_NONE("P0", "Không tải trước (Baseline)"),
@@ -64,42 +74,42 @@ public class PrefetchEngine {
         }
     }
 
-    public interface InFlightCallback {
-        void onComplete(long actualLoadTimeMs);
+    public enum P5Mode { LEGACY, FIXED_LAMBDA, ADAPTIVE_LAMBDA }
+
+    public static final class LambdaSnapshot {
+        public final P5Mode mode;
+        public final double initial;
+        public final double current;
+        public final int updates;
+        public final long completedBytes;
+        public final long wastedBytes;
+        public final Double wasteRatio;
+        public final Double missRate;
+        public final AdaptiveLambdaController.Reason reason;
+
+        LambdaSnapshot(P5Mode mode, double initial, double current, int updates, long completedBytes,
+                       long wastedBytes, Double wasteRatio, Double missRate, AdaptiveLambdaController.Reason reason) {
+            this.mode = mode;
+            this.initial = initial;
+            this.current = current;
+            this.updates = updates;
+            this.completedBytes = completedBytes;
+            this.wastedBytes = wastedBytes;
+            this.wasteRatio = wasteRatio;
+            this.missRate = missRate;
+            this.reason = reason;
+        }
     }
 
-    public static class InFlightTask {
-        public final ScreenId screenId;
-        public final long startTimeMs;
-        public final long expectedDurationMs;
-        private final List<InFlightCallback> waiters = new ArrayList<>();
-        private boolean isDone = false;
+    private static final class InFlightTask {
+        final long generation;
+        final P5Experiment.Attempt attempt;
+        final List<ScreenLoadCallback<Object>> waiters = new ArrayList<>();
+        FutureTask<Void> work;
 
-        public InFlightTask(ScreenId screenId, long expectedDurationMs) {
-            this.screenId = screenId;
-            this.startTimeMs = SystemClock.elapsedRealtime();
-            this.expectedDurationMs = expectedDurationMs;
-        }
-
-        public synchronized void addWaiter(InFlightCallback callback) {
-            if (isDone) {
-                callback.onComplete(SystemClock.elapsedRealtime() - startTimeMs);
-            } else {
-                waiters.add(callback);
-            }
-        }
-
-        public synchronized void markDone() {
-            isDone = true;
-            long actual = SystemClock.elapsedRealtime() - startTimeMs;
-            for (InFlightCallback waiter : waiters) {
-                waiter.onComplete(actual);
-            }
-            waiters.clear();
-        }
-
-        public boolean isDone() {
-            return isDone;
+        InFlightTask(long generation, P5Experiment.Attempt attempt) {
+            this.generation = generation;
+            this.attempt = attempt;
         }
     }
 
@@ -107,15 +117,26 @@ public class PrefetchEngine {
         void onPredictionUpdated(ScreenId currentScreen, List<Map.Entry<ScreenId, Double>> predictions, Policy policy);
     }
 
-    private final PrefetchCache cache = new PrefetchCache();
-    private final ExecutorService prefetchExecutor = Executors.newFixedThreadPool(2);
-    private final Handler mainHandler = new Handler(Looper.getMainLooper());
-    private final Map<ScreenId, InFlightTask> inFlightMap = new ConcurrentHashMap<>();
+    private final PrefetchCache cache;
+    private final Executor prefetchExecutor;
+    private final Consumer<Runnable> postToMain;
+    private final Consumer<String> learningLog;
+    private final Map<ScreenId, InFlightTask> inFlightMap = new EnumMap<>(ScreenId.class);
+    private UUID cacheSessionId;
+    private BiConsumer<Long, Integer> wasteSink;
+    private long cacheGeneration;
+    private int cancelledPrefetches;
+    private P5Mode nextP5Mode = P5Mode.LEGACY;
+    private AdaptiveLambdaController.Config lambdaConfig = AdaptiveLambdaController.Config.DEFAULT;
+    private volatile P5Experiment p5Replay;
 
     // Lịch sử điều hướng người dùng và bộ dự đoán Markov chuẩn của B (MarkovPredictor)
     private final List<ScreenId> navigationHistory = new ArrayList<>();
     private final MarkovPredictor<ScreenId> markovOrder1 = new MarkovPredictor<>(1, 3);
     private final MarkovPredictor<ScreenId> markovOrder2 = new MarkovPredictor<>(2, 3);
+    private final Set<UUID> observedSessions = new HashSet<>();
+    private UUID lastEventSession;
+    private long lastEventSequence;
 
     private Policy currentPolicy = Policy.P3_MARKOV_FIXED;
     private NetworkProfile currentNetwork = NetworkProfile.LTE;
@@ -129,6 +150,18 @@ public class PrefetchEngine {
     private OnPredictionUpdatedListener predictionListener;
 
     public PrefetchEngine() {
+        this(new PrefetchCache(), new Handler(Looper.getMainLooper())::post, message -> Log.d(LEARNING_TAG, message));
+    }
+
+    PrefetchEngine(PrefetchCache cache, Consumer<Runnable> postToMain, Consumer<String> learningLog) {
+        this(cache, postToMain, learningLog, Executors.newFixedThreadPool(2));
+    }
+
+    PrefetchEngine(PrefetchCache cache, Consumer<Runnable> postToMain, Consumer<String> learningLog, Executor prefetchExecutor) {
+        this.cache = cache;
+        this.postToMain = postToMain;
+        this.learningLog = learningLog;
+        this.prefetchExecutor = prefetchExecutor;
         seedInitialTransitions();
     }
 
@@ -154,6 +187,38 @@ public class PrefetchEngine {
 
     public void setCurrentPolicy(Policy currentPolicy) {
         this.currentPolicy = currentPolicy;
+    }
+
+    public P5Mode getNextP5Mode() { return nextP5Mode; }
+
+    public void setNextP5Mode(P5Mode mode) { nextP5Mode = mode; }
+
+    public void setLambdaConfig(AdaptiveLambdaController.Config config) { lambdaConfig = config; }
+
+    boolean usesDefaultLambdaConfig() { return lambdaConfig == AdaptiveLambdaController.Config.DEFAULT; }
+
+    synchronized void beginP5Replay(UUID runId, Consumer<String> sink) {
+        if (currentPolicy == Policy.P5_ADAPTIVE_NETWORK) {
+            p5Replay = new P5Experiment(runId, nextP5Mode, lambdaConfig, sink);
+        }
+    }
+
+    synchronized LambdaSnapshot finishP5Replay(UUID runId) {
+        P5Experiment experiment = p5ForRun(runId);
+        if (experiment == null) return null;
+        LambdaSnapshot result = experiment.finish();
+        p5Replay = null;
+        return result;
+    }
+
+    P5Experiment p5ForRun(UUID runId) {
+        P5Experiment experiment = p5Replay;
+        return experiment != null && experiment.matches(runId) ? experiment : null;
+    }
+
+    public LambdaSnapshot getP5Snapshot() {
+        P5Experiment experiment = p5Replay;
+        return experiment == null ? null : experiment.snapshot();
     }
 
     public NetworkProfile getCurrentNetwork() {
@@ -184,7 +249,8 @@ public class PrefetchEngine {
         return simulationMode;
     }
 
-    public void setSimulationMode(boolean simulationMode) {
+    public synchronized void setSimulationMode(boolean simulationMode) {
+        if (this.simulationMode != simulationMode) closeCacheGeneration();
         this.simulationMode = simulationMode;
     }
 
@@ -192,22 +258,63 @@ public class PrefetchEngine {
      * Tính độ trễ mạng giả theo công thức: RTT + (Dung lượng * scale) / Băng thông.
      */
     public long calculateSimulatedNetworkDelayMs(ScreenId screenId) {
-        long bytes = (long) (screenId.getBaseSizeBytes() * payloadScale);
+        return Math.max(10, (long) (estimatedLoadMs(screenId) / timeScale));
+    }
+
+    long scaledPayloadBytes(ScreenId screen) {
+        return (long) (screen.getBaseSizeBytes() * payloadScale);
+    }
+
+    long estimatedLoadMs(ScreenId screenId) {
+        long bytes = scaledPayloadBytes(screenId);
         double transferSec = (double) bytes / currentNetwork.bandwidthBps;
-        long totalMs = currentNetwork.rttMs + (long) (transferSec * 1000);
-        return Math.max(10, (long) (totalMs / timeScale));
+        return currentNetwork.rttMs + (long) (transferSec * 1000);
     }
 
     /**
      * Kiểm tra xem màn hình này đang có task tải trước chạy ngầm dở dang hay không.
      */
-    @Nullable
-    public InFlightTask getInFlightTask(ScreenId screenId) {
-        InFlightTask task = inFlightMap.get(screenId);
-        if (task != null && !task.isDone()) {
-            return task;
+    boolean tryLoadPrefetched(ScreenId screen, UUID sessionId, ScreenLoadCallback<Object> callback) {
+        PrefetchEntry<?> cached;
+        synchronized (this) {
+            if (!simulationMode || sessionId == null || !sessionId.equals(cacheSessionId)) return false;
+            cached = cache.takePrefetched(screen);
+            if (cached == null) {
+                InFlightTask task = inFlightMap.get(screen);
+                if (task == null) return false;
+                task.waiters.add(callback);
+                return true;
+            }
         }
-        return null;
+        callback.onLoaded(HitType.FULL_HIT, 0, cached.getData());
+        return true;
+    }
+
+    public synchronized void setCacheSession(@Nullable UUID sessionId, @Nullable BiConsumer<Long, Integer> onWaste) {
+        closeCacheGeneration();
+        cacheSessionId = sessionId;
+        wasteSink = onWaste;
+    }
+
+    private void closeCacheGeneration() {
+        cacheGeneration++;
+        List<InFlightTask> pending = new ArrayList<>(inFlightMap.values());
+        inFlightMap.clear();
+        long waste = cache.closeResearchScope();
+        int cancelled = cancelledPrefetches + pending.size();
+        cancelledPrefetches = 0;
+        if (wasteSink != null) wasteSink.accept(waste, cancelled);
+        for (InFlightTask task : pending) {
+            if (task.attempt != null) task.attempt.cancel();
+            task.work.cancel(true);
+            if (!task.waiters.isEmpty()) {
+                postToMain.accept(() -> {
+                    for (ScreenLoadCallback<Object> waiter : task.waiters) {
+                        waiter.onCancelled(new CancellationException("Prefetch scope closed"));
+                    }
+                });
+            }
+        }
     }
 
     /**
@@ -216,19 +323,30 @@ public class PrefetchEngine {
      * 2. Dự đoán xác suất các màn hình kế tiếp.
      * 3. Quyết định chính sách và phát request tải trước vào cache.
      */
-    public void onScreenDisplayed(@NonNull ScreenId currentScreen) {
+    public synchronized boolean onNavigationEvent(@NonNull NavigationEvent event) {
+        boolean sameSession = event.sessionId.equals(lastEventSession);
+        if (event.fromScreen == event.toScreen
+                || (sameSession ? event.sequence <= lastEventSequence : !observedSessions.add(event.sessionId))) {
+            return false;
+        }
+        boolean consecutive = sameSession && event.sequence == lastEventSequence + 1;
+        lastEventSession = event.sessionId;
+        lastEventSequence = event.sequence;
+
+        if (!consecutive || event.fromScreen == null || navigationHistory.isEmpty()
+                || navigationHistory.get(navigationHistory.size() - 1) != event.fromScreen) {
+            navigationHistory.clear();
+        }
+        boolean learned = learnNavigation(event);
+
+        ScreenId currentScreen = event.toScreen;
         lastCurrentScreen = currentScreen;
-
-        // Cập nhật lịch sử
-        updateMarkovTransitions(currentScreen);
-
-        // Lấy danh sách dự đoán
         List<Map.Entry<ScreenId, Double>> predictions = predictNext(currentScreen);
         lastPredictions = predictions;
 
         // Báo cho UI Overlay
         if (predictionListener != null) {
-            mainHandler.post(() -> {
+            postToMain.accept(() -> {
                 if (predictionListener != null) {
                     predictionListener.onPredictionUpdated(currentScreen, predictions, currentPolicy);
                 }
@@ -236,17 +354,23 @@ public class PrefetchEngine {
         }
 
         // Nếu chính sách là P0 hoặc đang TẮT mô phỏng thì không tải giả lập
-        if (currentPolicy == Policy.P0_NONE || !simulationMode) {
-            return;
+        if (currentPolicy == Policy.P0_NONE || !simulationMode
+                || (cacheSessionId != null && !cacheSessionId.equals(event.sessionId))) {
+            return learned;
         }
 
         // Chọn danh sách màn hình cần tải trước theo chính sách
+        if (currentPolicy == Policy.P5_ADAPTIVE_NETWORK) {
+            scheduleP5(event, predictions);
+            return learned;
+        }
         List<ScreenId> targetsToPrefetch = selectPrefetchTargets(predictions);
 
         // Kích hoạt tải trước trong nền
         for (ScreenId target : targetsToPrefetch) {
             triggerBackgroundPrefetch(target);
         }
+        return learned;
     }
 
     private List<ScreenId> selectPrefetchTargets(List<Map.Entry<ScreenId, Double>> predictions) {
@@ -283,23 +407,6 @@ public class PrefetchEngine {
                 }
                 break;
 
-            case P5_ADAPTIVE_NETWORK:
-                // Công thức Jiang & Kleinrock: p * thời_gian_tải > lambda * byte
-                // Ở mạng chậm (3G/EDGE, thời gian tải lớn), prefetch mang lại lợi ích giảm trễ cực lớn -> prefetch tích cực
-                // Ở mạng nhanh (WiFi, thời gian tải rất bé), hạn chế tải thừa để tránh lãng phí byte
-                double lambda = 0.000005; // Hệ số chi phí byte
-                for (Map.Entry<ScreenId, Double> entry : predictions) {
-                    double p = entry.getValue();
-                    long loadTimeMs = calculateSimulatedNetworkDelayMs(entry.getKey());
-                    long bytes = entry.getKey().getBaseSizeBytes();
-                    double benefit = p * loadTimeMs;
-                    double cost = lambda * bytes;
-                    if (benefit > cost || p >= 0.40) {
-                        selected.add(entry.getKey());
-                    }
-                }
-                break;
-
             case P0_NONE:
             default:
                 break;
@@ -308,44 +415,128 @@ public class PrefetchEngine {
         return selected;
     }
 
-    private void triggerBackgroundPrefetch(ScreenId screenId) {
-        // Nếu đã có trong Cache rồi thì không tải lại
-        if (cache.contains(screenId)) {
-            return;
-        }
-
-        // Nếu đang tải dở thì không tạo thêm task
-        if (inFlightMap.containsKey(screenId) && !inFlightMap.get(screenId).isDone()) {
-            return;
-        }
-
-        long delayMs = calculateSimulatedNetworkDelayMs(screenId);
-        InFlightTask task = new InFlightTask(screenId, delayMs);
-        inFlightMap.put(screenId, task);
-
-        prefetchExecutor.execute(() -> {
-            try {
-                Thread.sleep(delayMs);
-            } catch (InterruptedException ignored) {
+    private void scheduleP5(NavigationEvent event, List<Map.Entry<ScreenId, Double>> predictions) {
+        P5Experiment experiment = p5ForRun(event.runId);
+        boolean legacy = experiment == null || experiment.mode() == P5Mode.LEGACY;
+        double lambda = legacy ? P5Experiment.LEGACY_LAMBDA : experiment.lambda();
+        for (Map.Entry<ScreenId, Double> entry : predictions) {
+            ScreenId target = entry.getKey();
+            double probability = entry.getValue();
+            long scaledBytes = scaledPayloadBytes(target);
+            long estimate = legacy ? calculateSimulatedNetworkDelayMs(target) : estimatedLoadMs(target);
+            long costBytes = legacy ? target.getBaseSizeBytes() : scaledBytes;
+            double utility = P5Experiment.utility(probability, estimate, lambda, costBytes);
+            boolean selected = legacy ? legacySelected(probability, estimate, costBytes) : utility > 0;
+            P5Experiment.Attempt attempt = experiment == null ? null : experiment.consider(
+                    event, target, probability, estimate, scaledBytes, lambda, utility, selected);
+            if (selected) {
+                if (attempt == null) triggerBackgroundPrefetch(target);
+                else triggerBackgroundPrefetch(target, attempt);
             }
-
-            // Giả lập dữ liệu trả về và đưa vào Cache
-            long sizeBytes = (long) (screenId.getBaseSizeBytes() * payloadScale);
-            Object sampleData = FakeDataSource.getSampleDataForScreen(screenId);
-            cache.put(screenId, sampleData, sizeBytes);
-
-            task.markDone();
-            inFlightMap.remove(screenId);
-            Log.d(TAG, "Prefetched background complete for: " + screenId.getId() + " (" + delayMs + " ms)");
-        });
+        }
     }
 
-    private synchronized void updateMarkovTransitions(ScreenId currentScreen) {
-        if (!navigationHistory.isEmpty()) {
-            markovOrder1.learn(navigationHistory, currentScreen);
-            markovOrder2.learn(navigationHistory, currentScreen);
+    static boolean legacySelected(double probability, long estimatedMs, long baseBytes) {
+        return probability * estimatedMs > P5Experiment.LEGACY_LAMBDA * baseBytes || probability >= 0.40;
+    }
+
+    synchronized void triggerBackgroundPrefetch(ScreenId screenId) {
+        triggerBackgroundPrefetch(screenId, null);
+    }
+
+    private void triggerBackgroundPrefetch(ScreenId screenId, P5Experiment.Attempt attempt) {
+        if (cacheSessionId == null || cache.contains(screenId) || inFlightMap.containsKey(screenId)) {
+            if (attempt != null) attempt.skip();
+            return;
         }
-        navigationHistory.add(currentScreen);
+        long delayMs = calculateSimulatedNetworkDelayMs(screenId);
+        long sizeBytes = scaledPayloadBytes(screenId);
+        if (attempt != null) attempt.dispatch();
+        InFlightTask task = new InFlightTask(cacheGeneration, attempt);
+        inFlightMap.put(screenId, task);
+
+        task.work = new FutureTask<>(() -> {
+            Object sampleData;
+            try {
+                synchronized (this) {
+                    if (task.generation != cacheGeneration) return;
+                }
+                Thread.sleep(delayMs);
+                sampleData = FakeDataSource.getSampleDataForScreen(screenId);
+            } catch (InterruptedException error) {
+                Thread.currentThread().interrupt();
+                failPrefetch(screenId, task, error, true);
+                return;
+            } catch (RuntimeException error) {
+                failPrefetch(screenId, task, error, false);
+                return;
+            }
+
+            synchronized (this) {
+                if (task.generation != cacheGeneration || !inFlightMap.remove(screenId, task)) return;
+                if (task.attempt != null) task.attempt.complete();
+                cache.putPrefetched(screenId, sampleData, sizeBytes, !task.waiters.isEmpty(), task.attempt);
+            }
+            for (ScreenLoadCallback<Object> waiter : task.waiters) {
+                waiter.onLoaded(HitType.LATE_HIT, 0, sampleData);
+            }
+        }, null);
+        prefetchExecutor.execute(task.work);
+    }
+
+    private void failPrefetch(ScreenId screen, InFlightTask task, Throwable error, boolean cancelled) {
+        synchronized (this) {
+            if (task.generation != cacheGeneration || !inFlightMap.remove(screen, task)) return;
+            if (cancelled) cancelledPrefetches++;
+            if (task.attempt != null) {
+                if (cancelled) task.attempt.cancel();
+                else task.attempt.fail();
+            }
+        }
+        for (ScreenLoadCallback<Object> waiter : task.waiters) {
+            if (cancelled) waiter.onCancelled(error);
+            else waiter.onError(error);
+        }
+    }
+
+    private boolean learnNavigation(NavigationEvent event) {
+        int contextSize = Math.min(navigationHistory.size(), 2);
+        List<ScreenId> context = navigationHistory.subList(navigationHistory.size() - contextSize, navigationHistory.size());
+        if (contextSize > 0) {
+            markovOrder1.learn(navigationHistory, event.toScreen);
+            markovOrder2.learn(navigationHistory, event.toScreen);
+        }
+        learningLog.accept("navigationId=" + event.navigationId + " runId=" + event.runId
+                + " sessionId=" + event.sessionId + " sequence=" + event.sequence + " source=" + event.source
+                + " context=" + context + " fromScreen=" + event.fromScreen + " toScreen=" + event.toScreen
+                + " learnedMaxOrder=" + contextSize);
+        navigationHistory.add(event.toScreen);
+        return contextSize > 0;
+    }
+
+    int getTransitionCount(List<ScreenId> context, ScreenId next) {
+        return (context.size() == 1 ? markovOrder1 : markovOrder2).getTransitionCount(context, next);
+    }
+
+    public synchronized NavigationProfile snapshotProfile(long profileVersion) {
+        Map<Integer, Map<List<ScreenId>, Map<ScreenId, Integer>>> second = markovOrder2.snapshotCounts();
+        return new NavigationProfile(profileVersion, markovOrder2.getMinSupport(),
+                markovOrder1.snapshotCounts().get(1), second.get(1), second.get(2));
+    }
+
+    public boolean supportsProfile(NavigationProfile profile) {
+        return profile.minSupport == markovOrder1.getMinSupport() && profile.minSupport == markovOrder2.getMinSupport();
+    }
+
+    public synchronized void restoreProfile(NavigationProfile profile) {
+        if (!supportsProfile(profile)) throw new IllegalArgumentException("Incompatible Markov minSupport");
+        Map<Integer, Map<List<ScreenId>, Map<ScreenId, Integer>>> second = new HashMap<>();
+        second.put(1, profile.order2Backoff);
+        second.put(2, profile.order2);
+        markovOrder1.replaceCounts(Collections.singletonMap(1, profile.order1));
+        markovOrder2.replaceCounts(second);
+        navigationHistory.clear();
+        lastPredictions = Collections.emptyList();
     }
 
     private synchronized List<Map.Entry<ScreenId, Double>> predictNext(ScreenId currentScreen) {
@@ -403,17 +594,15 @@ public class PrefetchEngine {
      */
     public synchronized void startNewSession() {
         navigationHistory.clear();
-        cache.clear();
-        inFlightMap.clear();
+        closeCacheGeneration();
     }
 
     /**
      * Đặt lại toàn bộ phiên và bộ dự đoán Markov về trạng thái ban đầu (dùng khi đổi cấu hình thí nghiệm).
      */
     public synchronized void resetSession() {
-        navigationHistory.clear();
-        cache.clear();
-        inFlightMap.clear();
+        startNewSession();
+        lastPredictions = Collections.emptyList();
         markovOrder1.reset();
         markovOrder2.reset();
         seedInitialTransitions();

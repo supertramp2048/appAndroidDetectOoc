@@ -12,7 +12,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -23,10 +22,11 @@ import com.socialapp.core.network.dto.UserResource;
 import com.socialapp.core.pagination.PageLoader;
 import com.socialapp.core.session.SessionManager;
 import com.socialapp.core.ui.ConfirmDialog;
+import com.socialapp.core.telemetry.TelemetryActivity;
 import com.socialapp.core.ui.ReportSheetBottomSheet;
 import com.socialapp.databinding.ActivityCommentsBinding;
 
-public class CommentsActivity extends AppCompatActivity {
+public class CommentsActivity extends TelemetryActivity {
 
     public static final String EXTRA_POST_ID = "EXTRA_POST_ID";
 

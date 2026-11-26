@@ -24,6 +24,7 @@ import java.util.Map;
 
 import okhttp3.MultipartBody;
 import okhttp3.ResponseBody;
+import com.socialapp.core.telemetry.LoadContext;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.DELETE;
@@ -36,6 +37,7 @@ import retrofit2.http.PUT;
 import retrofit2.http.Part;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
+import retrofit2.http.Tag;
 
 public interface SocialAppApiService {
 
@@ -77,8 +79,23 @@ public interface SocialAppApiService {
             @Query("feed") String feed
     );
 
+    @GET("api/posts")
+    Call<PostListResponse> getPostsMeasured(
+            @Query("page") Integer page,
+            @Query("limit") Integer limit,
+            @Query("sort") String sort,
+            @Query("category") String category,
+            @Query("q") String query,
+            @Query("user_id") Integer userId,
+            @Query("feed") String feed,
+            @Tag LoadContext load
+    );
+
     @GET("api/posts/{id}")
     Call<PostDetailResponse> getPostDetail(@Path("id") int postId);
+
+    @GET("api/posts/{id}")
+    Call<PostDetailResponse> getPostDetailMeasured(@Path("id") int postId, @Tag LoadContext load);
 
     @POST("api/posts")
     Call<PostDetailResponse> createPost(@Body Map<String, Object> body);
@@ -102,6 +119,9 @@ public interface SocialAppApiService {
     @GET("api/posts/{id}/comments")
     Call<CommentListResponse> getComments(@Path("id") int postId, @Query("page") Integer page, @Query("limit") Integer limit);
 
+    @GET("api/posts/{id}/comments")
+    Call<CommentListResponse> getCommentsMeasured(@Path("id") int postId, @Query("page") Integer page, @Query("limit") Integer limit, @Tag LoadContext load);
+
     @GET("api/comments/{id}/replies")
     Call<CommentListResponse> getCommentReplies(@Path("id") int commentId, @Query("page") Integer page);
 
@@ -120,6 +140,9 @@ public interface SocialAppApiService {
     // Profiles & Users
     @GET("api/profiles/{user}")
     Call<ProfileDetailResponse> getProfile(@Path("user") int userId);
+
+    @GET("api/profiles/{user}")
+    Call<ProfileDetailResponse> getProfileMeasured(@Path("user") int userId, @Tag LoadContext load);
 
     @GET("api/profiles/{user}/followers")
     Call<UserSearchResponse> getFollowers(@Path("user") int userId, @Query("page") Integer page);

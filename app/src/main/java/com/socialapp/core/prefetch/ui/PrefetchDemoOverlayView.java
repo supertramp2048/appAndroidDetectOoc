@@ -1,6 +1,7 @@
 package com.socialapp.core.prefetch.ui;
 
 import android.app.AlertDialog;
+import android.app.Activity;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
@@ -20,6 +21,7 @@ import com.socialapp.core.prefetch.HitType;
 import com.socialapp.core.prefetch.MetricsLogger;
 import com.socialapp.core.prefetch.PrefetchEngine;
 import com.socialapp.core.prefetch.ReplayEngine;
+import com.socialapp.core.prefetch.ReplayResult;
 import com.socialapp.core.prefetch.Repository;
 import com.socialapp.core.prefetch.ScreenId;
 
@@ -102,7 +104,7 @@ public class PrefetchDemoOverlayView extends FrameLayout {
         ReplayEngine replay = container.getReplayEngine();
 
         // 1. Cập nhật Badge cấu hình & trạng thái Replay
-        if (replay != null && replay.isRunning()) {
+        if (replay != null && replay.isActive()) {
             btnReplayToggle.setText("⏹ Dừng");
             btnReplayToggle.setTextColor(0xFFF87171); // Đỏ
             String badge = String.format(Locale.US, "[Replay: S%d/%d | %s]",
@@ -131,12 +133,9 @@ public class PrefetchDemoOverlayView extends FrameLayout {
             tvPredictions.setText("Chưa có dự đoán");
         } else {
             StringBuilder sb = new StringBuilder();
-            int count = 0;
             for (Map.Entry<ScreenId, Double> entry : predictions) {
-                if (count > 0) sb.append(", ");
-                sb.append(String.format(Locale.US, "%s (%.0f%%)", entry.getKey().getId(), entry.getValue() * 100));
-                count++;
-                if (count >= 2) break; // Hiển thị top 2 để thanh gọn gàng
+                if (sb.length() > 0) sb.append(", ");
+                sb.append(String.format(Locale.US, "%s (%.1f%%)", entry.getKey().getId(), entry.getValue() * 100));
             }
             tvPredictions.setText(sb.toString());
         }
@@ -144,7 +143,7 @@ public class PrefetchDemoOverlayView extends FrameLayout {
         // 4. Trạng thái bước vừa rồi
         HitType lastHit = Repository.getLastHitType();
         long lastLatency = Repository.getLastLatencyMs();
-        String hitText = String.format(Locale.US, "%s (%d ms)", lastHit.name(), lastLatency);
+        String hitText = String.format(Locale.US, "%s (tải %d ms)", lastHit.name(), lastLatency);
         tvLastHitStatus.setText(hitText);
         if (lastHit == HitType.FULL_HIT) {
             tvLastHitStatus.setTextColor(0xFF34D399); // Xanh lá ngọc
@@ -160,7 +159,19 @@ public class PrefetchDemoOverlayView extends FrameLayout {
         double hitRate = total > 0 ? ((double) hits / total * 100) : 0.0;
         long wastedKb = logger.getTotalWastedBytes() / 1024;
 
-        String stats = String.format(Locale.US, "Hit: %d/%d (%.1f%%) | Lãng phí: %d KB", hits, total, hitRate, wastedKb);
+        String stats = String.format(Locale.US, "Hit: %d/%d (%.1f%%) | Lãng phí mô phỏng đã chốt: %d KiB", hits, total, hitRate, wastedKb);
+        ReplayResult.Metrics replayMetrics = logger.getCurrentReplayMetrics();
+        if (replayMetrics != null) {
+            stats += "\n" + formatLoadMetrics(replayMetrics);
+        }
+        PrefetchEngine.LambdaSnapshot lambda = engine.getP5Snapshot();
+        if (lambda != null) {
+            stats += String.format(Locale.US, "\n%s | λ=%.7f ms/B | Waste %s | MISS %s\nCập nhật %d | %s",
+                    lambda.mode, lambda.current, percent(lambda.wasteRatio), percent(lambda.missRate),
+                    lambda.updates, lambda.reason);
+        } else if (engine.getCurrentPolicy() == PrefetchEngine.Policy.P5_ADAPTIVE_NETWORK) {
+            stats += "\nLIVE: Legacy | Replay tiếp theo: " + engine.getNextP5Mode();
+        }
         tvStatsSummary.setText(stats);
     }
 
@@ -169,7 +180,7 @@ public class PrefetchDemoOverlayView extends FrameLayout {
         if (container == null) return;
 
         ReplayEngine replay = container.getReplayEngine();
-        if (replay.isRunning()) {
+        if (replay.isActive()) {
             replay.stopReplay();
             Toast.makeText(getContext(), "Đã dừng Replay!", Toast.LENGTH_SHORT).show();
             refreshUI();
@@ -179,20 +190,133 @@ public class PrefetchDemoOverlayView extends FrameLayout {
         String[] sessionOptions = new String[]{
                 "Chạy thử 5 phiên (Nhanh)",
                 "Chạy thử 20 phiên (Trung bình)",
-                "Chạy toàn bộ 100 phiên (Đầy đủ kịch bản)"
+                "Chạy toàn bộ 100 phiên (Đầy đủ kịch bản)",
+                "T4 — Calibration (10 sessions)",
+                "T4 — Evaluation (21 sessions)",
+                "Kết quả Replay gần nhất",
+                "So sánh và xuất CSV demo T4"
         };
         final int[] counts = new int[]{5, 20, 100};
 
         new AlertDialog.Builder(getContext())
                 .setTitle("▶ Bắt đầu Robot Replay")
                 .setItems(sessionOptions, (dialog, which) -> {
-                    int selectedCount = counts[which];
-                    Toast.makeText(getContext(), "Bắt đầu chạy Replay " + selectedCount + " phiên...", Toast.LENGTH_SHORT).show();
-                    replay.startReplay(selectedCount);
+                    if (which == sessionOptions.length - 1) {
+                        showDemoResults(replay);
+                        return;
+                    }
+                    if (which == sessionOptions.length - 2) {
+                        ReplayResult result = replay.getLatestResult();
+                        if (result == null) {
+                            Toast.makeText(getContext(), "Chưa có kết quả Replay.", Toast.LENGTH_SHORT).show();
+                        } else {
+                            showReplayResult(result);
+                        }
+                        return;
+                    }
+                    boolean started;
+                    if (which == counts.length) {
+                        started = replay.startT4CalibrationReplay();
+                    } else if (which == counts.length + 1) {
+                        started = replay.startT4EvaluationReplay();
+                    } else {
+                        replay.loadSessionsFromAsset(ReplayEngine.DEFAULT_ASSET_FILE);
+                        started = replay.startReplay(counts[which]);
+                    }
+                    if (started && replay.isActive()) {
+                        Toast.makeText(getContext(), "Bắt đầu chạy Replay " + replay.getTotalSessions() + " phiên...",
+                                Toast.LENGTH_SHORT).show();
+                    }
                     refreshUI();
                 })
                 .setNegativeButton("Hủy", null)
                 .show();
+    }
+
+    private void showDemoResults(ReplayEngine replay) {
+        List<ReplayResult> results = replay.getDemoResults();
+        StringBuilder message = new StringBuilder(
+                "T4 — Calibration (10 sessions) · LTE mô phỏng · Payload 1.0x · Replay 5.0x\n"
+                        + "Có " + results.size() + "/3 cấu hình hợp lệ.\n");
+        for (ReplayResult result : results) {
+            ReplayResult.Metrics metrics = result.metrics;
+            message.append("\n").append(result.lambda == null ? "P0" :
+                    result.lambda.mode == PrefetchEngine.P5Mode.FIXED_LAMBDA ? "P5 Fixed Lambda" : "P5 Adaptive Lambda")
+                    .append("\n").append(formatLoadMetrics(metrics))
+                    .append("\nHit rate ").append(percent(metrics.hitRate))
+                    .append(" | Waste ").append(metrics.simulatedWastedBytes == null ? "N/A"
+                            : metrics.simulatedWastedBytes + " B");
+            if (result.lambda != null) {
+                message.append(String.format(Locale.US, "\nλ %.7f ms/B | Cập nhật %d | %s",
+                        result.lambda.current, result.lambda.updates, result.lambda.reason));
+            }
+            message.append("\n");
+        }
+        AlertDialog.Builder dialog = new AlertDialog.Builder(getContext())
+                .setTitle("Kết quả demo T4")
+                .setMessage(message)
+                .setNegativeButton("Đóng", null);
+        if (results.size() == 3 && getContext() instanceof Activity) {
+            dialog.setPositiveButton("Xuất CSV",
+                    (ignored, which) -> ReplayDemoExport.share((Activity) getContext(),
+                            results, replay::getCalibrationMetricsFile));
+        }
+        dialog.show();
+    }
+
+    private static String formatLoadMetrics(ReplayResult.Metrics metrics) {
+        return String.format(Locale.US, "FULL HIT / LATE HIT / MISS: %d / %d / %d | Tải TB %s",
+                metrics.fullHits, metrics.lateHits, metrics.misses, metrics.averageLoadLatencyMs == null
+                        ? "N/A" : String.format(Locale.US, "%.2f ms", metrics.averageLoadLatencyMs));
+    }
+
+    boolean showReplayResult(ReplayResult result) {
+        if (!(getContext() instanceof Activity)) return false;
+        Activity activity = (Activity) getContext();
+        if (activity.isFinishing() || activity.isDestroyed() || !isAttachedToWindow()) return false;
+        AlertDialog dialog = new AlertDialog.Builder(activity)
+                .setTitle("Kết quả Replay gần nhất")
+                .setMessage(formatReplayResult(result))
+                .setPositiveButton("Đóng", null)
+                .show();
+        TextView message = dialog.findViewById(android.R.id.message);
+        if (message != null) message.setTextIsSelectable(true);
+        return true;
+    }
+
+    private static String formatReplayResult(ReplayResult result) {
+        String outcome;
+        switch (result.outcome) {
+            case COMPLETED: outcome = "Hoàn thành"; break;
+            case STOPPED: outcome = "Đã dừng"; break;
+            default: outcome = "Không hợp lệ (" + result.reason + ")"; break;
+        }
+        ReplayResult.Configuration config = result.configuration;
+        ReplayResult.Metrics metrics = result.metrics;
+        ReplayResult.ExportStatus export = result.getExportStatus();
+        boolean hasLoads = metrics != null && metrics.hitRate != null;
+        return "Trạng thái: " + outcome + "\nRun ID: " + result.runId + "\n"
+                + "CSV v2: " + (metrics == null ? "N/A" : export == null ? "Đang lưu"
+                : export.isComplete() ? "Đầy đủ" : "Không đầy đủ (bỏ " + export.droppedRows
+                + ", lỗi ghi " + export.failedRows + ")") + "\n"
+                + "Cấu hình lúc bắt đầu: " + (config == null ? "N/A" : String.format(Locale.US,
+                "%s | %s | payload %.1fx | tốc độ %.1fx | %s", config.policy.code, config.network.code,
+                config.payloadScale, config.timeScale, config.simulationMode ? "mô phỏng" : "mạng thật")) + "\n"
+                + "Bước đã xác nhận: " + result.confirmedSteps + " | Transition: " + result.transitions + "\n"
+                + "FULL HIT / LATE HIT / MISS: " + (hasLoads ? metrics.fullHits + " / " + metrics.lateHits + " / " + metrics.misses : "N/A") + "\n"
+                + "Hit rate: " + (hasLoads ? String.format(Locale.US, "%.1f%%", metrics.hitRate * 100) : "N/A") + "\n"
+                + "Load latency trung bình: " + (hasLoads ? String.format(Locale.US, "%.2f ms", metrics.averageLoadLatencyMs) : "N/A") + "\n"
+                + "Wasted bytes mô phỏng: " + (metrics == null || metrics.simulatedWastedBytes == null
+                ? "N/A" : metrics.simulatedWastedBytes + " B")
+                + (result.lambda == null ? "" : String.format(Locale.US,
+                "\nP5 %s | λ đầu %.7f | λ cuối %.7f ms/B | Cập nhật %d | %s"
+                        + "\nPrefetch hoàn tất %d B | Lãng phí %d B | Waste %s",
+                result.lambda.mode, result.lambda.initial, result.lambda.current, result.lambda.updates, result.lambda.reason,
+                result.lambda.completedBytes, result.lambda.wastedBytes, percent(result.lambda.wasteRatio)));
+    }
+
+    private static String percent(Double ratio) {
+        return ratio == null ? "N/A" : String.format(Locale.US, "%.1f%%", ratio * 100);
     }
 
     private void showConfigDialog() {
@@ -208,12 +332,17 @@ public class PrefetchDemoOverlayView extends FrameLayout {
                 "Tốc độ Tua nhanh (Hiện tại: " + engine.getTimeScale() + "x)",
                 "Chế độ Mô phỏng mạng (Hiện tại: " + (engine.isSimulationMode() ? "BẬT" : "TẮT") + ")",
                 "Đặt lại thống kê phiên này (Reset Stats)",
-                "🚀 Chạy Lô Thử nghiệm Ma trận (Batch Run 16 cấu hình)"
+                "🚀 Chạy Lô Thử nghiệm Ma trận (Batch Run 16 cấu hình)",
+                String.format(Locale.US, "Payload mô phỏng %.1fx (đặt 1.0x)", engine.getPayloadScale())
         };
 
         new AlertDialog.Builder(getContext())
                 .setTitle("⚙ Cấu hình Thử nghiệm")
                 .setItems(options, (dialog, which) -> {
+                    if (container.getReplayEngine().isActive() && which != 5) {
+                        Toast.makeText(getContext(), "Dừng Replay trước khi đổi cấu hình.", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
                     switch (which) {
                         case 0:
                             showPolicySelectionDialog(engine);
@@ -226,15 +355,12 @@ public class PrefetchDemoOverlayView extends FrameLayout {
                             break;
                         case 3:
                             engine.setSimulationMode(!engine.isSimulationMode());
-                            if (!engine.isSimulationMode()) {
-                                engine.getCache().clear();
-                            }
                             Toast.makeText(getContext(), "Chế độ mô phỏng mạng: " + (engine.isSimulationMode() ? "BẬT" : "TẮT"), Toast.LENGTH_SHORT).show();
                             refreshUI();
                             break;
                         case 4:
+                            container.getProfileManager().resetModel();
                             logger.resetSessionStats();
-                            engine.resetSession();
                             Repository.setSessionId(Repository.getSessionId() + 1);
                             Toast.makeText(getContext(), "Đã đặt lại dữ liệu thống kê!", Toast.LENGTH_SHORT).show();
                             refreshUI();
@@ -245,10 +371,18 @@ public class PrefetchDemoOverlayView extends FrameLayout {
                                 runner.stopBatch();
                                 Toast.makeText(getContext(), "Đã dừng chạy Lô!", Toast.LENGTH_SHORT).show();
                             } else {
+                                container.getReplayEngine().loadSessionsFromAsset(ReplayEngine.DEFAULT_ASSET_FILE);
                                 runner.setupKeyBenchmarkMatrix(5);
                                 runner.startBatch();
-                                Toast.makeText(getContext(), "Đang chạy tự động 16 cấu hình ma trận...", Toast.LENGTH_LONG).show();
+                                if (runner.isRunning()) {
+                                    Toast.makeText(getContext(), "Đang chạy tự động 16 cấu hình ma trận...", Toast.LENGTH_LONG).show();
+                                }
                             }
+                            refreshUI();
+                            break;
+                        case 6:
+                            engine.setPayloadScale(1.0f);
+                            Toast.makeText(getContext(), "Payload mô phỏng: 1.0x", Toast.LENGTH_SHORT).show();
                             refreshUI();
                             break;
                     }
@@ -271,11 +405,30 @@ public class PrefetchDemoOverlayView extends FrameLayout {
         new AlertDialog.Builder(getContext())
                 .setTitle("Chọn Chính sách Prefetch")
                 .setSingleChoiceItems(names, selectedIndex, (dialog, which) -> {
+                    dialog.dismiss();
+                    if (policies[which] == PrefetchEngine.Policy.P5_ADAPTIVE_NETWORK) {
+                        showP5ModeDialog(engine);
+                        return;
+                    }
                     engine.setCurrentPolicy(policies[which]);
                     Toast.makeText(getContext(), "Đã chọn: " + policies[which].code, Toast.LENGTH_SHORT).show();
                     refreshUI();
-                    dialog.dismiss();
                 })
+                .setNegativeButton("Hủy", null)
+                .show();
+    }
+
+    private void showP5ModeDialog(PrefetchEngine engine) {
+        PrefetchEngine.P5Mode[] modes = PrefetchEngine.P5Mode.values();
+        new AlertDialog.Builder(getContext())
+                .setTitle("P5 cho Replay")
+                .setSingleChoiceItems(new String[]{"Legacy", "Fixed Lambda", "Adaptive Lambda"},
+                        engine.getNextP5Mode().ordinal(), (dialog, index) -> {
+                            engine.setNextP5Mode(modes[index]);
+                            engine.setCurrentPolicy(PrefetchEngine.Policy.P5_ADAPTIVE_NETWORK);
+                            refreshUI();
+                            dialog.dismiss();
+                        })
                 .setNegativeButton("Hủy", null)
                 .show();
     }

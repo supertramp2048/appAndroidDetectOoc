@@ -46,6 +46,16 @@ public enum ScreenId {
     }
 
     @NonNull
+    public static ScreenId fromReplayId(@Nullable String replayId) {
+        for (ScreenId screen : values()) {
+            if (screen.getId().equals(replayId)) {
+                return screen;
+            }
+        }
+        throw new IllegalArgumentException("Unknown replay screen ID: " + replayId);
+    }
+
+    @NonNull
     public static ScreenId fromRoute(@Nullable String route) {
         if (route == null || route.isEmpty()) {
             return FEED_NEWEST;

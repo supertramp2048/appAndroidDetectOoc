@@ -12,6 +12,7 @@ import com.socialapp.core.di.AppContainer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Bộ chạy thử nghiệm hàng loạt (Batch Experiment Runner) cho ma trận cấu hình:
@@ -47,6 +48,7 @@ public class BatchExperimentRunner {
     public interface OnBatchProgressListener {
         void onConfigStarted(int configIndex, int totalConfigs, ExperimentConfig config);
         void onBatchCompleted(int totalConfigs);
+        default void onBatchFailed(int configIndex, UUID runId, String reason) {}
     }
 
     private final Context context;
@@ -104,6 +106,7 @@ public class BatchExperimentRunner {
     }
 
     public void stopBatch() {
+        if (!isRunning) return;
         isRunning = false;
         AppContainer container = MyApplication.getInstance() != null ? MyApplication.getInstance().getAppContainer() : null;
         if (container != null) {
@@ -125,20 +128,24 @@ public class BatchExperimentRunner {
 
         ExperimentConfig config = queue.get(currentConfigIndex);
         AppContainer container = MyApplication.getInstance() != null ? MyApplication.getInstance().getAppContainer() : null;
-        if (container == null) return;
+        if (container == null) {
+            isRunning = false;
+            return;
+        }
 
-        PrefetchEngine engine = container.getPrefetchEngine();
-        MetricsLogger logger = container.getMetricsLogger();
         ReplayEngine replay = container.getReplayEngine();
+        String blockReason = replay.getStartBlockReason(config.sessionsToRun);
+        if (blockReason != null) {
+            isRunning = false;
+            Toast.makeText(context, blockReason, Toast.LENGTH_LONG).show();
+            return;
+        }
+        PrefetchEngine engine = container.getPrefetchEngine();
 
         // 1. Áp dụng cấu hình thí nghiệm
         engine.setCurrentPolicy(config.policy);
         engine.setCurrentNetwork(config.network);
         engine.setPayloadScale(config.payloadScale);
-        logger.setConfigName(config.getConfigFileName());
-        logger.resetSessionStats();
-        engine.resetSession();
-
         Log.d(TAG, String.format("Starting experiment %d/%d: %s", currentConfigIndex + 1, queue.size(), config.getConfigFileName()));
 
         if (listener != null) {
@@ -146,7 +153,16 @@ public class BatchExperimentRunner {
         }
 
         // Lắng nghe khi Replay hoàn thành cấu hình này thì tự động nhảy sang cấu hình kế tiếp
-        replay.setListener(new ReplayEngine.OnReplayProgressListener() {
+        if (!replay.startReplay(config.sessionsToRun, config.getConfigFileName(), new ReplayEngine.OnReplayProgressListener() {
+            private UUID runId;
+            private String configName;
+
+            @Override
+            public void onReplayRunStarted(UUID startedRun) {
+                runId = startedRun;
+                configName = ReplayEngine.metricsConfigName(config.getConfigFileName(), runId);
+            }
+
             @Override
             public void onProgress(int currentSession, int totalSessions, int currentStep, int totalSteps, ScreenId screen) {}
 
@@ -155,6 +171,8 @@ public class BatchExperimentRunner {
 
             @Override
             public void onReplayFinished() {
+                if (!isRunning) return;
+                logResult("VALID");
                 currentConfigIndex++;
                 runNextConfig();
             }
@@ -162,11 +180,22 @@ public class BatchExperimentRunner {
             @Override
             public void onReplayStopped() {
                 isRunning = false;
+                logResult("STOPPED");
             }
-        });
 
-        // Kích hoạt chạy Replay với số phiên yêu cầu
-        replay.startReplay(config.sessionsToRun);
+            @Override
+            public void onReplayFailed(UUID failedRun, String reason) {
+                isRunning = false;
+                logResult("INVALID_" + reason);
+                if (listener != null) listener.onBatchFailed(currentConfigIndex + 1, failedRun, reason);
+            }
+
+            private void logResult(String status) {
+                Log.i(TAG, "runId=" + runId + " result=" + status + " csv=" + MetricsLogger.metricsFileName(configName));
+            }
+        })) {
+            isRunning = false;
+        }
     }
 }
 

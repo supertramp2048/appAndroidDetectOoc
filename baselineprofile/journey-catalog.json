@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "generatorClass": "com.socialapp.baselineprofile.BaselineProfileGenerator",
+  "targetPackage": "com.socialapp.profile",
+  "authState": "guest",
+  "prefetchPolicy": "P0",
+  "postStartupBudget": 2,
+  "profileIterationsPerJourney": 3,
+  "journeys": [
+    {
+      "id": "launcher_to_feed_newest",
+      "fromScreen": "LAUNCHER",
+      "toScreen": "FEED_NEWEST",
+      "testMethod": "startup",
+      "ready": "Selected Newest tab and fixture post title visible in feed_recycler_view",
+      "fixture": "Local feed fixture with postId=1",
+      "requiresLogin": false,
+      "includeInStartupProfile": true,
+      "status": "VERIFIED"
+    },
+    {
+      "id": "feed_newest_to_post_detail",
+      "fromScreen": "FEED_NEWEST",
+      "toScreen": "POST_DETAIL",
+      "testMethod": "feedToPostDetail",
+      "ready": "Fixture title and rendered WebView body visible",
+      "fixture": "postId=1",
+      "requiresLogin": false,
+      "includeInStartupProfile": false,
+      "status": "VERIFIED"
+    },
+    {
+      "id": "post_detail_to_comments",
+      "fromScreen": "POST_DETAIL",
+      "toScreen": "COMMENTS",
+      "testMethod": "postDetailToComments",
+      "ready": "Guest prompt and first fixture comment or valid empty state visible",
+      "fixture": "Local comments for postId=1",
+      "requiresLogin": false,
+      "includeInStartupProfile": false,
+      "status": "VERIFIED"
+    },
+    {
+      "id": "feed_newest_to_search",
+      "fromScreen": "FEED_NEWEST",
+      "toScreen": "SEARCH",
+      "testMethod": "feedToSearch",
+      "ready": "nav_search selected, search_input_edit_text and btn_search_submit visible",
+      "fixture": "Local feed with postId=1. Search landing without a query",
+      "requiresLogin": false,
+      "includeInStartupProfile": false,
+      "status": "VERIFIED"
+    },
+    {
+      "id": "feed_newest_to_fact_check",
+      "fromScreen": "FEED_NEWEST",
+      "toScreen": "FACT_CHECK",
+      "testMethod": "feedToFactCheck",
+      "ready": "nav_factcheck selected, btnGoToDetection and btnGoToHistory visible",
+      "fixture": "Local feed with postId=1. Fact-Check landing without capture",
+      "requiresLogin": false,
+      "includeInStartupProfile": false,
+      "status": "VERIFIED"
+    }
+  ]
+}

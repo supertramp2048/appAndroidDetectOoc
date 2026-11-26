@@ -3,9 +3,11 @@ package com.socialapp.feature.post;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.text.Html;
 import android.view.View;
 import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceError;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.PopupMenu;
@@ -13,26 +15,31 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.OneShotPreDrawListener;
 import androidx.core.widget.NestedScrollView;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.lifecycle.Lifecycle;
 
 import android.content.res.ColorStateList;
 
 import com.bumptech.glide.Glide;
 import com.socialapp.MyApplication;
 import com.socialapp.R;
+import com.socialapp.core.di.AppContainer;
 import com.socialapp.core.navigation.Navigator;
 import com.socialapp.core.network.dto.PostResource;
 import com.socialapp.core.network.dto.UserResource;
 import com.socialapp.core.session.SessionManager;
 import com.socialapp.core.ui.ReportSheetBottomSheet;
+import com.socialapp.core.telemetry.TelemetryActivity;
+import com.socialapp.core.telemetry.NavigationTiming;
+import com.socialapp.core.prefetch.ScreenId;
 import com.socialapp.core.util.DateTimeUtils;
 import com.socialapp.databinding.ActivityPostDetailBinding;
 
-public class PostDetailActivity extends AppCompatActivity {
+public class PostDetailActivity extends TelemetryActivity {
 
     public static final String EXTRA_POST_ID = "EXTRA_POST_ID";
 
@@ -40,6 +47,10 @@ public class PostDetailActivity extends AppCompatActivity {
     private PostDetailViewModel viewModel;
     private SessionManager sessionManager;
     private int postId = -1;
+    private NavigationTiming contentTiming;
+    private long contentRevision;
+    private boolean awaitingArticle;
+    private boolean contentReady;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -50,6 +61,10 @@ public class PostDetailActivity extends AppCompatActivity {
         sessionManager = MyApplication.getAppContainer(this).getSessionManager();
 
         if (getIntent() != null) {
+            if (savedInstanceState == null && getIntent().hasExtra(Navigator.EXTRA_CONTENT_REQUEST_MS)) {
+                contentTiming = new NavigationTiming(getIntent().getLongExtra(Navigator.EXTRA_CONTENT_REQUEST_MS, 0));
+            }
+            getIntent().removeExtra(Navigator.EXTRA_CONTENT_REQUEST_MS);
             postId = getIntent().getIntExtra(EXTRA_POST_ID, -1);
             if (postId == -1 && getIntent().getData() != null) {
                 Uri data = getIntent().getData();
@@ -160,6 +175,30 @@ public class PostDetailActivity extends AppCompatActivity {
         binding.postDetailWebView.getSettings().setDefaultTextEncodingName("UTF-8");
         binding.postDetailWebView.setWebViewClient(new WebViewClient() {
             @Override
+            public void onPageFinished(WebView view, String url) {
+                if (contentTiming == null || !awaitingArticle) return;
+                long revision = contentRevision;
+                view.postVisualStateCallback(revision, new WebView.VisualStateCallback() {
+                    @Override
+                    public void onComplete(long requestId) {
+                        if (contentRevision != requestId || !awaitingArticle) return;
+                        awaitingArticle = false;
+                        contentReady = true;
+                        scheduleContentMeasurement();
+                    }
+                });
+            }
+
+            @Override
+            public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
+                if (request.isForMainFrame()) {
+                    awaitingArticle = false;
+                    contentReady = false;
+                }
+                super.onReceivedError(view, request, error);
+            }
+
+            @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 if (request != null && request.getUrl() != null) {
                     openCustomTab(request.getUrl().toString());
@@ -194,15 +233,22 @@ public class PostDetailActivity extends AppCompatActivity {
             if (result == null) return;
 
             if (result.isLoading()) {
+                resetContentMeasurement();
                 binding.postDetailLoadingSkeleton.setVisibility(View.VISIBLE);
                 binding.postDetailErrorState.setVisibility(View.GONE);
                 binding.postDetailContentContainer.setVisibility(View.GONE);
             } else if (result.isSuccess() && result.data != null) {
+                resetContentMeasurement();
                 binding.postDetailLoadingSkeleton.setVisibility(View.GONE);
                 binding.postDetailErrorState.setVisibility(View.GONE);
                 binding.postDetailContentContainer.setVisibility(View.VISIBLE);
                 bindPostData(result.data);
+                if (contentTiming != null && !awaitingArticle) {
+                    contentReady = true;
+                    scheduleContentMeasurement();
+                }
             } else if (result.isError()) {
+                resetContentMeasurement();
                 binding.postDetailLoadingSkeleton.setVisibility(View.GONE);
                 binding.postDetailContentContainer.setVisibility(View.GONE);
                 binding.postDetailErrorState.setVisibility(View.VISIBLE);
@@ -219,6 +265,30 @@ public class PostDetailActivity extends AppCompatActivity {
                 binding.btnFollowAuthor.setText("Theo dõi");
             }
         });
+    }
+
+    private void resetContentMeasurement() {
+        contentRevision++;
+        awaitingArticle = false;
+        contentReady = false;
+    }
+
+    private void scheduleContentMeasurement() {
+        NavigationTiming timing = contentTiming;
+        View content = binding.postDetailContentContainer;
+        if (timing == null || !contentReady || !content.isAttachedToWindow()) return;
+        long revision = contentRevision;
+        OneShotPreDrawListener.add(content, () -> content.post(() -> {
+            if (timing != contentTiming || contentRevision != revision || !contentReady || !content.isShown()
+                    || isFinishing() || isDestroyed() || !getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED)) return;
+            long now = SystemClock.elapsedRealtime();
+            if (!timing.markReady(now)) return;
+            contentTiming = null;
+            AppContainer app = MyApplication.getAppContainer(this);
+            app.getPerformanceTelemetry().contentReady(ScreenId.POST_DETAIL, timing,
+                    app.getNavigationObserver().getContentNavigation(this, ScreenId.POST_DETAIL, timing.startedAtMs), now);
+        }));
+        content.invalidate();
     }
 
     private void bindPostData(@NonNull PostResource post) {
@@ -266,6 +336,7 @@ public class PostDetailActivity extends AppCompatActivity {
 
         // HTML WebView with editorial typography styling
         if (post.contentHtml != null && !post.contentHtml.trim().isEmpty()) {
+            awaitingArticle = contentTiming != null;
             String htmlData = buildEditorialHtml(post.contentHtml);
             binding.postDetailWebView.setVisibility(View.VISIBLE);
             binding.postDetailWebView.loadDataWithBaseURL(null, htmlData, "text/html", "UTF-8", null);
@@ -484,6 +555,7 @@ public class PostDetailActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        scheduleContentMeasurement();
         com.socialapp.core.prefetch.PrefetchManager.getInstance()
                 .onScreenVisited(com.socialapp.core.network.sim.ScreenPayloadConfig.SCREEN_POST_DETAIL);
     }

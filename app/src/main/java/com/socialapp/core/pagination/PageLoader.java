@@ -75,7 +75,11 @@ public class PageLoader<T> {
         this.idExtractor = idExtractor != null ? idExtractor : item -> item;
     }
 
-    public synchronized void refresh() {
+    public void refresh() {
+        refresh(pageFetcher);
+    }
+
+    public synchronized void refresh(@NonNull PageFetcher<T> refreshFetcher) {
         long currentGen = generationCounter.incrementAndGet();
         isLoading = true;
         currentPage = 1;
@@ -86,7 +90,7 @@ public class PageLoader<T> {
         postState(State.INITIAL_LOADING);
         postItems(new ArrayList<>());
 
-        pageFetcher.fetch(currentPage, new PageCallback<T>() {
+        refreshFetcher.fetch(currentPage, new PageCallback<T>() {
             @Override
             public void onSuccess(@NonNull PageResult<T> result) {
                 if (currentGen != generationCounter.get()) return;

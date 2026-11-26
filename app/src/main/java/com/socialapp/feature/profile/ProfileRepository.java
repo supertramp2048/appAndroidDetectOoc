@@ -20,6 +20,7 @@ import com.socialapp.core.network.dto.UserSearchResponse;
 import com.socialapp.core.pagination.PageLoader;
 import com.socialapp.core.prefetch.HitType;
 import com.socialapp.core.prefetch.Repository;
+import com.socialapp.core.telemetry.LoadContext;
 import com.socialapp.core.prefetch.ScreenId;
 import com.socialapp.core.prefetch.ScreenLoadCallback;
 
@@ -47,8 +48,8 @@ public class ProfileRepository {
 
         Repository.load(ScreenId.PROFILE, params, new Repository.RealDataLoader<ProfileResource>() {
             @Override
-            public void execute(@NonNull ScreenLoadCallback<ProfileResource> callback) {
-                apiService.getProfile(userId).enqueue(new Callback<ProfileDetailResponse>() {
+            public void execute(@NonNull ScreenLoadCallback<ProfileResource> callback, @NonNull LoadContext load) {
+                apiService.getProfileMeasured(userId, load).enqueue(new Callback<ProfileDetailResponse>() {
                     @Override
                     public void onResponse(@NonNull Call<ProfileDetailResponse> call, @NonNull Response<ProfileDetailResponse> response) {
                         if (response.isSuccessful() && response.body() != null) {
@@ -60,7 +61,8 @@ public class ProfileRepository {
 
                     @Override
                     public void onFailure(@NonNull Call<ProfileDetailResponse> call, @NonNull Throwable t) {
-                        callback.onError(t);
+                        if (call.isCanceled()) callback.onCancelled(t);
+                        else callback.onError(t);
                     }
                 });
             }

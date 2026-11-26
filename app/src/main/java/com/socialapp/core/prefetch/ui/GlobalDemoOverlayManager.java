@@ -13,6 +13,7 @@ import androidx.annotation.Nullable;
 import com.socialapp.MyApplication;
 import com.socialapp.core.di.AppContainer;
 import com.socialapp.core.prefetch.ReplayEngine;
+import com.socialapp.core.prefetch.ReplayResult;
 import com.socialapp.core.prefetch.ScreenId;
 
 /**
@@ -23,6 +24,7 @@ public class GlobalDemoOverlayManager {
     private static final String TAG_PREFETCH_OVERLAY = "TAG_PREFETCH_OVERLAY";
     private static boolean isEnabled = true;
     private static PrefetchDemoOverlayView currentActiveOverlay = null;
+    private static ReplayResult pendingResult;
 
     public static void init(@NonNull Application application) {
         AppContainer container = MyApplication.getAppContainer(application);
@@ -57,16 +59,17 @@ public class GlobalDemoOverlayManager {
 
             @Override
             public void onReplayFinished() {
-                if (currentActiveOverlay != null) {
-                    currentActiveOverlay.refreshUI();
-                }
+                onReplayEnded(container.getReplayEngine());
             }
 
             @Override
             public void onReplayStopped() {
-                if (currentActiveOverlay != null) {
-                    currentActiveOverlay.refreshUI();
-                }
+                onReplayEnded(container.getReplayEngine());
+            }
+
+            @Override
+            public void onReplayFailed(java.util.UUID runId, String reason) {
+                onReplayStopped();
             }
         });
 
@@ -75,6 +78,7 @@ public class GlobalDemoOverlayManager {
             public void onActivityResumed(@NonNull Activity activity) {
                 if (!isEnabled) return;
                 attachOverlay(activity);
+                showPendingResult(container.getReplayEngine());
             }
 
             @Override
@@ -95,6 +99,22 @@ public class GlobalDemoOverlayManager {
             @Override
             public void onActivityDestroyed(@NonNull Activity activity) {}
         });
+    }
+
+    private static void onReplayEnded(ReplayEngine replay) {
+        pendingResult = replay.getLatestResult();
+        if (currentActiveOverlay != null) {
+            currentActiveOverlay.refreshUI();
+            // Batch may start the next run from its own terminal listener.
+            currentActiveOverlay.post(() -> showPendingResult(replay));
+        }
+    }
+
+    private static void showPendingResult(ReplayEngine replay) {
+        if (isEnabled && !replay.isActive() && pendingResult != null && currentActiveOverlay != null
+                && currentActiveOverlay.showReplayResult(pendingResult)) {
+            pendingResult = null;
+        }
     }
 
     private static void attachOverlay(@NonNull Activity activity) {
