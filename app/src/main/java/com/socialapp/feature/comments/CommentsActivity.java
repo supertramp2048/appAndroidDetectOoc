@@ -2,17 +2,16 @@ package com.socialapp.feature.comments;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
-
-import android.widget.PopupMenu;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -23,10 +22,13 @@ import com.socialapp.core.network.dto.UserResource;
 import com.socialapp.core.pagination.PageLoader;
 import com.socialapp.core.session.SessionManager;
 import com.socialapp.core.ui.ConfirmDialog;
+import com.socialapp.core.telemetry.TelemetryActivity;
 import com.socialapp.core.ui.ReportSheetBottomSheet;
+import com.socialapp.core.ui.blocks.adapter.HighRefreshRateHelper;
+import com.socialapp.core.ui.blocks.adapter.RecyclerView120HzTuner;
 import com.socialapp.databinding.ActivityCommentsBinding;
 
-public class CommentsActivity extends AppCompatActivity {
+public class CommentsActivity extends TelemetryActivity {
 
     public static final String EXTRA_POST_ID = "EXTRA_POST_ID";
 
@@ -39,6 +41,7 @@ public class CommentsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        HighRefreshRateHelper.requestHighRefreshRate(this);
         binding = ActivityCommentsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
@@ -88,7 +91,10 @@ public class CommentsActivity extends AppCompatActivity {
             }
         });
 
-        binding.commentsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        binding.commentsRecyclerView.setLayoutManager(layoutManager);
+        RecyclerView120HzTuner.tuneReadingList(binding.commentsRecyclerView, layoutManager, false);
+        binding.commentsRecyclerView.setRecycledViewPool(MyApplication.getAppContainer(this).getUnifiedBlockViewPool());
         binding.commentsRecyclerView.setAdapter(commentsAdapter);
 
         binding.btnCancelReply.setOnClickListener(v -> viewModel.clearReplyingTo());
@@ -181,7 +187,7 @@ public class CommentsActivity extends AppCompatActivity {
             @Override
             public void onSuccess(@NonNull PageLoader.PageResult<CommentResource> result) {
                 if (result.items != null && !result.items.isEmpty()) {
-                    commentsAdapter.insertReplies(parentPosition, result.items);
+                    commentsAdapter.insertRepliesForParent(comment.id, result.items);
                 } else {
                     Toast.makeText(CommentsActivity.this, "Không có phản hồi thêm", Toast.LENGTH_SHORT).show();
                 }
@@ -195,7 +201,7 @@ public class CommentsActivity extends AppCompatActivity {
     }
 
     private void showCommentMenu(CommentResource comment, View anchor) {
-        PopupMenu popupMenu = new PopupMenu(this, anchor);
+        PopupMenu popupMenu = new PopupMenu(this, anchor, Gravity.END);
         UserResource currentUser = sessionManager.getCurrentUser();
 
         boolean isAuthor = currentUser != null && comment.author != null && currentUser.id == comment.author.id;

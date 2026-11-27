@@ -1,14 +1,12 @@
 package com.socialapp.feature.compose;
 
-import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
-import android.webkit.WebSettings;
+import android.view.ViewGroup;
 import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
@@ -24,19 +22,25 @@ import androidx.lifecycle.ViewModelProvider;
 import com.bumptech.glide.Glide;
 import com.google.gson.Gson;
 import com.socialapp.MyApplication;
+import com.socialapp.core.di.AppContainer;
 import com.socialapp.core.navigation.Navigator;
 import com.socialapp.core.network.dto.CategoryResource;
 import com.socialapp.core.network.dto.PostResource;
 import com.socialapp.core.ui.ConfirmDialog;
+import com.socialapp.core.ui.blocks.editor.EditorWebViewPool;
+import com.socialapp.core.ui.blocks.editor.WebAppInterfaceProxy;
 import com.socialapp.databinding.ActivityComposeBinding;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
-
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Rich-text article composer & editor using EditorWebViewPool + WebAppInterfaceProxy
+ * so the pre-warmed editor WebView attaches in ~0ms without leaking ComposeActivity.
+ */
 public class ComposeActivity extends AppCompatActivity {
 
     public static final String EXTRA_POST_ID = "EXTRA_POST_ID";
@@ -46,6 +50,9 @@ public class ComposeActivity extends AppCompatActivity {
 
     private ActivityComposeBinding binding;
     private ComposeViewModel viewModel;
+    private EditorWebViewPool editorWebViewPool;
+    @Nullable
+    private EditorWebViewPool.EditorHandle editorHandle;
 
     private List<CategoryResource> categoryList = new ArrayList<>();
     private boolean isInlineImagePick = false;
@@ -66,11 +73,29 @@ public class ComposeActivity extends AppCompatActivity {
         binding = ActivityComposeBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        ComposeRepository repository = new ComposeRepository(MyApplication.getAppContainer(this).getSocialAppApiService());
+        AppContainer container = MyApplication.getAppContainer(this);
+        editorWebViewPool = container.getEditorWebViewPool();
+
+        ComposeRepository repository = new ComposeRepository(container.getSocialAppApiService());
         viewModel = new ViewModelProvider(this, new ComposeViewModelFactory(repository)).get(ComposeViewModel.class);
 
         int postId = getIntent().getIntExtra(EXTRA_POST_ID, -1);
         viewModel.setPostId(postId);
+
+        // Initialize draft / prefill before acquiring pooled WebView so synchronous warm attach gets initial HTML
+        if (postId <= 0) {
+            String prefillTitle = getIntent().getStringExtra(EXTRA_PREFILL_TITLE);
+            String prefillImage = getIntent().getStringExtra(EXTRA_PREFILL_IMAGE);
+            String prefillBody = getIntent().getStringExtra(EXTRA_PREFILL_BODY);
+
+            if (prefillTitle != null || prefillImage != null || prefillBody != null) {
+                if (prefillTitle != null) viewModel.setTitle(prefillTitle);
+                if (prefillImage != null) viewModel.setThumbnailUrl(prefillImage);
+                if (prefillBody != null) viewModel.setContentHtml("<p>" + prefillBody + "</p>");
+            } else {
+                viewModel.loadDraft(this);
+            }
+        }
 
         setupUI();
         observeViewModel();
@@ -84,18 +109,11 @@ public class ComposeActivity extends AppCompatActivity {
             binding.composeToolbar.setTitle("Tạo bài viết");
             binding.btnSubmitPost.setText("Đăng bài");
             binding.btnDeletePost.setVisibility(View.GONE);
-
-            // Check prefill params from M9 or load local draft
-            String prefillTitle = getIntent().getStringExtra(EXTRA_PREFILL_TITLE);
-            String prefillImage = getIntent().getStringExtra(EXTRA_PREFILL_IMAGE);
-            String prefillBody = getIntent().getStringExtra(EXTRA_PREFILL_BODY);
-
-            if (prefillTitle != null || prefillImage != null || prefillBody != null) {
-                if (prefillTitle != null) viewModel.setTitle(prefillTitle);
-                if (prefillImage != null) viewModel.setThumbnailUrl(prefillImage);
-                if (prefillBody != null) viewModel.setContentHtml("<p>" + prefillBody + "</p>");
-            } else {
-                viewModel.loadDraft(this);
+            if (!viewModel.getTitle().isEmpty()) {
+                binding.composeTitleEditText.setText(viewModel.getTitle());
+            }
+            if (!viewModel.getThumbnailUrl().isEmpty()) {
+                updateThumbnailPreview(viewModel.getThumbnailUrl());
             }
         }
 
@@ -133,30 +151,44 @@ public class ComposeActivity extends AppCompatActivity {
     }
 
     private void setupWebViewEditor() {
-        WebSettings webSettings = binding.composeEditorWebView.getSettings();
-        webSettings.setJavaScriptEnabled(true);
-        webSettings.setAllowFileAccess(true);
-        webSettings.setDomStorageEnabled(true);
-
-        WebAppInterface webAppInterface = new WebAppInterface(
-                () -> {
+        WebAppInterfaceProxy.EditorBridgeDelegate bridgeDelegate = new WebAppInterfaceProxy.EditorBridgeDelegate() {
+            @Override
+            public void onPickImageRequested() {
+                runOnUiThread(() -> {
+                    if (isFinishing() || isDestroyed()) {
+                        return;
+                    }
                     isInlineImagePick = true;
                     imagePickerLauncher.launch("image/*");
-                },
-                html -> viewModel.setContentHtml(html)
-        );
-
-        binding.composeEditorWebView.addJavascriptInterface(webAppInterface, "AndroidBridge");
-        binding.composeEditorWebView.setWebViewClient(new WebViewClient() {
-            @Override
-            public void onPageFinished(WebView view, String url) {
-                super.onPageFinished(view, url);
-                isEditorLoaded = true;
-                setEditorContent(viewModel.getContentHtml());
+                });
             }
+
+            @Override
+            public void onContentChanged(@NonNull String html) {
+                runOnUiThread(() -> {
+                    if (!isFinishing() && !isDestroyed()) {
+                        viewModel.setContentHtml(html);
+                    }
+                });
+            }
+        };
+
+        editorHandle = editorWebViewPool.acquire(this, bridgeDelegate, () -> {
+            if (isFinishing() || isDestroyed()) {
+                return;
+            }
+            isEditorLoaded = true;
+            setEditorContent(viewModel.getContentHtml());
         });
 
-        binding.composeEditorWebView.loadUrl("file:///android_asset/editor/editor.html");
+        WebView webView = editorHandle.getWebView();
+        if (webView != null) {
+            binding.composeEditorContainer.removeAllViews();
+            binding.composeEditorContainer.addView(webView, new ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+            ));
+        }
     }
 
     private void observeViewModel() {
@@ -262,18 +294,26 @@ public class ComposeActivity extends AppCompatActivity {
         }
     }
 
-    private void setEditorContent(String html) {
-        if (html == null) html = "";
-        String escapedHtml = html.replace("'", "\\'").replace("\n", "\\n").replace("\r", "");
-        binding.composeEditorWebView.evaluateJavascript("javascript:setHtml('" + escapedHtml + "');", null);
+    private void setEditorContent(@Nullable String html) {
+        if (editorWebViewPool != null && editorHandle != null) {
+            editorWebViewPool.setHtml(editorHandle, html);
+        }
     }
 
-    private void insertImageToEditor(String imageUrl) {
-        binding.composeEditorWebView.evaluateJavascript("javascript:insertImage('" + imageUrl + "');", null);
+    private void insertImageToEditor(@NonNull String imageUrl) {
+        if (editorWebViewPool != null && editorHandle != null) {
+            editorWebViewPool.insertImage(editorHandle, imageUrl);
+        }
     }
 
     private void handleSubmitPost() {
-        binding.composeEditorWebView.evaluateJavascript("javascript:getHtml();", htmlValue -> {
+        if (editorWebViewPool == null || editorHandle == null) {
+            return;
+        }
+        editorWebViewPool.evaluateHtml(editorHandle, htmlValue -> {
+            if (isFinishing() || isDestroyed()) {
+                return;
+            }
             String html = "";
             if (htmlValue != null) {
                 try {
@@ -351,7 +391,36 @@ public class ComposeActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        if (editorHandle != null && editorHandle.getWebView() != null) {
+            editorHandle.getWebView().onResume();
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        if (editorHandle != null && editorHandle.getWebView() != null) {
+            editorHandle.getWebView().onPause();
+        }
+        super.onPause();
+    }
+
+    @Override
     public void onBackPressed() {
         handleExitPrompt();
+    }
+
+    @Override
+    protected void onDestroy() {
+        isEditorLoaded = false;
+        if (binding != null) {
+            binding.composeEditorContainer.removeAllViews();
+        }
+        if (editorWebViewPool != null && editorHandle != null) {
+            editorWebViewPool.release(editorHandle);
+            editorHandle = null;
+        }
+        super.onDestroy();
     }
 }

@@ -8,7 +8,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -22,10 +21,12 @@ import com.socialapp.core.network.dto.UserResource;
 import com.socialapp.core.pagination.PageLoader;
 import com.socialapp.core.session.SessionManager;
 import com.socialapp.core.ui.ReportSheetBottomSheet;
+import com.socialapp.core.telemetry.TelemetryActivity;
+import com.socialapp.core.ui.blocks.adapter.RecyclerView120HzTuner;
 import com.socialapp.databinding.ActivityProfileBinding;
 import com.socialapp.feature.feed.FeedAdapter;
 
-public class ProfileActivity extends AppCompatActivity {
+public class ProfileActivity extends TelemetryActivity {
 
     public static final String EXTRA_USER_ID = "EXTRA_USER_ID";
 
@@ -66,7 +67,12 @@ public class ProfileActivity extends AppCompatActivity {
         binding.btnProfileOverflowMenu.setOnClickListener(this::showOverflowMenu);
 
         userPostsAdapter = new FeedAdapter(post -> Navigator.navigateToPostDetail(this, post.id));
-        binding.profilePostsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        binding.profilePostsRecyclerView.setLayoutManager(layoutManager);
+        RecyclerView120HzTuner.tuneReadingList(binding.profilePostsRecyclerView, layoutManager, true);
+        binding.profilePostsRecyclerView.setRecycledViewPool(
+                MyApplication.getAppContainer(this).getUnifiedBlockViewPool()
+        );
         binding.profilePostsRecyclerView.setAdapter(userPostsAdapter);
 
         binding.btnFollowUser.setOnClickListener(v -> {

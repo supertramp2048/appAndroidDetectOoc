@@ -90,23 +90,6 @@ def run_unit_tests():
     )
     check("Case 6 (Lịch sử dài > maxOrder & Empty-safe)", ok, format_res(res))
 
-    # CASE 7: So sánh độ chính xác giữa các bậc k = 1, 2, 3 trên sessions.csv
-    sessions = load_sessions("sessions.csv")
-    print("----------------------------------------------------------")
-    print("   SO SÁNH ĐA BẬC (k = 1, 2, 3) TRÊN sessions.csv:")
-    for k in (1, 2, 3):
-        p_k, hits, n = Markov(max_order=k, min_support=3), 0, 0
-        for _, seq in sessions:
-            hist = []
-            for i in range(len(seq) - 1):
-                hist.append(seq[i][0])
-                nxt = seq[i + 1][0]
-                cand = p_k.predict(hist)
-                hits += int(bool(cand) and cand[0][0] == nxt)
-                n += 1
-                p_k.learn(hist, nxt)
-        print(f"   - Bậc k = {k}: top1 = {hits/n:.4f} ({hits}/{n})")
-
     print("----------------------------------------------------------")
     print(f"KẾT QUẢ: {passed} PASSED, {failed} FAILED")
     print("==========================================================")

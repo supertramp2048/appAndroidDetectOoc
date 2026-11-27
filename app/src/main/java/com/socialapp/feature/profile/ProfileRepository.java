@@ -7,6 +7,8 @@ import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.socialapp.MyApplication;
+import com.socialapp.core.di.AppContainer;
 import com.socialapp.core.network.ApiErrorParser;
 import com.socialapp.core.network.ApiResult;
 import com.socialapp.core.network.SocialAppApiService;
@@ -20,8 +22,10 @@ import com.socialapp.core.network.dto.UserSearchResponse;
 import com.socialapp.core.pagination.PageLoader;
 import com.socialapp.core.prefetch.HitType;
 import com.socialapp.core.prefetch.Repository;
+import com.socialapp.core.telemetry.LoadContext;
 import com.socialapp.core.prefetch.ScreenId;
 import com.socialapp.core.prefetch.ScreenLoadCallback;
+import com.socialapp.core.ui.blocks.adapter.FeedBlockListBuilder;
 
 import java.util.Collections;
 import java.util.List;
@@ -47,8 +51,8 @@ public class ProfileRepository {
 
         Repository.load(ScreenId.PROFILE, params, new Repository.RealDataLoader<ProfileResource>() {
             @Override
-            public void execute(@NonNull ScreenLoadCallback<ProfileResource> callback) {
-                apiService.getProfile(userId).enqueue(new Callback<ProfileDetailResponse>() {
+            public void execute(@NonNull ScreenLoadCallback<ProfileResource> callback, @NonNull LoadContext load) {
+                apiService.getProfileMeasured(userId, load).enqueue(new Callback<ProfileDetailResponse>() {
                     @Override
                     public void onResponse(@NonNull Call<ProfileDetailResponse> call, @NonNull Response<ProfileDetailResponse> response) {
                         if (response.isSuccessful() && response.body() != null) {
@@ -60,7 +64,8 @@ public class ProfileRepository {
 
                     @Override
                     public void onFailure(@NonNull Call<ProfileDetailResponse> call, @NonNull Throwable t) {
-                        callback.onError(t);
+                        if (call.isCanceled()) callback.onCancelled(t);
+                        else callback.onError(t);
                     }
                 });
             }
@@ -175,6 +180,7 @@ public class ProfileRepository {
                         if (response.isSuccessful() && response.body() != null) {
                             PostListResponse body = response.body();
                             List<PostResource> items = body.data != null ? body.data : Collections.emptyList();
+                            warmupUserPostsL1(items);
                             boolean hasNext = body.links != null && body.links.hasNext();
                             int currentPage = (body.meta != null && body.meta.currentPage > 0) ? body.meta.currentPage : page;
                             callback.onSuccess(new PageLoader.PageResult<>(items, currentPage, hasNext));
@@ -188,5 +194,14 @@ public class ProfileRepository {
                         callback.onError(ApiErrorParser.parseThrowable(t));
                     }
                 });
+    }
+
+    private static void warmupUserPostsL1(@NonNull List<PostResource> posts) {
+        if (posts.isEmpty()) return;
+        MyApplication app = MyApplication.getInstance();
+        AppContainer container = app != null ? app.getAppContainer() : null;
+        if (container != null) {
+            container.getBlockWarmupEngine().warmupL1(app, FeedBlockListBuilder.build(posts));
+        }
     }
 }

@@ -7,6 +7,10 @@ import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.socialapp.BuildConfig;
+import com.socialapp.MyApplication;
+import com.socialapp.core.di.AppContainer;
+import com.socialapp.core.mock.FakeApi;
 import com.socialapp.core.network.ApiErrorParser;
 import com.socialapp.core.network.ApiResult;
 import com.socialapp.core.network.SocialAppApiService;
@@ -19,6 +23,9 @@ import com.socialapp.core.prefetch.HitType;
 import com.socialapp.core.prefetch.Repository;
 import com.socialapp.core.prefetch.ScreenId;
 import com.socialapp.core.prefetch.ScreenLoadCallback;
+import com.socialapp.core.telemetry.LoadContext;
+import com.socialapp.core.telemetry.NavigationEvent;
+import com.socialapp.core.ui.blocks.adapter.FeedBlockListBuilder;
 
 import java.util.Collections;
 import java.util.List;
@@ -36,6 +43,9 @@ public class FeedRepository {
     }
 
     public LiveData<ApiResult<List<CategoryResource>>> getCategories() {
+        if (BuildConfig.PROFILE_FIXTURES) {
+            return new MutableLiveData<>(ApiResult.success(FakeApi.getSampleCategories()));
+        }
         MutableLiveData<ApiResult<List<CategoryResource>>> resultLiveData = new MutableLiveData<>(ApiResult.loading());
 
         apiService.getCategories().enqueue(new Callback<CategoryListResponse>() {
@@ -65,6 +75,13 @@ public class FeedRepository {
             @Nullable String query,
             @Nullable Integer userId,
             @Nullable String feed) {
+        return createPostPageFetcher(sort, category, query, userId, feed, LoadContext.Trigger.UNKNOWN, null);
+    }
+
+    PageLoader.PageFetcher<PostResource> createPostPageFetcher(
+            @Nullable String sort, @Nullable String category, @Nullable String query,
+            @Nullable Integer userId, @Nullable String feed, LoadContext.Trigger trigger,
+            @Nullable NavigationEvent navigation) {
 
         return (page, callback) -> {
             ScreenId screenId = ScreenId.FEED_NEWEST;
@@ -85,8 +102,8 @@ public class FeedRepository {
 
                 Repository.load(screenId, params, new Repository.RealDataLoader<List<PostResource>>() {
                     @Override
-                    public void execute(@NonNull ScreenLoadCallback<List<PostResource>> screenCallback) {
-                        apiService.getPosts(page, 10, sort, category, query, userId, feed)
+                    public void execute(@NonNull ScreenLoadCallback<List<PostResource>> screenCallback, @NonNull LoadContext load) {
+                        apiService.getPostsMeasured(page, 10, sort, category, query, userId, feed, load)
                                 .enqueue(new Callback<PostListResponse>() {
                                     @Override
                                     public void onResponse(@NonNull Call<PostListResponse> call,
@@ -101,7 +118,8 @@ public class FeedRepository {
 
                                     @Override
                                     public void onFailure(@NonNull Call<PostListResponse> call, @NonNull Throwable t) {
-                                        screenCallback.onError(t);
+                                        if (call.isCanceled()) screenCallback.onCancelled(t);
+                                        else screenCallback.onError(t);
                                     }
                                 });
                     }
@@ -109,6 +127,7 @@ public class FeedRepository {
                     @Override
                     public void onLoaded(@NonNull HitType hitType, long latencyMs, @Nullable List<PostResource> data) {
                         List<PostResource> items = data != null ? data : Collections.emptyList();
+                        warmupFeedPostsL1(items);
                         callback.onSuccess(new PageLoader.PageResult<>(items, 1, items.size() >= 10));
                     }
 
@@ -116,7 +135,7 @@ public class FeedRepository {
                     public void onError(@NonNull Throwable error) {
                         callback.onError(ApiErrorParser.parseThrowable(error));
                     }
-                });
+                }, trigger, navigation);
             } else {
                 apiService.getPosts(page, 10, sort, category, query, userId, feed)
                         .enqueue(new Callback<PostListResponse>() {
@@ -126,6 +145,7 @@ public class FeedRepository {
                                 if (response.isSuccessful() && response.body() != null) {
                                     PostListResponse body = response.body();
                                     List<PostResource> items = body.data != null ? body.data : Collections.emptyList();
+                                    warmupFeedPostsL1(items);
                                     boolean hasNext = body.links != null && body.links.hasNext();
                                     int currentPage = (body.meta != null && body.meta.currentPage > 0) ? body.meta.currentPage : page;
                                     callback.onSuccess(new PageLoader.PageResult<>(items, currentPage, hasNext));
@@ -141,5 +161,14 @@ public class FeedRepository {
                         });
             }
         };
+    }
+
+    private static void warmupFeedPostsL1(@NonNull List<PostResource> posts) {
+        if (posts.isEmpty()) return;
+        MyApplication app = MyApplication.getInstance();
+        AppContainer container = app != null ? app.getAppContainer() : null;
+        if (container != null) {
+            container.getBlockWarmupEngine().warmupL1(app, FeedBlockListBuilder.build(posts));
+        }
     }
 }

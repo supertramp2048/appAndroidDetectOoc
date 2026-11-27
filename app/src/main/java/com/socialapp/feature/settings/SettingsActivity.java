@@ -13,7 +13,6 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.socialapp.MyApplication;
@@ -22,13 +21,14 @@ import com.socialapp.core.network.AppError;
 import com.socialapp.core.network.dto.UserResource;
 import com.socialapp.core.session.SessionManager;
 import com.socialapp.core.ui.ConfirmDialog;
+import com.socialapp.core.telemetry.TelemetryActivity;
 import com.socialapp.databinding.ActivitySettingsBinding;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 
-public class SettingsActivity extends AppCompatActivity {
+public class SettingsActivity extends TelemetryActivity {
 
     private ActivitySettingsBinding binding;
     private SettingsViewModel viewModel;

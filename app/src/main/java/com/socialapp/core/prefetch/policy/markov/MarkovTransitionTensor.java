@@ -98,27 +98,20 @@ public class MarkovTransitionTensor {
 
     /**
      * Retrieves candidate transitions conditioned on the 2-step history [prev, curr].
-     * If the 2-step sequence has no observations, automatically applies Katz Backoff to Order 1.
+     * Uses Kiên's MarkovPredictor (Tasks B1-B5) with automatic backoff, then falls back to baseline.
      */
     @NonNull
     public List<ScreenProbability> getTransitions(@NonNull String prev, @NonNull String curr) {
         String key = makeKey(prev, curr);
 
-        // 1. Check online counts
-        Map<String, AtomicInteger> counts = tensorCounts.get(key);
-        if (counts != null && !counts.isEmpty()) {
-            long total = 0;
-            for (AtomicInteger c : counts.values()) {
-                total += c.get();
+        // 1. Consult Kiên's MarkovPredictor (Order 2 with built-in backoff)
+        List<Map.Entry<String, Double>> predicted = predictor.predict(java.util.Arrays.asList(prev, curr));
+        if (predicted != null && !predicted.isEmpty()) {
+            List<ScreenProbability> list = new ArrayList<>(predicted.size());
+            for (Map.Entry<String, Double> e : predicted) {
+                list.add(new ScreenProbability(e.getKey(), e.getValue()));
             }
-            if (total > 0) {
-                List<ScreenProbability> list = new ArrayList<>();
-                for (Map.Entry<String, AtomicInteger> e : counts.entrySet()) {
-                    list.add(new ScreenProbability(e.getKey(), (double) e.getValue().get() / total));
-                }
-                Collections.sort(list);
-                return list;
-            }
+            return list;
         }
 
         // 2. Check explicit probabilities

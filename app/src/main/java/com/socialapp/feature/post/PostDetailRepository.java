@@ -1,12 +1,16 @@
 package com.socialapp.feature.post;
 
+import android.content.res.Resources;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.socialapp.MyApplication;
+import com.socialapp.core.di.AppContainer;
 import com.socialapp.core.network.ApiErrorParser;
 import com.socialapp.core.network.ApiResult;
 import com.socialapp.core.network.SocialAppApiService;
@@ -18,12 +22,15 @@ import com.socialapp.core.network.dto.ReportRequest;
 import com.socialapp.core.network.dto.VoteResponse;
 import com.socialapp.core.prefetch.HitType;
 import com.socialapp.core.prefetch.Repository;
+import com.socialapp.core.telemetry.LoadContext;
 import com.socialapp.core.prefetch.ScreenId;
 import com.socialapp.core.prefetch.ScreenLoadCallback;
+import com.socialapp.core.ui.blocks.adapter.BlockWarmupEngine;
+import com.socialapp.core.ui.blocks.adapter.PostDetailBlockAssembler;
+import com.socialapp.core.ui.blocks.layout.BlockPrecomputer;
+import com.socialapp.core.ui.blocks.parser.ArticleAstCache;
 
-import com.socialapp.core.network.sim.ScreenPayloadConfig;
-import com.socialapp.core.prefetch.PrefetchManager;
-import com.socialapp.core.prefetch.PrefetchResult;
+import java.util.List;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -46,14 +53,14 @@ public class PostDetailRepository {
 
         Repository.load(ScreenId.POST_DETAIL, params, new Repository.RealDataLoader<PostResource>() {
             @Override
-            public void execute(@NonNull ScreenLoadCallback<PostResource> callback) {
-                fetchViaRetrofit(postId, callback);
+            public void execute(@NonNull ScreenLoadCallback<PostResource> callback, @NonNull LoadContext load) {
+                fetchViaRetrofit(postId, callback, load);
             }
         }, new ScreenLoadCallback<PostResource>() {
             @Override
             public void onLoaded(@NonNull HitType hitType, long latencyMs, @Nullable PostResource data) {
                 if (data != null) {
-                    resultLiveData.postValue(ApiResult.success(data));
+                    warmupAndDeliver(data, resultLiveData);
                 } else {
                     resultLiveData.postValue(ApiResult.error(com.socialapp.core.network.AppError.unknown(0, "Không có dữ liệu bài viết")));
                 }
@@ -68,8 +75,51 @@ public class PostDetailRepository {
         return resultLiveData;
     }
 
-    private void fetchViaRetrofit(int postId, @NonNull ScreenLoadCallback<PostResource> callback) {
-        apiService.getPostDetail(postId).enqueue(new Callback<PostDetailResponse>() {
+    private void warmupAndDeliver(
+            @NonNull PostResource post,
+            @NonNull MutableLiveData<ApiResult<PostResource>> resultLiveData) {
+        MyApplication app = MyApplication.getInstance();
+        AppContainer container = app != null ? app.getAppContainer() : null;
+        if (container == null) {
+            resultLiveData.postValue(ApiResult.success(post));
+            return;
+        }
+        try {
+            container.getBlockPrecomputer().submitBackgroundTask(() -> {
+                try {
+                    ArticleAstCache.ParsedArticle parsed =
+                            container.getArticleAstCache().getOrParse(post.id, post.contentHtml);
+                    BlockWarmupEngine warmupEngine = container.getBlockWarmupEngine();
+                    if (!warmupEngine.isMemoryPressureActive()) {
+                        Resources res = app.getResources();
+                        DisplayMetrics dm = res != null ? res.getDisplayMetrics() : null;
+                        if (dm != null && dm.widthPixels > 0) {
+                            float fontScale = res.getConfiguration() != null
+                                    ? res.getConfiguration().fontScale
+                                    : 1.0f;
+                            container.getBlockPrecomputer().precomputeBlocksSync(
+                                    parsed.bodyBlocks, dm.widthPixels, dm.density, fontScale
+                            );
+                            List<String> imageUrls = PostDetailBlockAssembler.collectImageUrls(post, parsed.bodyBlocks);
+                            if (!imageUrls.isEmpty()) {
+                                int targetW = Math.max(1, dm.widthPixels - BlockPrecomputer.dpToPx(36, dm.density));
+                                int targetH = Math.max(1, Math.round(targetW / 1.7777778f));
+                                warmupEngine.warmupL2Images(app, imageUrls, targetW, targetH);
+                            }
+                        }
+                    }
+                } catch (Throwable ignored) {
+                    // Never block article delivery if warmup fails in restricted environments
+                }
+                resultLiveData.postValue(ApiResult.success(post));
+            });
+        } catch (Throwable ignored) {
+            resultLiveData.postValue(ApiResult.success(post));
+        }
+    }
+
+    private void fetchViaRetrofit(int postId, @NonNull ScreenLoadCallback<PostResource> callback, LoadContext load) {
+        apiService.getPostDetailMeasured(postId, load).enqueue(new Callback<PostDetailResponse>() {
             @Override
             public void onResponse(@NonNull Call<PostDetailResponse> call, @NonNull Response<PostDetailResponse> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().data != null) {
@@ -81,7 +131,8 @@ public class PostDetailRepository {
 
             @Override
             public void onFailure(@NonNull Call<PostDetailResponse> call, @NonNull Throwable t) {
-                callback.onError(t);
+                if (call.isCanceled()) callback.onCancelled(t);
+                else callback.onError(t);
             }
         });
     }

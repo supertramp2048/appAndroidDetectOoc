@@ -1,0 +1,3 @@
+timestamp,policy,network,total_steps,full_hits,late_hits,misses,hit_rate_pct,avg_latency_ms,total_wasted_kb
+2026-11-24 15:58:31,P3,LTE,14,2,0,12,14.3,57,1860
+2026-11-24 15:59:55,P0,LTE,14,0,0,14,0.0,68,0

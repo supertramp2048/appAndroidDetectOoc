@@ -8,7 +8,9 @@ import androidx.annotation.NonNull;
 import java.io.IOException;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
+import okhttp3.Call;
 import okhttp3.Interceptor;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -23,6 +25,15 @@ import okhttp3.Response;
 public class MockNetworkInterceptor implements Interceptor {
 
     private static final String TAG = "MockNetworkEngine";
+    private final Consumer<Call> onSimulation;
+
+    public MockNetworkInterceptor() {
+        this(call -> {});
+    }
+
+    public MockNetworkInterceptor(Consumer<Call> onSimulation) {
+        this.onSimulation = onSimulation;
+    }
 
     @NonNull
     @Override
@@ -33,6 +44,7 @@ public class MockNetworkInterceptor implements Interceptor {
         if (!engine.isSimulationEnabled()) {
             return chain.proceed(request);
         }
+        onSimulation.accept(chain.call());
 
         String url = request.url().toString();
         String screenName = mapUrlToScreen(url);

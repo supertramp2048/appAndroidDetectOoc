@@ -56,6 +56,7 @@ public class MockNetworkEngine {
     private volatile NetworkProfile currentProfile = NetworkProfile.LTE_4G;
     private volatile PayloadWeight currentWeight = PayloadWeight.NORMAL_1_0;
     private volatile boolean isSimulationEnabled = true;
+    private volatile float timeScale = 1.0f;
 
     private long lastUpdateTimeMs = System.currentTimeMillis();
 
@@ -103,6 +104,20 @@ public class MockNetworkEngine {
 
     public void setSimulationEnabled(boolean enabled) {
         this.isSimulationEnabled = enabled;
+        if (!enabled) {
+            cancelAll();
+        }
+    }
+
+    public float getTimeScale() {
+        return timeScale;
+    }
+
+    public void setTimeScale(float timeScale) {
+        synchronized (lock) {
+            this.timeScale = Math.max(0.1f, timeScale);
+            updateStateAndRescheduleLocked();
+        }
     }
 
     public void addListener(@NonNull MockNetworkListener listener) {
@@ -175,7 +190,8 @@ public class MockNetworkEngine {
             // Compute total transfer size
             double baseSize = ScreenPayloadConfig.getBaseSizeKb(screenName);
             double totalBytesKb = baseSize * currentWeight.getMultiplier();
-            long rttMs = currentProfile.getRttMs();
+            float scale = Math.max(0.1f, timeScale);
+            long rttMs = Math.max(1L, (long) (currentProfile.getRttMs() / scale));
 
             ActiveTransfer<T> transfer = new ActiveTransfer<>(
                     requestId,
@@ -243,9 +259,11 @@ public class MockNetworkEngine {
             return;
         }
 
+        float scale = Math.max(0.1f, timeScale);
+
         // 1. Progress active transfers using the bandwidth from the elapsed time slice
         if (elapsed > 0) {
-            double sliceEffectiveBw = currentProfile.getBandwidthKbps() / activeCount;
+            double sliceEffectiveBw = (currentProfile.getBandwidthKbps() * scale) / activeCount;
             for (ActiveTransfer<?> t : activeTransfers.values()) {
                 if (now > t.rttEndTimeMs) {
                     // Calculate time elapsed strictly after RTT ended
@@ -257,7 +275,7 @@ public class MockNetworkEngine {
         }
 
         // 2. Reschedule completion timers based on new effective bandwidth
-        double newEffectiveBw = currentProfile.getBandwidthKbps() / activeCount;
+        double newEffectiveBw = (currentProfile.getBandwidthKbps() * scale) / activeCount;
         List<ActiveTransfer<?>> readyToComplete = new ArrayList<>();
 
         for (ActiveTransfer<?> t : activeTransfers.values()) {

@@ -2,7 +2,7 @@ package com.socialapp.core.prefetch;
 
 /**
  * Phân loại kết quả nạp màn hình:
- * - FULL_HIT: Đã tải trước hoàn chỉnh trong Cache, hiển thị ngay (độ trễ = 0ms).
+ * - FULL_HIT: Dữ liệu tải trước đã có trong cache khi foreground load bắt đầu.
  * - LATE_HIT: Đang được tải trước trong nền, người dùng bấm vào thì đợi phần còn lại, không gửi trùng request.
  * - MISS: Chưa được tải trước, phải tải từ đầu qua mạng.
  */

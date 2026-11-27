@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "selection": {
+    "source": "REPLAY",
+    "dataset": "T4.B.1 calibration",
+    "runId": "e28c0f10-b3e4-452e-a586-a77c8a0c6742",
+    "sessionCount": 10,
+    "navigationEventCount": 50,
+    "transitionCount": 40
+  },
+  "execution": {
+    "targetPackage": "com.socialapp.profile",
+    "authState": "guest",
+    "prefetchPolicy": "P0",
+    "fixturePostId": 1
+  },
+  "journeys": [
+    {
+      "id": "launcher_to_feed_newest",
+      "testMethod": "startup",
+      "fromScreen": "LAUNCHER",
+      "toScreen": "FEED_NEWEST",
+      "includeInStartupProfile": true,
+      "selectionBasis": "manual_startup_coverage",
+      "observedTransitionCount": null
+    },
+    {
+      "id": "feed_newest_to_post_detail",
+      "testMethod": "feedToPostDetail",
+      "fromScreen": "FEED_NEWEST",
+      "toScreen": "POST_DETAIL",
+      "includeInStartupProfile": false,
+      "selectionBasis": "calibration_transition_frequency",
+      "observedTransitionCount": 10,
+      "relatedObservedTransitions": { "FEED_HOT": 5 }
+    },
+    {
+      "id": "post_detail_to_comments",
+      "testMethod": "postDetailToComments",
+      "fromScreen": "POST_DETAIL",
+      "toScreen": "COMMENTS",
+      "includeInStartupProfile": false,
+      "selectionBasis": "calibration_transition_frequency",
+      "observedTransitionCount": 10
+    }
+  ]
+}

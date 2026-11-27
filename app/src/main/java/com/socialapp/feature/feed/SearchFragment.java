@@ -23,6 +23,7 @@ import com.socialapp.core.network.dto.PostResource;
 import com.socialapp.core.network.dto.UserResource;
 import com.socialapp.core.network.dto.UserSearchResponse;
 import com.socialapp.core.pagination.PageLoader;
+import com.socialapp.core.ui.blocks.adapter.RecyclerView120HzTuner;
 import com.socialapp.databinding.FragmentSearchBinding;
 
 import java.util.Collections;
@@ -65,7 +66,12 @@ public class SearchFragment extends Fragment {
         feedAdapter = new FeedAdapter(post -> Navigator.navigateToPostDetail(requireContext(), post.id));
         userAdapter = new UserAdapter(user -> Navigator.navigateToUserProfile(requireContext(), user.id));
 
-        binding.searchResultsRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+        LinearLayoutManager layoutManager = new LinearLayoutManager(requireContext());
+        binding.searchResultsRecyclerView.setLayoutManager(layoutManager);
+        RecyclerView120HzTuner.tuneReadingList(binding.searchResultsRecyclerView, layoutManager, true);
+        binding.searchResultsRecyclerView.setRecycledViewPool(
+                MyApplication.getAppContainer(requireContext()).getUnifiedBlockViewPool()
+        );
         binding.searchResultsRecyclerView.setAdapter(feedAdapter);
 
         PageLoader<PostResource> pageLoader = viewModel.getPostPageLoader();

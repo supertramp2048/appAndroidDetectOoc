@@ -127,23 +127,17 @@ public class MarkovTransitionMatrix {
      */
     @NonNull
     public List<ScreenProbability> getSortedTransitions(@NonNull String fromScreen) {
-        Map<String, AtomicInteger> rowCounts = countMatrix.get(fromScreen);
-        if (rowCounts != null && !rowCounts.isEmpty()) {
-            long total = 0;
-            for (AtomicInteger c : rowCounts.values()) {
-                total += c.get();
+        // Priority 1: Consult Kiên's MarkovPredictor (Tasks B1-B5)
+        List<Map.Entry<String, Double>> predicted = predictor.predict(Collections.singletonList(fromScreen));
+        if (predicted != null && !predicted.isEmpty()) {
+            List<ScreenProbability> list = new ArrayList<>(predicted.size());
+            for (Map.Entry<String, Double> e : predicted) {
+                list.add(new ScreenProbability(e.getKey(), e.getValue()));
             }
-            if (total > 0) {
-                List<ScreenProbability> list = new ArrayList<>();
-                for (Map.Entry<String, AtomicInteger> e : rowCounts.entrySet()) {
-                    double p = (double) e.getValue().get() / total;
-                    list.add(new ScreenProbability(e.getKey(), p));
-                }
-                Collections.sort(list);
-                return list;
-            }
+            return list;
         }
 
+        // Priority 2: Fallback to explicit empirical baseline probabilities
         Map<String, Double> explicitRow = explicitProbabilities.get(fromScreen);
         if (explicitRow != null && !explicitRow.isEmpty()) {
             List<ScreenProbability> list = new ArrayList<>();
@@ -174,5 +168,6 @@ public class MarkovTransitionMatrix {
 
     public void clearLearnedData() {
         countMatrix.clear();
+        predictor.reset();
     }
 }

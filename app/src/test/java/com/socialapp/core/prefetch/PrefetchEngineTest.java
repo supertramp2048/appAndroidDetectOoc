@@ -204,4 +204,57 @@ public class PrefetchEngineTest {
         assertEquals(1, p3Result.size());
         assertEquals(ScreenPayloadConfig.SCREEN_POST_DETAIL, p3Result.get(0));
     }
+
+    @Test
+    public void testSwrDualTtl_FreshThenStaleThenExpired() throws Exception {
+        PrefetchEntry<String> entry = new PrefetchEntry<>(
+                "POST_DETAIL:postId=42",
+                "POST_DETAIL",
+                "Post 42 Content",
+                180 * 1024,
+                40L,  // softTtl = 40ms
+                200L  // hardTtl = 200ms
+        );
+
+        // Immediately after creation: FRESH
+        assertEquals(PrefetchEntry.FreshnessState.FRESH, entry.getFreshnessState());
+        assertFalse(entry.isStaleButUsable());
+        assertFalse(entry.isExpired());
+
+        // Wait past softTtl (40ms) but before hardTtl (200ms) -> STALE_REVALIDATE
+        Thread.sleep(70);
+        assertEquals(PrefetchEntry.FreshnessState.STALE_REVALIDATE, entry.getFreshnessState());
+        assertTrue(entry.isStaleButUsable());
+        assertFalse(entry.isExpired());
+        assertTrue(entry.tryMarkRevalidating());
+        assertFalse(entry.tryMarkRevalidating()); // Only 1 concurrent revalidation allowed
+        entry.clearRevalidating();
+
+        // Wait past hardTtl (200ms) -> EXPIRED
+        Thread.sleep(160);
+        assertEquals(PrefetchEntry.FreshnessState.EXPIRED, entry.getFreshnessState());
+        assertTrue(entry.isExpired());
+    }
+
+    @Test
+    public void testCachePollutionGuard_ProtectsVerifiedUsedEntriesFromUnusedPrefetches() {
+        PrefetchCache guardedCache = new PrefetchCache(2, 0);
+
+        // k_used is opened by user (isUsed = true)
+        guardedCache.put("k_used", "POST_DETAIL", "Verified User Post", 100, 60_000L);
+        PrefetchEntry<String> usedEntry = guardedCache.get("k_used");
+        assertNotNull(usedEntry);
+        usedEntry.markUsed();
+
+        // k_unused_1 is a speculative prefetch (isUsed = false), accessed more recently than k_used
+        guardedCache.put("k_unused_1", "SEARCH", "Speculative Search", 100, 60_000L);
+
+        // Insert 3rd entry -> Cache Pollution Guard must evict k_unused_1 (unused) instead of k_used (verified)!
+        guardedCache.put("k_unused_2", "PROFILE", "Speculative Profile", 100, 60_000L);
+
+        assertNotNull("Verified used entry must be protected from cache pollution", guardedCache.get("k_used"));
+        assertNull("Unused speculative entry should be evicted first", guardedCache.get("k_unused_1"));
+        assertNotNull(guardedCache.get("k_unused_2"));
+        guardedCache.shutdown();
+    }
 }
