@@ -31,8 +31,26 @@ if not exist "%RAW_FILE%" (
     exit /b 1
 )
 
+set "PY_BIN="
 if exist "%VENV_PY%" (
-    "%VENV_PY%" "%~dp0markov-lab\sim\format_comparison.py" "%RAW_FILE%" "%OUT_CSV%"
+    set "PY_BIN=%VENV_PY%"
+) else (
+    where python >nul 2>nul
+    if not errorlevel 1 (
+        set "PY_BIN=python"
+    ) else (
+        where py >nul 2>nul
+        if not errorlevel 1 (
+            set "PY_BIN=py"
+        )
+    )
+)
+
+if defined PY_BIN (
+    "%PY_BIN%" "%~dp0markov-lab\sim\format_comparison.py" "%RAW_FILE%" "%OUT_CSV%"
+    if errorlevel 1 (
+        copy /y "%RAW_FILE%" "%OUT_CSV%" >nul
+    )
 ) else (
     copy /y "%RAW_FILE%" "%OUT_CSV%" >nul
 )

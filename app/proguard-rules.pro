@@ -32,3 +32,13 @@
 
 # Preserve androidx.profileinstaller startup initializer
 -keep class androidx.profileinstaller.** { *; }
+
+# Preserve Gson-serialized Prefetch & Replay experiment models
+-keep class com.socialapp.core.prefetch.ReplayResult { *; }
+-keep class com.socialapp.core.prefetch.ReplayResult$* { *; }
+-keep class com.socialapp.core.prefetch.PrefetchEngine$Policy { *; }
+-keep class com.socialapp.core.prefetch.PrefetchEngine$NetworkProfile { *; }
+-keep class com.socialapp.core.prefetch.PrefetchEngine$P5Mode { *; }
+-keep class com.socialapp.core.prefetch.PrefetchEngine$LambdaSnapshot { *; }
+-keep class com.socialapp.core.prefetch.AdaptiveLambdaController$Reason { *; }
+-keep class com.socialapp.core.prefetch.ScreenId { *; }
